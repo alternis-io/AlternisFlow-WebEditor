@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "rootDir": "..",
     "composite": true,
     "outDir": "lib",
     "declaration": true,
@@ -13,7 +14,7 @@
   },
   "include": ["src/**/*.ts"],
   "references": [
-    { "path": "./tests/e2e" }
+    { "path": "./tests/e2e" },
     { "path": "../common" }
   ]
 }

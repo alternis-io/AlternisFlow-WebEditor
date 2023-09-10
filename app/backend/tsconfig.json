@@ -1,14 +1,13 @@
 {
   "compilerOptions": {
-    "outDir": "../lib",
-    "declaration": false,
-    "target": "es2015",
+    "outDir": "lib",
+    "declaration": true,
+    "target": "es2020",
     "module": "CommonJS",
     "moduleResolution": "node",
-    "lib": ["DOM", "ScriptHost", "ES2020"],
+    "lib": ["ScriptHost", "ES2020"],
     "strict": true,
     "skipLibCheck": true,
-    // FIXME: remove
     "types": ["node"]
   },
   "include": ["**/*.ts"]

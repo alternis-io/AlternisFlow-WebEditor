@@ -9,17 +9,17 @@ To start, a JSON file for maximum readability
 
 #### C API
 
-We probably want a prefix
+We probably need a function prefix
 
 - `set_allocators(malloc, free, realloc)`
 
-- `dialogue_create_context_builder_from_resource(resource: string) DialogueContext | Error`
-  loads a dialogue (JSON) file to create an incomplete dialogue context that must be "completed"
+- `dialogue_create_ctx_builder_from_json(json: string) DialogueContext | Error`
+  loads a json dialogue file to create an incomplete dialogue context that must be "completed"
 
-- `dialogue_context_builder_set_callback(DialogueContext, name: string, callback: () => void) DialogueContextBuilder | Error`
+- `dialogue_ctx_builder_set_callback(DialogueContext, name: string, callback: () => void) DialogueContextBuilder | Error`
   set a callback in a dialogue context builder
 
-- `dialogue_context_builder_complete() DialogueContext | Error`
+- `dialogue_ctx_builder_complete() DialogueContext | Error`
   create a dialogue context from the builder, error if it wasn't properly set up (e.g. callbacks not set)
 
 - `dialogue_ctx_character_id_by_name(ctx: DialogueContext, name: string) u32`

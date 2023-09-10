@@ -1,44 +1,37 @@
 import * as express from 'express';
-import * as sqlite from 'sqlite';
-import * as sqlite3 from 'sqlite3';
-const app = express()
-const port = Number(process.env.PORT) || 3000;
+import { connect } from "./db";
+import * as assert from "node:assert";
 
-async function connect() {
-  const db = await sqlite.open({
-    filename: '/tmp/database.db',
-    driver: sqlite3.Database
-  });
-  /*
-  await db.exec(`
-    CREATE TABLE users (name TEXT)
-  `);
-  */
-  return db;
+const app = express()
+
+export interface RunOpts {
+  port?: number;
 }
 
-async function main() {
-  const db = await connect();
+export async function run(opts: RunOpts = {}) {
+  const conn = await connect();
 
   app.get('/', (req, res) => {
-    //res.send('Hello World!')
-    db.get("SELECT * FROM users").then(data => {
+    conn.get("SELECT * FROM users").then(data => {
       res.send(JSON.stringify(data));
       res.end();
     });
   })
 
   app.post('/', (req, res) => {
-    //res.send('Hello World!')
-    db.exec("INSERT INTO users VALUES ('blah')").then(() => {
+    conn.exec("INSERT INTO users VALUES ('blah')").then(() => {
       res.end();
     });
   })
 
+  const port = opts.port ?? Number(process.env.PORT);
+  assert(process.env.PORT && !Number.isNaN(port), `PORT in env '${process.env.PORT}' not a number`);
+  assert(port, "No port was set")
+
   app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`)
-  })
+    console.log(`Service listening on port ${port}`)
+  });
 }
 
-main();
-
+if (module === require.main)
+  void run();

@@ -5,11 +5,11 @@
   "main": "lib/index.js",
   "types": "src/index.ts",
   "scripts": {
-    "build": "tsc -b .",
+    "build": "tsc -b",
     "preview": "vite preview",
     "dev": "ts-node src/index.ts",
     "test": "mocha --config ./.mocharc.js tests/unit/**/*.test.ts",
-    "test:e2e": "mocha --config tests/e2e/.mocharc.js tests/e2e/**/*.test.ts"
+    "test:e2e": "npm run build:tests:e2e && mocha --config tests/e2e/.mocharc.js tests/e2e/**/*.test.ts"
   },
   "devDependencies": {
     "@types/chai": "^4.3.4",

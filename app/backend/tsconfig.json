@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "composite": true,
     "outDir": "lib",
     "declaration": true,
     "target": "es2020",
@@ -10,5 +11,9 @@
     "skipLibCheck": true,
     "types": ["node"]
   },
-  "include": ["**/*.ts"]
+  "include": ["src/**/*.ts"],
+  "references": [
+    { "path": "./tests/e2e" }
+    { "path": "../common" }
+  ]
 }

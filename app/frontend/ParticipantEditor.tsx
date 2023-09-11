@@ -18,28 +18,25 @@ export const iconSizes = {
   small: {
     label: "small",
     styles: {
-      minHeight: "20px",
-      maxHeight: "8%",
-      minWidth: "20px",
-      maxWidth: "8%",
+      paddingBottom: "8%",
+      height: "0",
+      width: "8%",
     },
   },
   medium: {
     label: "medium",
     styles: {
-      minHeight: "50px",
-      maxHeight: "20%",
-      minWidth: "50px",
-      maxWidth: "20%",
+      paddingBottom: "20%",
+      height: "0",
+      width: "20%",
     },
   },
   large: {
     label: "large",
     styles: {
-      minHeight: "150px",
-      maxHeight: "50%",
-      minWidth: "150px",
-      maxWidth: "50%",
+      paddingBottom: "50%",
+      height: "0",
+      width: "50%",
     },
   },
 } as const;
@@ -50,7 +47,6 @@ const isIconSize = (t: any): t is IconSize => t in iconSizes;
 
 export function ParticipantEditor() {
   const contextMenuId = String(Math.random());
-  // FIXME: store in local storage
 
   const [iconSize, setIconSize] = useState<keyof typeof iconSizes>(persistentData.participantEditor.preferences.iconSize);
 
@@ -58,22 +54,27 @@ export function ParticipantEditor() {
     persistentData.participantEditor.preferences.iconSize = iconSize;
   }, [iconSize]);
 
-  console.log(iconSize);
-  console.log(iconSizes?.[iconSize].value ?? "50px");
-
   return (
     <div>
       <ContextMenuTrigger id={contextMenuId}>
         <div>
           <div className={styles.selectionGrid}>
             {participants.map(participant => 
-              <img key={participant.name} style={{
-                color: "red",
-                ...iconSizes?.[iconSize].styles ?? {
-                  height: "50px",
-                  width: "50px",
-                },
-              }} alt={participant.name} />
+              // FIXME: make a default portrait pic
+              <img
+                key={participant.name}
+                style={{
+                  borderRadius: "5px",
+                  boxSizing: "border-box",
+                  border: "1px solid black",
+                  ...iconSizes?.[iconSize]?.styles ?? {
+                    height: "50px",
+                    width: "50px",
+                  },
+                }}
+                alt={participant.name}
+                className={styles.portraitImage}
+              />
             )}
           </div>
           <div>
@@ -90,9 +91,12 @@ export function ParticipantEditor() {
       </ContextMenuTrigger>
 
       <ContextMenu id={contextMenuId}>
+        {/* FIXME: add a real context menu component */}
+        <div style={{ backgroundColor: "white", color: "black" }}>
         {Object.entries(iconSizes).map(([name, iconSize]) => 
-          <MenuItem key={name} onClick={() => setIconSize(iconSize)}> Make icons {iconSize.label} </MenuItem>
+          <MenuItem key={name} onClick={() => setIconSize(name)}> Make icons {iconSize.label} </MenuItem>
         )}
+        </div>
       </ContextMenu>
     </div>
   );

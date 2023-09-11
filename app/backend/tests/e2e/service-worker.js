@@ -5,7 +5,10 @@
 
 /** @type { WorkerData } */
 const { workerData } = require("worker_threads");
+const { parentPort } = require("worker_threads");
 
 const Service = require("../..");
 
-void Service.run(workerData);
+void Service.run(workerData).then(() => {
+  parentPort.postMessage("ready");
+});

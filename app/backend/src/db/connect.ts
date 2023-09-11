@@ -4,7 +4,7 @@ import * as db from '.';
 
 export async function connect() {
   const conn = await sqlite.open({
-    filename: '/tmp/database.db',
+    filename: process.env.SQLITE_DB_NAME ?? ':memory:',
     driver: sqlite3.Database
   });
   db.init(conn);

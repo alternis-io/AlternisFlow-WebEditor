@@ -1,0 +1,12 @@
+.selectionGrid {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  /* FIXME: use grid instead */
+  min-height: 400px;
+  max-height: 0.3vh;
+  padding: 8px;
+
+  flex-wrap: wrap;
+  overflow: scroll;
+}

@@ -16,6 +16,12 @@ export interface DialogueEntryNodeData extends DialogueEntry {
 interface PersistentData {
   initialNodes: Node<{} | DialogueEntryNodeData>[];
   initialEdges: Edge<{}>[];
+  // FIXME: split objects into paths for independent updates
+  participantEditor: {
+    preferences: {
+      iconSize: string;
+    }
+  };
 }
 
 const defaultPersistentData: PersistentData = {
@@ -28,6 +34,11 @@ const defaultPersistentData: PersistentData = {
     position: { x: 540, y: 100 },
   }],
   initialEdges: [],
+  participantEditor: {
+    preferences: {
+      iconSize: "medium"
+    }
+  }
 };
 
 export const persistentData = new Proxy({} as any as PersistentData, {

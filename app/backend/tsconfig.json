@@ -1,7 +1,5 @@
 {
   "compilerOptions": {
-    "rootDir": "..",
-    "composite": true,
     "outDir": "lib",
     "declaration": true,
     "target": "es2020",
@@ -12,8 +10,5 @@
     "skipLibCheck": true,
     "types": ["node"]
   },
-  "include": ["src/**/*.ts"],
-  "references": [
-    { "path": "./tests/e2e" }
-  ]
+  "include": ["src/**/*.ts"]
 }

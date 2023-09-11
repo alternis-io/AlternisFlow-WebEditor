@@ -1,7 +1,5 @@
 {
   "compilerOptions": {
-    "rootDir": "../../..", // to access backend and common
-    "composite": true,
     "outDir": "lib",
     "declaration": true,
     "target": "es2020",

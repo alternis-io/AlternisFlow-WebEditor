@@ -2,7 +2,7 @@ import * as express from 'express';
 import { connect } from "./db";
 import * as assert from "node:assert";
 
-const app = express()
+const app = express();
 
 export interface RunOpts {
   port?: number;
@@ -24,9 +24,9 @@ export async function run(opts: RunOpts = {}) {
     });
   })
 
+  assert(!process.env.PORT || !Number.isNaN(process.env.PORT), `PORT in env '${process.env.PORT}' not a number`);
   const port = opts.port ?? Number(process.env.PORT);
-  assert(process.env.PORT && !Number.isNaN(port), `PORT in env '${process.env.PORT}' not a number`);
-  assert(port, "No port was set")
+  assert(port, "No port was set, either set PORT in the environment or pass one explicitly through the API");
 
   app.listen(port, () => {
     console.log(`Service listening on port ${port}`)

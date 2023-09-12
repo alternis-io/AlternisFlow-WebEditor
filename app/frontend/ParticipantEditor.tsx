@@ -18,9 +18,9 @@ export const iconSizes = {
   small: {
     label: "small",
     styles: {
-      paddingBottom: "8%",
+      paddingBottom: "10%",
       height: "0",
-      width: "8%",
+      width: "10%",
     },
   },
   medium: {
@@ -61,8 +61,9 @@ export function ParticipantEditor() {
           <div className={styles.selectionGrid}>
             {participants.map(participant => 
               // FIXME: make a default portrait pic
-              <img
+              <div
                 key={participant.name}
+                className={styles.portraitImage}
                 style={{
                   borderRadius: "5px",
                   boxSizing: "border-box",
@@ -72,9 +73,11 @@ export function ParticipantEditor() {
                     width: "50px",
                   },
                 }}
-                alt={participant.name}
-                className={styles.portraitImage}
-              />
+                >
+                <img
+                  alt={participant.name}
+                />
+              </div>
             )}
           </div>
           <div>

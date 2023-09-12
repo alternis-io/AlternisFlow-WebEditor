@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styles from "./ParticipantEditor.module.css";
 import { Participant } from "../common/data-types/participant";
-import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
+import { ContextMenu } from "./components/ContextMenu";
 import { persistentData } from "./AppPersistentState";
 
 export namespace ProjectDataEditor {
@@ -41,13 +41,12 @@ export const iconSizes = {
   },
 } as const;
 
-type IconSize = keyof typeof iconSizes;
+type IconSizes = keyof typeof iconSizes;
+type IconSizeData = (typeof iconSizes)[IconSizes];
 
-const isIconSize = (t: any): t is IconSize => t in iconSizes;
+const isIconSize = (t: any): t is IconSizes => t in iconSizes;
 
 export function ParticipantEditor() {
-  const contextMenuId = String(Math.random());
-
   const [iconSize, setIconSize] = useState<keyof typeof iconSizes>(persistentData.participantEditor.preferences.iconSize);
 
   useEffect(() => {
@@ -56,51 +55,48 @@ export function ParticipantEditor() {
 
   return (
     <div>
-      <ContextMenuTrigger id={contextMenuId}>
-        <div>
-          <div className={styles.selectionGrid}>
-            {participants.map(participant => 
-              // FIXME: make a default portrait pic
-              <div
-                key={participant.name}
-                className={styles.portraitImage}
-                style={{
-                  borderRadius: "5px",
-                  boxSizing: "border-box",
-                  border: "1px solid black",
-                  ...iconSizes?.[iconSize]?.styles ?? {
-                    height: "50px",
-                    width: "50px",
-                  },
-                }}
-                >
-                <img
-                  alt={participant.name}
-                />
-              </div>
-            )}
-          </div>
-          <div>
-            tabs
-            <span>speakers</span>
-            <span>states</span>
-          </div>
-          <div>
-            <span>speaker</span>
-            <div>portrait</div>
-            <div>name</div>
-          </div>
-        </div>
-      </ContextMenuTrigger>
-
-      <ContextMenu id={contextMenuId}>
+      <ContextMenu>
         {/* FIXME: add a real context menu component */}
         <div style={{ backgroundColor: "white", color: "black" }}>
         {Object.entries(iconSizes).map(([name, iconSize]) => 
-          <MenuItem key={name} onClick={() => setIconSize(name)}> Make icons {iconSize.label} </MenuItem>
+          <div key={name} onClick={() => setIconSize(name as IconSizes)}>
+            Make icons {iconSize.label}
+          </div>
         )}
         </div>
       </ContextMenu>
+      <div className={styles.selectionGrid}>
+        {participants.map(participant => 
+          // FIXME: make a default portrait pic
+          <div
+            key={participant.name}
+            className={styles.portraitImage}
+            style={{
+              borderRadius: "5px",
+              boxSizing: "border-box",
+              border: "1px solid black",
+              ...iconSizes?.[iconSize]?.styles ?? {
+                height: "50px",
+                width: "50px",
+              },
+            }}
+            >
+            <img
+              alt={participant.name}
+            />
+          </div>
+        )}
+      </div>
+      <div>
+        tabs
+        <span>speakers</span>
+        <span>states</span>
+      </div>
+      <div>
+        <span>speaker</span>
+        <div>portrait</div>
+        <div>name</div>
+      </div>
     </div>
   );
 }

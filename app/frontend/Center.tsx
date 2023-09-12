@@ -1,14 +1,9 @@
 import React from "react";
+import "./shared.global.css";
 
 export function Center(props: React.HTMLProps<HTMLDivElement>) {
   return (
-    <div style={{
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      height: "100%",
-      width: "100%",
-    }}>
+    <div className="centered">
       {props.children}
     </div>
   );

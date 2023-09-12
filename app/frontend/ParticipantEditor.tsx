@@ -56,13 +56,12 @@ export function ParticipantEditor() {
   return (
     <div>
       <ContextMenu>
-        {/* FIXME: add a real context menu component */}
         <div style={{ backgroundColor: "white", color: "black" }}>
-        {Object.entries(iconSizes).map(([name, iconSize]) => 
-          <div key={name} onClick={() => setIconSize(name as IconSizes)}>
-            Make icons {iconSize.label}
-          </div>
-        )}
+          {Object.entries(iconSizes).map(([name, iconSize]) => 
+            <div key={name} onClick={() => setIconSize(name as IconSizes)}>
+              Make icons {iconSize.label}
+            </div>
+          )}
         </div>
       </ContextMenu>
       <div className={styles.selectionGrid}>
@@ -71,15 +70,12 @@ export function ParticipantEditor() {
           <div
             key={participant.name}
             className={styles.portraitImage}
-            style={{
-              borderRadius: "5px",
-              boxSizing: "border-box",
-              border: "1px solid black",
-              ...iconSizes?.[iconSize]?.styles ?? {
+            style={
+              iconSizes?.[iconSize]?.styles ?? {
                 height: "50px",
                 width: "50px",
-              },
-            }}
+              }
+            }
             >
             <img
               alt={participant.name}

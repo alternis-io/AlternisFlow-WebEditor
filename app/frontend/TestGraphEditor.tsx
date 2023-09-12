@@ -165,7 +165,7 @@ const nodeTypes = {
   default: UnknownNode,
 };
 
-import { ContextMenu } from './ContextMenu'
+import { ContextMenu } from './components/ContextMenu'
 
 const CustomEdge = (props: EdgeProps) => {
   // TODO: draw path from boundary of handle box

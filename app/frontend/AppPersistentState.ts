@@ -20,6 +20,7 @@ interface PersistentData {
   participantEditor: {
     preferences: {
       iconSize: string;
+      selected?: string;
     }
   };
 }

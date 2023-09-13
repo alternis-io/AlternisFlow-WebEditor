@@ -3,6 +3,8 @@ import styles from "./ParticipantEditor.module.css";
 import { ContextMenu } from "./components/ContextMenu";
 import { IconSizes, useAppState } from "./AppState";
 import { useValidatedInput } from "./hooks/useValidatedInput";
+import { usePrevValue, useWithPrevDepsEffect } from "./hooks/usePrevValue";
+import { assert } from "./browser-utils";
 
 export namespace ProjectDataEditor {
   export interface Props {}
@@ -39,15 +41,7 @@ export function ParticipantEditor() {
   const participants = useAppState((s) => s.document.participants);
   const editorPrefs = useAppState((s) => s.preferences.participantEditor);
   const set = useAppState((s) => s.set);
-  const setSelectedId = (val: string) => set((s) => ({
-    preferences: {
-      ...s.preferences,
-      participantEditor: {
-        ...s.preferences.participantEditor,
-        lastSelected: val,
-      },
-    },
-  }));
+
   const setIconSize = (val: IconSizes) => set((s) => ({
     preferences: {
       ...s.preferences,
@@ -57,25 +51,67 @@ export function ParticipantEditor() {
       },
     },
   }));
-                
 
-  const selectedId = editorPrefs.lastSelected;
-  const selected = selectedId !== undefined ? participants[selectedId] : undefined;
+  const selectedName = editorPrefs.lastSelected;
+  const selected = selectedName !== undefined ? participants[selectedName] : undefined;
 
   const [name, nameInput, setNameInput, nameStatus, nameStatusMessage] = useValidatedInput(selected?.name ?? "", {
-    // FIXME: this is bad, this can accidentally swap state with another character that you match names with
     validate: useCallback((text: string) => {
-      return {
-        valid: !(text in participants),
-        status: "A participant with that name already exists",
-      };
+      if (text === selectedName)
+        return { valid: true };
+      if (!text)
+        return { valid: false, status: "Participant can't have an empty name"}
+      if (participants[text] !== undefined)
+        return { valid: false, status: "A participant with that name already exists" };
+      return { valid: true };
     }, [participants]),
   });
 
   useEffect(() => {
-    if (name != null && selectedId)
-      participants[selectedId].name = name;
-  }, [name, participants, selectedId]);
+    if (name === null || !selectedName || selectedName === name)
+      return;
+
+    const prevName = selectedName;
+    // svelte please
+    set(s => {
+      return {
+        preferences: {
+          ...s.preferences,
+          participantEditor: {
+            ...s.preferences.participantEditor,
+            lastSelected: name,
+          },
+        },
+        document: {
+          ...s.document,
+          participants: {
+            ...s.document.participants,
+            [prevName]: undefined,
+            [name]: {
+              ...s.document.participants[prevName],
+              name,
+            },
+          }
+        },
+      };
+    }
+  );
+
+  }, [name, selectedName]);
+
+  const setSelectedName = (val: string) => {
+    set((s) => ({
+      preferences: {
+        ...s.preferences,
+        participantEditor: {
+          ...s.preferences.participantEditor,
+          lastSelected: val,
+        },
+      },
+    }));
+    setNameInput(val);
+  };
+
 
   const details = (
     <div>
@@ -83,10 +119,14 @@ export function ParticipantEditor() {
       {selected ? <>
         <label>
           Participant name
-          <input defaultValue={selected.name} value={nameInput} onChange={(e) => setNameInput(e.currentTarget.value)} />
+          <input
+            defaultValue={selectedName}
+            value={nameInput}
+            onChange={(e) => setNameInput(e.currentTarget.value)}
+          />
         </label>
-        <span style={{color: "#f00"}}> { nameStatus !== "success" && nameStatusMessage } </span>
-        <div>{selected.name}</div>
+        <div style={{color: "#f00"}}> { nameStatus !== "success" && nameStatusMessage } </div>
+        <div>{name ?? selected.name}</div>
         </> : <>
           Select a participant to see and edit them
         </>
@@ -109,10 +149,10 @@ export function ParticipantEditor() {
         </ContextMenu>
         {Object.entries(participants).map(([id, participant]) => 
           // FIXME: make a default portrait pic
-          <div
+          participant && <div
             key={id}
             className={styles.portraitImage}
-            onClick={() => setSelectedId(id)}
+            onClick={() => setSelectedName(id)}
             style={
               iconSizes?.[editorPrefs.iconSize]?.styles ?? {
                 height: "50px",

@@ -48,7 +48,7 @@ const defaultAppState = {
       position: { x: 540, y: 100 },
     }] as Node<{}>[],
     edges: [] as Edge<{}>[],
-    participants: testParticipants as { [k: string]: Participant },
+    participants: testParticipants as { [k: string]: Participant | undefined },
   }
 };
 
@@ -59,7 +59,9 @@ const appStateKey = "appState";
 const initialState: AppState = (() => {
   let maybeLocallyStoredState: AppState | undefined;
   try {
-    maybeLocallyStoredState = JSON.parse(localStorage.get(appStateKey));
+    const localState = localStorage.getItem(appStateKey);
+    if (localState !== null)
+      maybeLocallyStoredState = JSON.parse(localState);
   } catch {}
   return maybeLocallyStoredState ?? deepCloneJson(defaultAppState);
 })();

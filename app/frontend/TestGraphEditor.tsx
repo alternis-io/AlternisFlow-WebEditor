@@ -351,6 +351,23 @@ const TestGraphEditor = (props: TestGraphEditor.Props) => {
           snapGrid={[15, 15]}
           nodeTypes={nodeTypes}
           //edgeTypes={edgeTypes}
+          onDragOver={(e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = "move";
+          }}
+          onDrop={(e) => {
+            e.preventDefault();
+            const participantDataText = e.dataTransfer.getData("application/dialogical-participant");
+            if (participantDataText) {
+              const participantData = JSON.parse(participantDataText);
+              const { top, left } = graphContainerElem.current!.getBoundingClientRect();
+              // FIXME: no hardcoded node width
+              addNode("default", graph.project({
+                x: e.clientX - left - 150/2,
+                y: e.clientY - top,
+              }));
+            }
+          }}
           onEdgeClick={(_evt, edge) => {
             graph.deleteElements({edges: [edge]})
           }}

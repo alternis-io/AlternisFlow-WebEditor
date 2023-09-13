@@ -176,8 +176,15 @@ export function ParticipantEditor() {
                 width: "50px",
               }
             }
-            >
-            <img src={p.portraitUrl} alt={p.name} />
+          >
+            <img
+              src={p.portraitUrl}
+              alt={p.name}
+              onDragStart={(event) => {
+                event.dataTransfer.setData("application/dialogical-participant", JSON.stringify(p));
+                event.dataTransfer.effectAllowed = "move";
+              }}
+            />
           </div>
         )}
       </div>

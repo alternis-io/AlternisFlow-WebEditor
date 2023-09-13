@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React from 'react'
 import ReactFlow, {
   addEdge,
   Handle,
@@ -20,10 +20,8 @@ import 'reactflow/dist/style.css'
 import styles from './TestGraphEditor.module.css'
 import { downloadFile, uploadFile } from './localFileManip'
 import classNames from './classnames'
-import { useValidatedInput, useStable, useOnMount } from "@bentley/react-hooks"
-import { InputStatus } from '@bentley/react-hooks/lib/useValidatedInput'
 import { Center } from "./Center";
-import { DialogueEntry, DialogueEntryNodeData, useAppState } from "./AppState";
+import { DialogueEntryNodeData, useAppState } from "./AppState";
 import { assert } from "./browser-utils";
 
 // FIXME: consolidate with AppState.ts
@@ -184,13 +182,17 @@ const TestGraphEditor = (props: TestGraphEditor.Props) => {
   const edges = useEdges<{}>();
   const nodes = useNodes<NodeData>();
 
-  const [doc, setAppState] = useAppState((s) => s.document);
+  const doc = useAppState((s) => s.document);
+  const set = useAppState((s) => s.set);
 
   React.useEffect(() => {
-    setAppState(s => {
-      s.document.nodes = nodes;
-      s.document.edges = edges;
-    });
+    set((s) => ({
+      document: {
+        ...s.document,
+        nodes,
+        edges,
+      },
+    }));
   }, [nodes, edges]);
 
   const addNode = React.useCallback(

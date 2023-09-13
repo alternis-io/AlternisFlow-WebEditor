@@ -1,8 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import styles from "./ParticipantEditor.module.css";
-import { Participant } from "../common/data-types/participant";
 import { ContextMenu } from "./components/ContextMenu";
-import { AppState, IconSizes, useAppState } from "./AppState";
+import { IconSizes, useAppState } from "./AppState";
 import { useValidatedInput } from "./hooks/useValidatedInput";
 
 export namespace ProjectDataEditor {
@@ -37,21 +36,33 @@ export const iconSizes = {
 } as const;
 
 export function ParticipantEditor() {
-  const [{ participants, preferences }, setAppState] = useAppState((s) => ({
-    participants: s.document.participants,
-    preferences: s.preferences.participantEditor,
+  const participants = useAppState((s) => s.document.participants);
+  const editorPrefs = useAppState((s) => s.preferences.participantEditor);
+  const set = useAppState((s) => s.set);
+  const setSelectedId = (val: string) => set((s) => ({
+    preferences: {
+      ...s.preferences,
+      participantEditor: {
+        ...s.preferences.participantEditor,
+        lastSelected: val,
+      },
+    },
   }));
-  //const participants = {} as any;
-  //const preferences = { iconSizes: "medium" } as any;
+  const setIconSize = (val: IconSizes) => set((s) => ({
+    preferences: {
+      ...s.preferences,
+      participantEditor: {
+        ...s.preferences.participantEditor,
+        iconSize: val
+      },
+    },
+  }));
+                
 
-  const selectedId = preferences.lastSelected;
-  const setSelectedId = (val: string) => setAppState((s) => s.preferences.participantEditor = {
-    ...s.preferences.participantEditor,
-    lastSelected: val
-  });
-  const selected = selectedId && participants[selectedId];
+  const selectedId = editorPrefs.lastSelected;
+  const selected = selectedId !== undefined ? participants[selectedId] : undefined;
 
-  const [name, nameInput, setNameInput, nameStatus, nameStatusMessage] = useValidatedInput("", {
+  const [name, nameInput, setNameInput, nameStatus, nameStatusMessage] = useValidatedInput(selected?.name ?? "", {
     // FIXME: this is bad, this can accidentally swap state with another character that you match names with
     validate: useCallback((text: string) => {
       return {
@@ -70,7 +81,11 @@ export function ParticipantEditor() {
     <div>
       <h1> Details </h1>
       {selected ? <>
-        <input value={nameInput} onChange={(e) => setNameInput(e.currentTarget.value)} />
+        <label>
+          Participant name
+          <input defaultValue={selected.name} value={nameInput} onChange={(e) => setNameInput(e.currentTarget.value)} />
+        </label>
+        <span style={{color: "#f00"}}> { nameStatus !== "success" && nameStatusMessage } </span>
         <div>{selected.name}</div>
         </> : <>
           Select a participant to see and edit them
@@ -86,10 +101,7 @@ export function ParticipantEditor() {
         <ContextMenu>
           <div style={{ backgroundColor: "white", color: "black" }}>
             {Object.entries(iconSizes).map(([name, iconSize]) => 
-              <div key={name} onClick={() => setAppState((s) => s.preferences.participantEditor = {
-                ...s.preferences.participantEditor,
-                iconSize: name as IconSizes
-              })}>
+              <div key={name} onClick={() => setIconSize(name as IconSizes)}>
                 Make icons {iconSize.label}
               </div>
             )}
@@ -102,7 +114,7 @@ export function ParticipantEditor() {
             className={styles.portraitImage}
             onClick={() => setSelectedId(id)}
             style={
-              iconSizes?.[preferences.iconSize]?.styles ?? {
+              iconSizes?.[editorPrefs.iconSize]?.styles ?? {
                 height: "50px",
                 width: "50px",
               }

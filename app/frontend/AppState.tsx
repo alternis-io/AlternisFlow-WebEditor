@@ -2,6 +2,7 @@ import type { Node, Edge } from 'reactflow'
 import { Participant } from "../common/data-types/participant";
 import { deepCloneJson } from "./react-utils";
 import { create } from "zustand";
+import { DeepPartial } from "ts-essentials/dist/deep-partial";
 
 // FIXME: move to common/
 export interface DialogueEntry {
@@ -55,7 +56,7 @@ export type AppState = typeof defaultAppState;
 
 const appStateKey = "appState";
 
-const initialState = (() => {
+const initialState: AppState = (() => {
   let maybeLocallyStoredState: AppState | undefined;
   try {
     maybeLocallyStoredState = JSON.parse(localStorage.get(appStateKey));
@@ -63,9 +64,15 @@ const initialState = (() => {
   return maybeLocallyStoredState ?? deepCloneJson(defaultAppState);
 })();
 
-export const useAppState = create<AppState>((set) => ({
+type SettableState<T extends object> = T & {
+  set(
+    cb: (s: T) => DeepPartial<T> | Promise<DeepPartial<T>>,
+  ): void;
+};
+
+export const useAppState = create<SettableState<AppState>>((set) => ({
   ...initialState,
-  set,
+  set: set as SettableState<AppState>["set"],
 }));
 
 useAppState.subscribe((state) =>

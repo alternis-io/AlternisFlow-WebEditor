@@ -1,4 +1,4 @@
-import React, { useMemo, useSyncExternalStore } from "react";
+import React, { useCallback, useMemo, useSyncExternalStore } from "react";
 import type { Node, Edge } from 'reactflow'
 import { assert } from "./browser-utils";
 import { Participant } from "../common/data-types/participant";
@@ -24,6 +24,7 @@ const defaultAppState = {
   preferences: {
     participantEditor: {
       iconSize: "medium",
+      lastSelected: undefined as undefined | string,
     },
   },
 
@@ -41,7 +42,7 @@ const defaultAppState = {
   }
 };
 
-type AppState = typeof defaultAppState;
+export type AppState = typeof defaultAppState;
 
 const initialState = deepCloneJson(defaultAppState);
 
@@ -79,16 +80,17 @@ export function makeLocalStorageSynchronizedObject<T extends {[k: string]: any}>
 const localStorageSyncedState = makeLocalStorageSynchronizedObject(initialState);
 
 // I can smell the bugs already
-export function useAppState<R>(get: (s: AppState) => R) {
+export function useAppState<R>(get: (s: AppState) => R = () => undefined as R) {
   return [
     useSyncExternalStore(
       localStorageSyncedState.subscribe,
       () => get(localStorageSyncedState.object)
     ),
-    function setAppState(mutate: (appState: AppState) => void) {
+    useCallback(function setAppState(mutate: (appState: AppState) => void) {
+      // FIXME: could prevent multiple updates within one mutation callback with a gate
       mutate(localStorageSyncedState.object);
-    },
-  ];
+    }, []),
+  ] as const;
 }
 
 // export const AppStateCtx = React.createContext<AppState>(makeInaccessibleObject("no app state provider in this tree"));

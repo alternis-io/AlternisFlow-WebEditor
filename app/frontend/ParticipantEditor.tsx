@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import styles from "./ParticipantEditor.module.css";
 import { Participant } from "../common/data-types/participant";
 import { ContextMenu } from "./components/ContextMenu";
-import { persistentData, IconSizes, useAppState } from "./AppState";
-import { useValidatedInput } from "@bentley/react-hooks";
+import { AppState, IconSizes, useAppState } from "./AppState";
+import { useValidatedInput } from "./hooks/useValidatedInput";
 
 export namespace ProjectDataEditor {
   export interface Props {}
@@ -47,23 +47,37 @@ export const iconSizes = {
 } as const;
 
 export function ParticipantEditor() {
-  const [iconSize, setIconSize] = useState<keyof typeof iconSizes>(persistentData.participantEditor.preferences.iconSize);
-  const [selectedId, setSelected] = useState(persistentData.participantEditor.preferences.selected);
+  const [{ participants, preferences }, setAppState] = useAppState((s) => ({
+    participants: s.document.participants,
+    preferences: s.preferences.participantEditor,
+  }));
+  //const participants = {} as any;
+  //const preferences = { iconSizes: "medium" } as any;
 
-  const [participants, setAppState] = useAppState((s) => s.document.participants);
+  const selectedId = preferences.lastSelected;
+  const setSelectedId = (val: string) => setAppState((s) => s.preferences.participantEditor.lastSelected = val);
+  const selected = selectedId && participants[selectedId];
+
+  const [name, nameInput, setNameInput, nameStatus, nameStatusMessage] = useValidatedInput("", {
+    // FIXME: this is bad, this can accidentally swap state with another character that you match names with
+    validate: useCallback((text: string) => {
+      return {
+        valid: !(text in participants),
+        status: "A participant with that name already exists",
+      };
+    }, [participants]),
+  });
 
   useEffect(() => {
-    persistentData.participantEditor.preferences.iconSize = iconSize;
-  }, [iconSize]);
-
-  const [name, nameInput, setNameInput, nameStatus, nameStatusMessage] = useValidatedInput();
-
-  const selected = selectedId && participants[selectedId];
+    if (name != null && selectedId)
+      participants[selectedId].name = name;
+  }, [name, participants, selectedId]);
 
   const details = (
     <div>
       <h1> Details </h1>
       {selected ? <>
+        <input value={nameInput} onChange={(e) => setNameInput(e.currentTarget.value)} />
         <div>{selected.name}</div>
         </> : <>
           Select a participant to see and edit them
@@ -79,7 +93,7 @@ export function ParticipantEditor() {
         <ContextMenu>
           <div style={{ backgroundColor: "white", color: "black" }}>
             {Object.entries(iconSizes).map(([name, iconSize]) => 
-              <div key={name} onClick={() => setIconSize(name as IconSizes)}>
+              <div key={name} onClick={() => setAppState((s) => s.preferences.participantEditor.iconSize = name as IconSizes)}>
                 Make icons {iconSize.label}
               </div>
             )}
@@ -90,9 +104,9 @@ export function ParticipantEditor() {
           <div
             key={id}
             className={styles.portraitImage}
-            onClick={() => setSelected(id)}
+            onClick={() => setSelectedId(id)}
             style={
-              iconSizes?.[iconSize]?.styles ?? {
+              iconSizes?.[preferences.iconSize]?.styles ?? {
                 height: "50px",
                 width: "50px",
               }

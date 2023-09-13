@@ -23,7 +23,7 @@ import classNames from './classnames'
 import { useValidatedInput, useStable, useOnMount } from "@bentley/react-hooks"
 import { InputStatus } from '@bentley/react-hooks/lib/useValidatedInput'
 import { Center } from "./Center";
-import { DialogueEntry, DialogueEntryNodeData, persistentData } from "./AppState";
+import { DialogueEntry, DialogueEntryNodeData, useAppState } from "./AppState";
 import { assert } from "./browser-utils";
 
 // FIXME: consolidate with AppState.ts
@@ -184,9 +184,13 @@ const TestGraphEditor = (props: TestGraphEditor.Props) => {
   const edges = useEdges<{}>();
   const nodes = useNodes<NodeData>();
 
+  const [doc, setAppState] = useAppState((s) => s.document);
+
   React.useEffect(() => {
-    persistentData.initialNodes = nodes;
-    persistentData.initialEdges = edges;
+    setAppState(s => {
+      s.document.nodes = nodes;
+      s.document.edges = edges;
+    });
   }, [nodes, edges]);
 
   const addNode = React.useCallback(
@@ -338,8 +342,8 @@ const TestGraphEditor = (props: TestGraphEditor.Props) => {
       </div>
       <div className={styles.graph} ref={graphContainerElem}>
         <ReactFlow
-          defaultNodes={persistentData.initialNodes}
-          defaultEdges={persistentData.initialEdges}
+          defaultNodes={doc.nodes}
+          defaultEdges={doc.edges}
           deleteKeyCode={"Delete"} /*DELETE key*/
           snapToGrid
           snapGrid={[15, 15]}

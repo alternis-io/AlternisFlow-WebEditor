@@ -45,7 +45,10 @@ export function ParticipantEditor() {
   //const preferences = { iconSizes: "medium" } as any;
 
   const selectedId = preferences.lastSelected;
-  const setSelectedId = (val: string) => setAppState((s) => s.preferences.participantEditor.lastSelected = val);
+  const setSelectedId = (val: string) => setAppState((s) => s.preferences.participantEditor = {
+    ...s.preferences.participantEditor,
+    lastSelected: val
+  });
   const selected = selectedId && participants[selectedId];
 
   const [name, nameInput, setNameInput, nameStatus, nameStatusMessage] = useValidatedInput("", {
@@ -83,7 +86,10 @@ export function ParticipantEditor() {
         <ContextMenu>
           <div style={{ backgroundColor: "white", color: "black" }}>
             {Object.entries(iconSizes).map(([name, iconSize]) => 
-              <div key={name} onClick={() => setAppState((s) => s.preferences.participantEditor.iconSize = name as IconSizes)}>
+              <div key={name} onClick={() => setAppState((s) => s.preferences.participantEditor = {
+                ...s.preferences.participantEditor,
+                iconSize: name as IconSizes
+              })}>
                 Make icons {iconSize.label}
               </div>
             )}

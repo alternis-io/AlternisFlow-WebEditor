@@ -4,6 +4,7 @@ import { assert } from "./browser-utils";
 import { Participant } from "../common/data-types/participant";
 import { deepCloneJson, makeInaccessibleObject } from "./react-utils";
 import { useStable } from "@bentley/react-hooks";
+import { StateCreator, StoreMutatorIdentifier, create } from "zustand";
 
 // FIXME: move to common/
 export interface DialogueEntry {
@@ -55,8 +56,6 @@ const defaultAppState = {
 
 export type AppState = typeof defaultAppState;
 
-const initialState = deepCloneJson(defaultAppState);
-
 // FIXME: move to different file
 export function makeLocalStorageSynchronizedObject<T extends {[k: string]: any}>(defaultData: T) {
   const subscriptions = new Set<() => void>();
@@ -88,44 +87,21 @@ export function makeLocalStorageSynchronizedObject<T extends {[k: string]: any}>
   };
 }
 
-const localStorageSyncedState = makeLocalStorageSynchronizedObject(initialState);
+const appStateKey = "appState";
 
-// FIXME
-// I can smell the bugs already (1 hour later, I saw them, but they escaped)
-export function useAppStateOld<R>(get: (s: AppState) => R = () => undefined as R) {
-  return [
-    useSyncExternalStore(
-      localStorageSyncedState.subscribe,
-      () => get(localStorageSyncedState.object)
-    ),
-    useCallback(function setAppState(mutate: (appState: AppState) => void) {
-      // FIXME: could prevent multiple updates within one mutation callback with a gate
-      mutate(localStorageSyncedState.object);
-    }, []),
-  ] as const;
-}
+const initialState = (() => {
+  let maybeLocallyStoredState: AppState | undefined;
+  try {
+    maybeLocallyStoredState = JSON.parse(localStorage.get(appStateKey));
+  } catch {}
+  return maybeLocallyStoredState ?? deepCloneJson(defaultAppState);
+})();
 
-const AppStateCtx = React.createContext<[AppState, React.Dispatch<React.SetStateAction<AppState>>]>(
-  makeInaccessibleObject("no app state provider in this tree")
+export const useAppState = create<AppState>((set) => ({
+  ...initialState,
+  set,
+}));
+
+useAppState.subscribe((state) =>
+  localStorage.setItem(appStateKey, JSON.stringify(state))
 );
-
-// FIXME:
-export function AppStateProvider(props: React.PropsWithChildren<{}>) {
-  return (
-    <AppStateCtx.Provider value={useState(initialState)}>
-      {props.children}
-    </AppStateCtx.Provider>
-  );
-};
-
-// I can smell the bugs already
-export function useAppState<R>(get: (s: AppState) => R = () => undefined as R) {
-  const [appState, _setAppState] = useContext(AppStateCtx);
-  return [
-    get(appState),
-    useCallback((cb: (s: AppState) => void) => {
-      _setAppState((s) => { cb(s); return s; })
-    }, []),
-  ] as const;
-}
-

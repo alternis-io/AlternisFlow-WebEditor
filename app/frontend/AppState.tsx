@@ -1,10 +1,7 @@
-import React, { useCallback, useContext, useMemo, useState, useSyncExternalStore } from "react";
 import type { Node, Edge } from 'reactflow'
-import { assert } from "./browser-utils";
 import { Participant } from "../common/data-types/participant";
-import { deepCloneJson, makeInaccessibleObject } from "./react-utils";
-import { useStable } from "@bentley/react-hooks";
-import { StateCreator, StoreMutatorIdentifier, create } from "zustand";
+import { deepCloneJson } from "./react-utils";
+import { create } from "zustand";
 
 // FIXME: move to common/
 export interface DialogueEntry {
@@ -55,37 +52,6 @@ const defaultAppState = {
 };
 
 export type AppState = typeof defaultAppState;
-
-// FIXME: move to different file
-export function makeLocalStorageSynchronizedObject<T extends {[k: string]: any}>(defaultData: T) {
-  const subscriptions = new Set<() => void>();
-
-  return {
-    object: new Proxy({} as T, {
-      get(obj: T, key, recv) {
-        assert(typeof key === "string", "locally stored object had non-string key");
-        if (!(key in obj)) {
-          const persisted = localStorage.getItem(key);
-          obj[key as keyof T] = persisted
-            ? JSON.parse(persisted)
-            : defaultData[key];
-        }
-        return Reflect.get(obj, key, recv);
-      },
-      set(obj, key, value, recv) {
-        assert(typeof key === "string", "locally stored object had non-string key");
-        localStorage.setItem(key, JSON.stringify(value));
-        const result = Reflect.set(obj, key, value, recv)
-        subscriptions.forEach(s => s())
-        return result;
-      }
-    }),
-    subscribe: (f: () => void) => {
-      subscriptions.add(f);
-      return function unsubscribe() { subscriptions.delete(f); };
-    },
-  };
-}
 
 const appStateKey = "appState";
 

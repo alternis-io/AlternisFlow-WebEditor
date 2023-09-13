@@ -9,16 +9,6 @@ export namespace ProjectDataEditor {
   export interface Props {}
 }
 
-// prepopulate during loading...
-const testParticipants: Record<string, Participant> = Object.fromEntries(new Array(100).fill(undefined).map((_, i) => ([
-  `test_${i}`,
-  {
-    name: `test_${i}`,
-    // FIXME: make my own
-    portraitUrl: "https://www.svgrepo.com/show/166448/portrait.svg"
-  }
-])));
-
 export const iconSizes = {
   small: {
     label: "small",

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import styles from "./ParticipantEditor.module.css";
 import { Participant } from "../common/data-types/participant";
 import { ContextMenu } from "./components/ContextMenu";
-import { persistentData } from "./AppState";
+import { persistentData, IconSizes, useAppState } from "./AppState";
 import { useValidatedInput } from "@bentley/react-hooks";
 
 export namespace ProjectDataEditor {
@@ -46,15 +46,11 @@ export const iconSizes = {
   },
 } as const;
 
-type IconSizes = keyof typeof iconSizes;
-type IconSizeData = (typeof iconSizes)[IconSizes];
-
-const isIconSize = (t: any): t is IconSizes => t in iconSizes;
-
 export function ParticipantEditor() {
   const [iconSize, setIconSize] = useState<keyof typeof iconSizes>(persistentData.participantEditor.preferences.iconSize);
-  const [participants, setParticipants] = useState(testParticipants);
   const [selectedId, setSelected] = useState(persistentData.participantEditor.preferences.selected);
+
+  const [participants, setAppState] = useAppState((s) => s.document.participants);
 
   useEffect(() => {
     persistentData.participantEditor.preferences.iconSize = iconSize;

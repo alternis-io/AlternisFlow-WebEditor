@@ -126,7 +126,7 @@ export function ParticipantEditor() {
       <h1> Details </h1>
       {selectedName && selected ? <>
         <label style={{ width: "100%" }}>
-          Participant name
+          Participant name&nbsp;
           <input
             value={nameInput}
             onChange={(e) => setNameInput(e.currentTarget.value)}
@@ -134,13 +134,15 @@ export function ParticipantEditor() {
         </label>
         <label style={{ width: "100%" }}>
           Portrait
-          <img className={styles.bigPortrait} src={selected.portraitUrl} alt={selected.name} />
+          &nbsp;
           <button onClick={async () => {
             const file = await uploadFile({ type: 'dataurl' })
             setSelectedPortrait(selectedName, file.content);
           }}>
-            Upload portrait
+            Upload new portrait
           </button>
+          &nbsp;
+          <img className={styles.bigPortrait} src={selected.portraitUrl} alt={selected.name} />
         </label>
         <div style={{color: "#f00"}}> { nameStatus !== "success" && nameStatusMessage } </div>
         </> : <>

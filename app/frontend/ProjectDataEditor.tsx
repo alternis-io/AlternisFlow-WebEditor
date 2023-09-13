@@ -5,7 +5,7 @@ import { ParticipantEditor } from "./ParticipantEditor";
 
 export function ProjectDataEditor(_props: ProjectDataEditor.Props) {
   return (
-    <div className={styles.textEditor}>
+    <div className={styles.projectDataEditor}>
       <ParticipantEditor />
     </div>
   );

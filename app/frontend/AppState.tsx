@@ -21,14 +21,11 @@ export interface DialogueEntryNodeData extends DialogueEntry {
 export type IconSizes = "small" | "medium" | "large";
 
 // prepopulate during loading...
-const testParticipants: Record<string, Participant> = Object.fromEntries(new Array(100).fill(undefined).map((_, i) => ([
-  `test_${i}`,
-  {
+const testParticipants = new Array(100).fill(undefined).map((_, i) => ({
     name: `test_${i}`,
     // FIXME: make my own
     portraitUrl: "https://www.svgrepo.com/show/166448/portrait.svg"
-  }
-])));
+}));
 
 const defaultAppState = {
   preferences: {
@@ -48,8 +45,8 @@ const defaultAppState = {
       position: { x: 540, y: 100 },
     }] as Node<{}>[],
     edges: [] as Edge<{}>[],
-    participants: testParticipants as { [k: string]: Participant | undefined },
-  }
+    participants: testParticipants as Participant[],
+  },
 };
 
 export type AppState = typeof defaultAppState;

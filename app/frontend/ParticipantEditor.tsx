@@ -3,8 +3,6 @@ import styles from "./ParticipantEditor.module.css";
 import { ContextMenu } from "./components/ContextMenu";
 import { IconSizes, useAppState } from "./AppState";
 import { useValidatedInput } from "./hooks/useValidatedInput";
-import { usePrevValue, useWithPrevDepsEffect } from "./hooks/usePrevValue";
-import { assert } from "./browser-utils";
 
 export namespace ProjectDataEditor {
   export interface Props {}
@@ -53,7 +51,7 @@ export function ParticipantEditor() {
   }));
 
   const selectedName = editorPrefs.lastSelected;
-  const selected = selectedName !== undefined ? participants[selectedName] : undefined;
+  const selected = selectedName !== undefined ? participants.find(p => p?.name === selectedName) : undefined;
 
   const [name, nameInput, setNameInput, nameStatus, nameStatusMessage] = useValidatedInput(selected?.name ?? "", {
     validate: useCallback((text: string) => {
@@ -61,10 +59,10 @@ export function ParticipantEditor() {
         return { valid: true };
       if (!text)
         return { valid: false, status: "Participant can't have an empty name"}
-      if (participants[text] !== undefined)
+      if (participants.some(p => p?.name === text))
         return { valid: false, status: "A participant with that name already exists" };
       return { valid: true };
-    }, [participants]),
+    }, [participants, selectedName]),
   });
 
   useEffect(() => {
@@ -84,14 +82,11 @@ export function ParticipantEditor() {
         },
         document: {
           ...s.document,
-          participants: {
-            ...s.document.participants,
-            [prevName]: undefined,
-            [name]: {
-              ...s.document.participants[prevName],
-              name,
-            },
-          }
+          participants: s.document.participants.map(p =>
+            p.name === prevName
+            ? { ...p, name }
+            : p
+          ),
         },
       };
     }
@@ -120,7 +115,6 @@ export function ParticipantEditor() {
         <label>
           Participant name
           <input
-            defaultValue={selectedName}
             value={nameInput}
             onChange={(e) => setNameInput(e.currentTarget.value)}
           />
@@ -147,12 +141,11 @@ export function ParticipantEditor() {
             )}
           </div>
         </ContextMenu>
-        {Object.entries(participants).map(([id, participant]) => 
-          // FIXME: make a default portrait pic
-          participant && <div
-            key={id}
+        {participants.map((p) => 
+          <div
+            key={p.name}
             className={styles.portraitImage}
-            onClick={() => setSelectedName(id)}
+            onClick={() => setSelectedName(p.name)}
             style={
               iconSizes?.[editorPrefs.iconSize]?.styles ?? {
                 height: "50px",
@@ -160,7 +153,7 @@ export function ParticipantEditor() {
               }
             }
             >
-            <img src={participant.portraitUrl} alt={participant.name} />
+            <img src={p.portraitUrl} alt={p.name} />
           </div>
         )}
       </div>

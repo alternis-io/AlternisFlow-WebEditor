@@ -18,8 +18,24 @@
   border: 1px solid black;
 }
 
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  padding: 11px;
+}
+
+.details h1 {
+  margin: 0;
+}
+
 .portraitImage > img {
   object-fit: contain;
-  height: 100%;
+  height: auto;
+  width: 100%;
+}
+
+.bigPortrait {
+  object-fit: contain;
   width: 100%;
 }

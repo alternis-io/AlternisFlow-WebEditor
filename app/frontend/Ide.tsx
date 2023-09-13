@@ -10,7 +10,7 @@ const apiBaseUrl = "http://localhost:3001"
 export function Ide(_props: Ide.Props) {
   return <div className={styles.split}>
     <ProjectDataEditor />
-    <DialogueViewer />
+    {/*<DialogueViewer />*/}
     <span className={styles.graphEditor}>
       <TestGraphEditor />
     </span>

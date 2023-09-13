@@ -1,7 +1,9 @@
 
 .split {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 2fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
+  /* not doing the runtime yet */
+  /* grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 2fr); */
 }
 
 .textEditor {

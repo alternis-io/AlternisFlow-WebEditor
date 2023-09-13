@@ -3,6 +3,7 @@ import styles from "./ParticipantEditor.module.css";
 import { ContextMenu } from "./components/ContextMenu";
 import { IconSizes, useAppState } from "./AppState";
 import { useValidatedInput } from "./hooks/useValidatedInput";
+import { uploadFile } from "./localFileManip";
 
 export namespace ProjectDataEditor {
   export interface Props {}
@@ -50,6 +51,7 @@ export function ParticipantEditor() {
     },
   }));
 
+  // FIXME: consolidate
   const selectedName = editorPrefs.lastSelected;
   const selected = selectedName !== undefined ? participants.find(p => p?.name === selectedName) : undefined;
 
@@ -70,7 +72,6 @@ export function ParticipantEditor() {
       return;
 
     const prevName = selectedName;
-    // svelte please
     set(s => {
       return {
         preferences: {
@@ -107,20 +108,41 @@ export function ParticipantEditor() {
     setNameInput(val);
   };
 
+  const setSelectedPortrait = (participantName: string, portraitUrl: string) => {
+    set((s) => ({
+      document: {
+        ...s.document,
+        participants: s.document.participants.map(p =>
+          p.name === participantName
+          ? { ...p, portraitUrl }
+          : p
+        ),
+      },
+    }));
+  };
 
   const details = (
-    <div>
+    <div className={styles.details} style={{ width: "100%" }}>
       <h1> Details </h1>
-      {selected ? <>
-        <label>
+      {selectedName && selected ? <>
+        <label style={{ width: "100%" }}>
           Participant name
           <input
             value={nameInput}
             onChange={(e) => setNameInput(e.currentTarget.value)}
           />
         </label>
+        <label style={{ width: "100%" }}>
+          Portrait
+          <img className={styles.bigPortrait} src={selected.portraitUrl} alt={selected.name} />
+          <button onClick={async () => {
+            const file = await uploadFile({ type: 'dataurl' })
+            setSelectedPortrait(selectedName, file.content);
+          }}>
+            Upload portrait
+          </button>
+        </label>
         <div style={{color: "#f00"}}> { nameStatus !== "success" && nameStatusMessage } </div>
-        <div>{name ?? selected.name}</div>
         </> : <>
           Select a participant to see and edit them
         </>

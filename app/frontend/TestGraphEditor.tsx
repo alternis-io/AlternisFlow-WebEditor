@@ -23,10 +23,10 @@ import classNames from './classnames'
 import { useValidatedInput, useStable, useOnMount } from "@bentley/react-hooks"
 import { InputStatus } from '@bentley/react-hooks/lib/useValidatedInput'
 import { Center } from "./Center";
-import { DialogueEntry, DialogueEntryNodeData, persistentData } from "./AppPersistentState";
+import { DialogueEntry, DialogueEntryNodeData, persistentData } from "./AppState";
 import { assert } from "./browser-utils";
 
-// FIXME: consolidate with AppPersistentState.ts
+// FIXME: consolidate with AppState.ts
 interface NodeData {
   comment?: string;
 }

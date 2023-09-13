@@ -1,6 +1,6 @@
 import React from "react";
 import styles from "./Ide.module.css"; // FIXME: use separate file
-import { persistentData } from "./AppPersistentState";
+import { persistentData } from "./AppState";
 import { ParticipantEditor } from "./ParticipantEditor";
 
 export function ProjectDataEditor(_props: ProjectDataEditor.Props) {

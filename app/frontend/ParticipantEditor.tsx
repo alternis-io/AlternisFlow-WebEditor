@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import styles from "./ParticipantEditor.module.css";
 import { Participant } from "../common/data-types/participant";
 import { ContextMenu } from "./components/ContextMenu";
-import { persistentData } from "./AppPersistentState";
+import { persistentData } from "./AppState";
 import { useValidatedInput } from "@bentley/react-hooks";
 
 export namespace ProjectDataEditor {

@@ -53,7 +53,8 @@ export function ParticipantEditor() {
 
   // FIXME: consolidate
   const selectedName = editorPrefs.lastSelected;
-  const selected = selectedName !== undefined ? participants.find(p => p?.name === selectedName) : undefined;
+  const selectedIndex = selectedName !== undefined ? participants.findIndex(p => p?.name === selectedName) : -1;
+  const selected = selectedIndex !== -1 ? participants[selectedIndex] : undefined;
 
   const [name, nameInput, setNameInput, nameStatus, nameStatusMessage] = useValidatedInput(selected?.name ?? "", {
     validate: useCallback((text: string) => {
@@ -165,7 +166,7 @@ export function ParticipantEditor() {
             )}
           </div>
         </ContextMenu>
-        {participants.map((p) => 
+        {participants.map((p, i) =>
           <div
             key={p.name}
             className={styles.portraitImage}
@@ -181,7 +182,7 @@ export function ParticipantEditor() {
               src={p.portraitUrl}
               alt={p.name}
               onDragStart={(event) => {
-                event.dataTransfer.setData("application/dialogical-participant", JSON.stringify(p));
+                event.dataTransfer.setData("application/dialogical-participant", JSON.stringify({ participant: p, index: i }));
                 event.dataTransfer.effectAllowed = "move";
               }}
             />

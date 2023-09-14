@@ -1,15 +1,12 @@
 import React from 'react'
 import ReactFlow, {
-  addEdge,
   Handle,
   NodeProps,
-  Node,
   Controls,
   MiniMap,
   EdgeProps,
   getMarkerEnd,
   getBezierPath,
-  Edge,
   useReactFlow,
   MarkerType,
   BaseEdge,
@@ -21,8 +18,7 @@ import styles from './TestGraphEditor.module.css'
 import { downloadFile, uploadFile } from './localFileManip'
 import classNames from './classnames'
 import { Center } from "./Center";
-import { useAppState } from "./AppState";
-import { assert } from "./browser-utils";
+import { resetAllAppState, useAppState } from "./AppState";
 
 // FIXME: consolidate with AppState.ts
 interface NodeData {
@@ -35,12 +31,12 @@ interface NodeState extends NodeData {
 }
 
 const NodeHandle = (props: {
-  direction: "input" | "output";
+  type: "source" | "target";
   label: string;
   owningNodeId: string;
   index: number;
-} & NodeData) => {
-  const isInput = props.direction === "input"
+}) => {
+  const isInput = props.type === "source";
   const id = `${props.owningNodeId}_${isInput}_${props.index}`;
   /*
   const edges = useEdges();
@@ -59,8 +55,8 @@ const NodeHandle = (props: {
       {!isInput && label}
       <Handle
         id={id}
-        type={isInput ? "source" : "target"}
-        position={isInput ? "left" : "right"}
+        type={props.type}
+        position={props.type === "source" ? "top" : "bottom"}
         className={classNames(
           styles.knob,
           isInput
@@ -77,7 +73,7 @@ const NodeHandle = (props: {
 
 // FIXME: move to common/
 export interface DialogueEntry {
-  speaker: Participant;
+  speakerIndex: number;
   specificPortraitUrl?: string;
   title?: string;
   text: string;
@@ -92,16 +88,18 @@ export interface DialogueEntryProps extends DialogueEntry {
 
 const DialogueEntryNode = (props: NodeProps<DialogueEntryProps>) => {
   console.log(props.data)
+  const participant = useAppState((s) => s.document.participants[props.data.speakerIndex]);
+  if (!participant) return "unknown participant";
   return (
     <div className={styles.node} style={{ width: "max-content" }}>
-      <Handle
+      <NodeHandle
         type="target"
         position="top"
         className={styles.handle}
         isConnectable
       />
-      <div>{props.data.speaker?.name}</div>
-      <img width="50px" height="100px" src={props.data.speaker?.portraitUrl} />
+      <div>{participant.name}</div>
+      <img width="50px" height="100px" src={participant.portraitUrl} />
       <button onClick={props.data.onDelete} className={styles.deleteButton}>
         &times;
       </button>
@@ -119,13 +117,6 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntryProps>) => {
             ))
             .concat(<option>none</option>)}
         </select>
-        {props.data.portrait && (
-          <img
-            className={styles.portraitImg}
-            src={appCtx.portraits.get(props.data.portrait)}
-            alt={props.data.portrait}
-          />
-        )}
       </label>
       */}
       <label>
@@ -177,7 +168,13 @@ const UnknownNode = (props: NodeProps<NodeState>) => {
 };
 
 const nodeTypes = {
+  //FIXME: dialogue line?
   dialogueEntry: DialogueEntryNode,
+  //randomSwitch: RandomSwitchNode,
+  //playerReplies: PlayerRepliesNode,
+  //emitEvent: EmitEventNode,
+  //lockNode: LockNode,
+  //unlockNode: UnlockNode,
   default: UnknownNode,
 };
 
@@ -293,8 +290,7 @@ const TestGraphEditor = (props: TestGraphEditor.Props) => {
         </button>
         <button
           onClick={async () => {
-            graph.setNodes([]);
-            graph.setEdges([]);
+            resetAllAppState();
           }}
         >
           Reset
@@ -317,11 +313,11 @@ const TestGraphEditor = (props: TestGraphEditor.Props) => {
             e.preventDefault();
             const participantDataText = e.dataTransfer.getData("application/dialogical-participant");
             if (participantDataText) {
-              const participantData = JSON.parse(participantDataText);
+              const { index } = JSON.parse(participantDataText);
               const { top, left } = graphContainerElem.current!.getBoundingClientRect();
               // FIXME: no hardcoded node width
               const props: DialogueEntry = {
-                speaker: participantData,
+                speakerIndex: index,
                 text: "this is default text"
               };
               addNode("dialogueEntry", graph.project({

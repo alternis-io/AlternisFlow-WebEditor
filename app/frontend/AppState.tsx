@@ -64,3 +64,7 @@ export const useAppState = create<SettableState<AppState>>((set) => ({
 useAppState.subscribe((state) =>
   localStorage.setItem(appStateKey, JSON.stringify(state))
 );
+
+export function resetAllAppState() {
+  useAppState.setState(deepCloneJson(defaultAppState));
+}

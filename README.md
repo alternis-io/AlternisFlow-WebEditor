@@ -29,6 +29,8 @@ We probably need a function prefix
   tries to open a dialogue with a character, possibly returning the resulting dialogue
   response and continuation options
 
+- ... we also need optional debug inspection APIs to support a debugger
+
 #### Game Engine Plugins
 
 ##### Unreal Engine

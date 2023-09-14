@@ -16,12 +16,12 @@ import ReactFlow, {
   useEdges,
   useNodes,
 } from 'reactflow'
-import 'reactflow/dist/style.css'
+import 'reactflow/dist/base.css'
 import styles from './TestGraphEditor.module.css'
 import { downloadFile, uploadFile } from './localFileManip'
 import classNames from './classnames'
 import { Center } from "./Center";
-import { DialogueEntryNodeData, useAppState } from "./AppState";
+import { useAppState } from "./AppState";
 import { assert } from "./browser-utils";
 
 // FIXME: consolidate with AppState.ts
@@ -75,8 +75,23 @@ const NodeHandle = (props: {
   );
 };
 
-const DialogueEntryNode = (props: NodeProps<DialogueEntryNodeData>) => {
-  //const appCtx = React.useContext(AppCtx)
+// FIXME: move to common/
+export interface DialogueEntry {
+  speaker: Participant;
+  specificPortraitUrl?: string;
+  title?: string;
+  text: string;
+  customData?: any;
+}
+
+export interface DialogueEntryProps extends DialogueEntry {
+  /** shallow merges in a patch to the data for that entry */
+  onChange(newData: Partial<DialogueEntry>): void
+  onDelete(): void
+}
+
+const DialogueEntryNode = (props: NodeProps<DialogueEntryProps>) => {
+  console.log(props.data)
   return (
     <div className={styles.node} style={{ width: "max-content" }}>
       <Handle
@@ -85,6 +100,11 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntryNodeData>) => {
         className={styles.handle}
         isConnectable
       />
+      <div>{props.data.speaker?.name}</div>
+      <img width="50px" height="100px" src={props.data.speaker?.portraitUrl} />
+      <button onClick={props.data.onDelete} className={styles.deleteButton}>
+        &times;
+      </button>
       {/*
       <label>
         portrait
@@ -117,6 +137,7 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntryNodeData>) => {
           }
           defaultValue={props.data.title}
         />
+        (FIXME: focus on create)
       </label>
       <label>
         text
@@ -128,9 +149,6 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntryNodeData>) => {
           defaultValue={props.data.text}
         />
       </label>
-      <button onClick={props.data.onDelete} className={styles.deleteButton}>
-        &times;
-      </button>
       {/* will dynamically add handles potentially... */}
       <Handle
         type="source"
@@ -140,12 +158,12 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntryNodeData>) => {
       />
     </div>
   )
-}
+};
 
 const UnknownNode = (props: NodeProps<NodeState>) => {
   // TODO: store connections on data in case the correct type is restored
   return (
-    <div className={styles.node} style={{ height: 50, width: 100 }}>
+    <div className={styles.node}>
       <div className={styles.nodeHeader}>
         <button className={styles.deleteButton}>
           &times;
@@ -164,6 +182,7 @@ const nodeTypes = {
 };
 
 import { ContextMenu } from './components/ContextMenu'
+import { Participant } from '../common/data-types/participant'
 
 const CustomEdge = (props: EdgeProps) => {
   // TODO: draw path from boundary of handle box
@@ -178,9 +197,9 @@ const edgeTypes = {
 
 const TestGraphEditor = (props: TestGraphEditor.Props) => {
   // FIXME: use correct types
-  const graph = useReactFlow<{}, {}>();
+  const graph = useReactFlow<DialogueEntryProps, {}>();
   const edges = useEdges<{}>();
-  const nodes = useNodes<NodeData>();
+  const nodes = useNodes<DialogueEntryProps>();
 
   const doc = useAppState((s) => s.document);
   const set = useAppState((s) => s.set);
@@ -196,30 +215,30 @@ const TestGraphEditor = (props: TestGraphEditor.Props) => {
   }, [nodes, edges]);
 
   const addNode = React.useCallback(
-    (nodeType: string, position: {x: number, y:number}) => {
+    (nodeType: string, position: {x: number, y:number}, initData?: any) => {
       const newId = `${Math.round(Math.random() * Number.MAX_SAFE_INTEGER)}`
       graph.addNodes({
-          id: newId,
-          type: nodeType,
-          data: {
-            onChange: (newVal: Partial<NodeState>) =>
-              graph.setNodes(prev => {
-                const copy = prev.slice()
-                const index = copy.findIndex(elem => elem.id === newId)
-                const elem = copy[index]
-                copy[index] = {
-                  ...elem,
-                  data: {
-                    ...elem.data,
-                    ...newVal,
-                  },
-                }
-                return copy
-              }),
-          },
-          position,
-        }
-      )
+        id: newId,
+        type: nodeType,
+        data: {
+          ...initData,
+          onChange: (newVal: Partial<DialogueEntryProps>) =>
+            graph.setNodes(prev => {
+              const copy = prev.slice();
+              const index = copy.findIndex(elem => elem.id === newId);
+              const elem = copy[index];
+              copy[index] = {
+                ...elem,
+                data: {
+                  ...elem.data,
+                  ...newVal,
+                },
+              };
+              return copy;
+            }),
+        },
+        position,
+      });
     },
     []
   );
@@ -251,71 +270,10 @@ const TestGraphEditor = (props: TestGraphEditor.Props) => {
       <div className={styles.toolbar}>
         <button
           onClick={() => {
-            interface SerializedNode extends Node {
-              inputs: string[];
-              outputs: string[];
-            }
-
-            const nodes = new Map<string, SerializedNode>();
-
-            function fromFlowNode(node: Node): SerializedNode {
-              const nodeData = node.data as NodeData;
-              // TODO: unscrew types
-              if (!("isEntry" in nodeData))
-                (nodeData as NodeData).isEntry = node.type === "CustomTickEntry";
-
-              const result = {
-                ...node,
-                inputs: new Array(nodeData.fullDesc.inputs.length ?? 0),
-                outputs: new Array(nodeData.fullDesc.outputs.length ?? 0),
-              };
-
-              for (const [key, value] of Object.entries(nodeData.literalInputs)) {
-                const index = +key;
-                result.inputs[key] = value;
-              }
-
-              return result;
-            }
-
-            for (let i = 0; i < edges.length; ++i) {
-              const edge = edges[i];
-              assert(edge.sourceHandle && edge.targetHandle);
-              // flow's graph directionality is arbitrary to us
-              // establish direction based on whether handle is input or output
-              const [handle1NodeId, handle1IsInput, handle1Index] = edge.sourceHandle.split("_");
-              const [handle2NodeId, handle2IsInput, handle2Index] = edge.targetHandle.split("_");
-              assert(handle1NodeId && handle1IsInput && handle1Index);
-              assert(handle2NodeId && handle2IsInput && handle2Index);
-              const handle1 = { nodeId: handle1NodeId, handleIndex: +handle1Index, handleId: edge.sourceHandle };
-              const handle2 = { nodeId: handle2NodeId, handleIndex: +handle2Index, handleId: edge.targetHandle };
-              const toZigHandle = ({ nodeId, handleIndex }: typeof handle1) => ({ nodeId, handleIndex });
-              const { source, target } = handle1IsInput
-                ? { source: handle2, target: handle1 }
-                : { source: handle1, target: handle2 };
-              const sourceNode = graph.getNode(source.nodeId);
-              const targetNode = graph.getNode(target.nodeId);
-              assert(sourceNode && targetNode);
-
-              let sourceResultNode = nodes.get(source.nodeId);
-              if (sourceResultNode === undefined) {
-                sourceResultNode = fromFlowNode(sourceNode);
-                nodes.set(source.nodeId, sourceResultNode);
-              }
-              sourceResultNode.outputs[source.handleIndex] = toZigHandle(target);
-
-              let targetResultNode = nodes.get(target.nodeId);
-              if (targetResultNode === undefined) {
-                targetResultNode = fromFlowNode(targetNode);
-                nodes.set(target.nodeId, targetResultNode);
-              }
-              targetResultNode.inputs[target.handleIndex] = toZigHandle(source);
-            }
-
             downloadFile({
-              fileName: 'graph.json',
+              fileName: 'doc.name.json',
               content: JSON.stringify({
-                nodes: Object.fromEntries(nodes.entries()),
+                nodes,
                 edges,
               }, null, "  "),
             })
@@ -362,10 +320,14 @@ const TestGraphEditor = (props: TestGraphEditor.Props) => {
               const participantData = JSON.parse(participantDataText);
               const { top, left } = graphContainerElem.current!.getBoundingClientRect();
               // FIXME: no hardcoded node width
-              addNode("default", graph.project({
+              const props: DialogueEntry = {
+                speaker: participantData,
+                text: "this is default text"
+              };
+              addNode("dialogueEntry", graph.project({
                 x: e.clientX - left - 150/2,
                 y: e.clientY - top,
-              }));
+              }), props);
             }
           }}
           onEdgeClick={(_evt, edge) => {

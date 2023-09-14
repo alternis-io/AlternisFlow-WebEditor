@@ -4,19 +4,6 @@ import { deepCloneJson } from "./react-utils";
 import { create } from "zustand";
 import { DeepPartial } from "ts-essentials/dist/deep-partial";
 
-// FIXME: move to common/
-export interface DialogueEntry {
-  portrait?: string
-  title: string
-  text: string
-}
-
-export interface DialogueEntryNodeData extends DialogueEntry {
-  /** shallow merges in a patch to the data for that entry */
-  onChange(newData: Partial<DialogueEntry>): void
-  onDelete(): void
-}
-
 // FIXME: move out icon data and get type from that list
 export type IconSizes = "small" | "medium" | "large";
 

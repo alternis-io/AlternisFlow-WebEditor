@@ -25,21 +25,20 @@ const defaultAppState = {
   document: {
     nodes: [{
       id: '1',
-      type: 'input',
-      data: {
-        label: 'entry',
-      },
+      type: 'entry',
       position: { x: 540, y: 100 },
     }] as Node<{}>[],
     edges: [] as Edge<{}>[],
     participants: testParticipants as Participant[],
-    variables: {
-      gates: {} as {
-        [name: string]: {
-          startState: "locked" | "unlocked"
-        },
+    constants: {} as {
+      [name: string]: number | string | boolean,
+    },
+    gates: {} as {
+      [name: string]: {
+        initial: "locked" | "unlocked"
       },
     },
+    events: [] as string[],
   },
 };
 

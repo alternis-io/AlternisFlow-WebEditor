@@ -56,7 +56,7 @@ const NodeHandle = (props: {
       <Handle
         id={id}
         type={props.type}
-        position={props.type === "source" ? "top" : "bottom"}
+        position={props.type === "source" ? "left" : "right"}
         className={classNames(
           styles.knob,
           isInput
@@ -71,6 +71,12 @@ const NodeHandle = (props: {
   );
 };
 
+interface NodeBaseData<T> {
+  /** shallow merges in a patch to the data for that entry */
+  onChange(newData: Partial<T>): void
+  onDelete(): void
+}
+
 // FIXME: move to common/
 export interface DialogueEntry {
   speakerIndex: number;
@@ -80,18 +86,14 @@ export interface DialogueEntry {
   customData?: any;
 }
 
-export interface DialogueEntryProps extends DialogueEntry {
-  /** shallow merges in a patch to the data for that entry */
-  onChange(newData: Partial<DialogueEntry>): void
-  onDelete(): void
-}
+export type DialogueEntryProps = DialogueEntry & NodeBaseData<DialogueEntry>;
 
 const DialogueEntryNode = (props: NodeProps<DialogueEntryProps>) => {
   const participant = useAppState((s) => s.document.participants[props.data.speakerIndex]);
   if (!participant) return "unknown participant";
 
   // focus on first mount (will be confusing on document open...)
-  const textInput = React.useRef<HTMLInputElement>(null);
+  const textInput = React.useRef<HTMLTextAreaElement>(null);
   React.useEffect(() => {
     textInput.current?.focus();
   }, []);
@@ -100,12 +102,14 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntryProps>) => {
     <div className={styles.node} style={{ width: "max-content" }}>
       <Handle
         type="target"
-        position="top"
+        position="left"
         className={styles.handle}
         isConnectable
       />
-      <div>{participant.name}</div>
-      <img width="50px" height="100px" src={participant.portraitUrl} />
+      <div className={styles.nodeHeader}>
+        <div>{participant.name}</div>
+        <img width="50px" height="100px" src={participant.portraitUrl} />
+      </div>
       {/*
       <label>
         portrait
@@ -125,7 +129,6 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntryProps>) => {
       <label>
         title
         <input
-          ref={textInput}
           className="nodrag"
           onChange={e =>
             props.data.onChange({ ...props.data, title: e.currentTarget.value })
@@ -136,6 +139,7 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntryProps>) => {
       <label>
         text
         <textarea
+          ref={textInput}
           className="nodrag"
           onChange={e =>
             props.data.onChange({ ...props.data, text: e.currentTarget.value })
@@ -146,7 +150,7 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntryProps>) => {
       {/* will dynamically add handles potentially... */}
       <Handle
         type="source"
-        position="bottom"
+        position="right"
         className={styles.handle}
         isConnectable
       />
@@ -156,21 +160,16 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntryProps>) => {
 
 export interface Lock {
   variable: string;
-  action: "lock" | "unlock"; //| "toggle";
+  action: "lock" | "unlock";
 }
 
-export interface LockNodeProps extends Lock {
-  // FIXME: I don't think we need these anymore
-  /** shallow merges in a patch to the data for that entry */
-  onChange(newData: Partial<Lock>): void
-  onDelete(): void
-}
+export type LockProps = Lock & NodeBaseData<Lock>;
 
 import { ReactComponent as LockIcon } from "./resources/inkscape-lock.svg";
 import { ReactComponent as UnlockIcon } from "./resources/inkscape-unlock.svg";
 
-const LockNode = (props: NodeProps<LockNodeProps>) => {
-  const gates = useAppState(s => s.document.variables.gates);
+const LockNode = (props: NodeProps<LockProps>) => {
+  const gates = useAppState(s => s.document.gates);
   const set = useAppState((s) => s.set);
   const action = props.data.action
   // FIXME: this might be low-performance? not sure it matters tbh
@@ -186,7 +185,7 @@ const LockNode = (props: NodeProps<LockNodeProps>) => {
     >
       <Handle
         type="target"
-        position="top"
+        position="left"
         className={styles.handle}
         isConnectable
       />
@@ -229,10 +228,65 @@ const LockNode = (props: NodeProps<LockNodeProps>) => {
       </label>
       <Handle
         type="source"
-        position="bottom"
+        position="right"
         className={styles.handle}
         isConnectable
       />
+    </div>
+  )
+};
+
+interface RandomSwitch {
+  proportions: number[];
+}
+
+const defaultRandomSwitchProps = {
+  proportions: [1, 1],
+};
+
+export type RandomSwitchProps = RandomSwitch & NodeBaseData<RandomSwitch>;
+
+const RandomSwitchNode = (props: NodeProps<RandomSwitchProps>) => {
+  const totalProportion = props.data.proportions.reduce((prev, curr) => prev + curr, 0);
+
+  return (
+    <div className={styles.node} style={{ width: "max-content" }}>
+      <Handle
+        type="target"
+        position="left"
+        className={styles.handle}
+        isConnectable
+      />
+      <div className={styles.randomSwitchBody}>
+        {props.data.proportions.map((proportion, index) => (
+          <div className={styles.randomSwitchInput}>
+            <input
+              value={String(proportion)}
+              onChange={(e) => {
+                // FIXME: just useValidatedInput
+                const next = parseInt(e.currentTarget.value);
+                if (Number.isNaN(next))
+                  return;
+                const updatedList = props.data.proportions.slice();
+                updatedList[index] = next;
+                props.data.onChange({
+                  proportions: updatedList
+                });
+              }}
+            />
+            <Handle
+              id={`${props.id}_${index}`}
+              style={{
+                top: `${(index + 0.5) / props.data.proportions.length * 100}%`
+              }}
+              type="source"
+              position="right"
+              className={styles.handle}
+              isConnectable
+            />
+          </div>
+        ))}
+      </div>
     </div>
   )
 };
@@ -241,11 +295,6 @@ const UnknownNode = (props: NodeProps<NodeState>) => {
   // TODO: store connections on data in case the correct type is restored
   return (
     <div className={styles.node}>
-      <div className={styles.nodeHeader}>
-        <button className={styles.deleteButton}>
-          &times;
-        </button>
-      </div>
       <Center>
         <strong>Unknown node</strong>
       </Center>
@@ -253,17 +302,36 @@ const UnknownNode = (props: NodeProps<NodeState>) => {
   )
 };
 
+const EntryNode = (props: NodeProps<NodeBaseData<{}>>) => {
+  // TODO: store connections on data in case the correct type is restored
+  return (
+    <div className={styles.node}>
+      <Center style={{ padding: 5 }}>
+        <strong>Start</strong>
+      </Center>
+      <Handle
+        type="source"
+        position="right"
+        className={styles.handle}
+        isConnectable
+      />
+    </div>
+  )
+};
+
 const nodeTypes = {
   //FIXME: dialogue line?
   dialogueEntry: DialogueEntryNode,
-  //randomSwitch: RandomSwitchNode,
+  randomSwitch: RandomSwitchNode,
   //playerReplies: PlayerRepliesNode,
   //emitEvent: EmitEventNode,
   lockNode: LockNode,
+  entry: EntryNode,
   default: UnknownNode,
 };
 
 import { ContextMenu } from './components/ContextMenu'
+import { deepCloneJson } from './react-utils'
 
 const CustomEdge = (props: EdgeProps) => {
   // TODO: draw path from boundary of handle box
@@ -306,7 +374,8 @@ const TestGraphEditor = (props: TestGraphEditor.Props) => {
           ...nodeType === "lockNode" && {
             action: "lock",
           },
-          onChange: (newVal: Partial<DialogueEntryProps | LockNodeProps>) =>
+          ...nodeType === "randomSwitch" && deepCloneJson(defaultRandomSwitchProps),
+          onChange: (newVal: Partial<DialogueEntryProps | LockProps>) =>
             graph.setNodes(prev => {
               const copy = prev.slice();
               const index = copy.findIndex(elem => elem.id === newId);

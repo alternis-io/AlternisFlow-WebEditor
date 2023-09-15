@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import ReactFlow, {
   Handle,
   NodeProps,
@@ -87,12 +87,18 @@ export interface DialogueEntryProps extends DialogueEntry {
 }
 
 const DialogueEntryNode = (props: NodeProps<DialogueEntryProps>) => {
-  console.log(props.data)
   const participant = useAppState((s) => s.document.participants[props.data.speakerIndex]);
   if (!participant) return "unknown participant";
+
+  // focus on first mount (will be confusing on document open...)
+  const textInput = React.useRef<HTMLInputElement>(null);
+  React.useEffect(() => {
+    textInput.current?.focus();
+  }, []);
+
   return (
     <div className={styles.node} style={{ width: "max-content" }}>
-      <NodeHandle
+      <Handle
         type="target"
         position="top"
         className={styles.handle}
@@ -100,9 +106,6 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntryProps>) => {
       />
       <div>{participant.name}</div>
       <img width="50px" height="100px" src={participant.portraitUrl} />
-      <button onClick={props.data.onDelete} className={styles.deleteButton}>
-        &times;
-      </button>
       {/*
       <label>
         portrait
@@ -122,13 +125,13 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntryProps>) => {
       <label>
         title
         <input
+          ref={textInput}
           className="nodrag"
           onChange={e =>
             props.data.onChange({ ...props.data, title: e.currentTarget.value })
           }
           defaultValue={props.data.title}
         />
-        (FIXME: focus on create)
       </label>
       <label>
         text
@@ -141,6 +144,89 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntryProps>) => {
         />
       </label>
       {/* will dynamically add handles potentially... */}
+      <Handle
+        type="source"
+        position="bottom"
+        className={styles.handle}
+        isConnectable
+      />
+    </div>
+  )
+};
+
+export interface Lock {
+  variable: string;
+  action: "lock" | "unlock"; //| "toggle";
+}
+
+export interface LockNodeProps extends Lock {
+  // FIXME: I don't think we need these anymore
+  /** shallow merges in a patch to the data for that entry */
+  onChange(newData: Partial<Lock>): void
+  onDelete(): void
+}
+
+import { ReactComponent as LockIcon } from "./resources/inkscape-lock.svg";
+import { ReactComponent as UnlockIcon } from "./resources/inkscape-unlock.svg";
+
+const LockNode = (props: NodeProps<LockNodeProps>) => {
+  const gates = useAppState(s => s.document.variables.gates);
+  const set = useAppState((s) => s.set);
+  const action = props.data.action
+  // FIXME: this might be low-performance? not sure it matters tbh
+  const Icon = action === "lock" ? LockIcon : UnlockIcon;
+  return (
+    <div className={styles.node} style={{ width: "max-content" }}
+      onContextMenu={(e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const next = action === "lock" ? "unlock" : "lock";
+        props.data.onChange({ action: next });
+      }}
+    >
+      <Handle
+        type="target"
+        position="top"
+        className={styles.handle}
+        isConnectable
+      />
+      <Icon
+        style={{
+          height: 150,
+          width: 150,
+          // TODO: style all of this SVG's elements... also fix the SVG itself
+          stroke: "#000",
+          strokeLinecap: "round",
+        }}
+        viewBox="-2 -2 85 112"
+      />
+      <label>
+        variable
+        <select
+          onChange={e =>
+            set((s) => {
+              const nodes = s.document.nodes.slice();
+              const thisNodeIndex = nodes.findIndex(n => n.type === "lockNode");
+              const thisNode = nodes[thisNodeIndex];
+              nodes[thisNodeIndex] = {
+                ...thisNode,
+              };
+              return {
+                document: {
+                  ...s.document,
+                  nodes,
+                },
+              };
+            })
+          }
+        >
+          {Object.entries(gates)
+            .map(([gateName]) => (
+              <option value={gateName}>{gateName}</option>
+            ))
+            .concat(<option>none</option>)}
+        </select>
+      </label>
       <Handle
         type="source"
         position="bottom"
@@ -173,13 +259,11 @@ const nodeTypes = {
   //randomSwitch: RandomSwitchNode,
   //playerReplies: PlayerRepliesNode,
   //emitEvent: EmitEventNode,
-  //lockNode: LockNode,
-  //unlockNode: UnlockNode,
+  lockNode: LockNode,
   default: UnknownNode,
 };
 
 import { ContextMenu } from './components/ContextMenu'
-import { Participant } from '../common/data-types/participant'
 
 const CustomEdge = (props: EdgeProps) => {
   // TODO: draw path from boundary of handle box
@@ -219,7 +303,10 @@ const TestGraphEditor = (props: TestGraphEditor.Props) => {
         type: nodeType,
         data: {
           ...initData,
-          onChange: (newVal: Partial<DialogueEntryProps>) =>
+          ...nodeType === "lockNode" && {
+            action: "lock",
+          },
+          onChange: (newVal: Partial<DialogueEntryProps | LockNodeProps>) =>
             graph.setNodes(prev => {
               const copy = prev.slice();
               const index = copy.findIndex(elem => elem.id === newId);

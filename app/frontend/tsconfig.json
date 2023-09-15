@@ -8,8 +8,8 @@
     "lib": ["DOM", "ScriptHost", "ES2020"],
     "strict": true,
     "skipLibCheck": true,
-    // FIXME: remove
-    "types": ["node"]
+    //"types": ["node", "./env.d.ts"]
+    "types": ["vite"]
   },
   "include": ["**/*.ts"]
 }

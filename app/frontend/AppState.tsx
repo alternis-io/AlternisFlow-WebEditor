@@ -3,6 +3,7 @@ import { Participant } from "../common/data-types/participant";
 import { deepCloneJson } from "./react-utils";
 import { create } from "zustand";
 import { DeepPartial } from "ts-essentials/dist/deep-partial";
+import defaultParticipantIconUrl from "./resources/participant-icon.svg";
 
 // FIXME: move out icon data and get type from that list
 export type IconSizes = "small" | "medium" | "large";
@@ -10,8 +11,7 @@ export type IconSizes = "small" | "medium" | "large";
 // prepopulate during loading...
 const testParticipants = new Array(100).fill(undefined).map((_, i) => ({
     name: `test_${i}`,
-    // FIXME: make my own
-    portraitUrl: "https://www.svgrepo.com/show/166448/portrait.svg"
+    portraitUrl:defaultParticipantIconUrl,
 }));
 
 const defaultAppState = {
@@ -33,6 +33,13 @@ const defaultAppState = {
     }] as Node<{}>[],
     edges: [] as Edge<{}>[],
     participants: testParticipants as Participant[],
+    variables: {
+      gates: {} as {
+        [name: string]: {
+          startState: "locked" | "unlocked"
+        },
+      },
+    },
   },
 };
 

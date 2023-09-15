@@ -1,48 +1,78 @@
 import React, { useLayoutEffect, useRef, useState } from "react"
 import styles from './ContextMenu.module.css'
+import { assert } from "../browser-utils";
 
-export const ContextMenu = (props: ContextMenu.Props) => {
-  const rootElem = useRef<HTMLDivElement>(null);
+export const ContextMenu = ({
+  autoCloseDelay = 1_500,
+  children,
+}: ContextMenu.Props) => {
+  const rootElementRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
-    const parentElement = rootElem.current?.parentElement;
+    const rootElem = rootElementRef.current;
+    assert(rootElem);
+
+    const parentElem = rootElementRef.current?.parentElement;
+
     
     // FIXME: this does in fact not happen before mount first paint
-    rootElem.current!.style.display = "none";
+    rootElem.style.display = "none";
 
     // TODO: lodash debounce delayed close if user doesn't hover the context menu for long?
+
+    const hide = () => (rootElem.style.display = "none");
+    const show = () => ((rootElem.style as any).display = null);
+
+    let timeout: NodeJS.Timeout | undefined;
+
+    const onMouseEnter = (e: MouseEvent) => {
+      e.preventDefault();
+      if (timeout) clearTimeout(timeout);
+      timeout = undefined;
+    };
+
+    const onMouseLeave = (e: MouseEvent) => {
+      e.preventDefault();
+      timeout = setTimeout(hide, autoCloseDelay);
+    };
 
     const onRightClick = (e: MouseEvent) => {
       e.preventDefault();
       // FIXME: null or delete?
-      rootElem.current!.style.top = `${e.pageY}`;
-      rootElem.current!.style.left = `${e.pageX}`;
-      (rootElem.current!.style as any).display = null;
+      rootElem.style.top = `${e.pageY}`;
+      rootElem.style.left = `${e.pageX}`;
+      show();
     };
 
     const onLeftClick = (e: MouseEvent) => {
       e.preventDefault();
-      const clickInContextMenu = e.currentTarget === rootElem.current
-        || rootElem.current!.contains(e.currentTarget as HTMLElement);
+      const clickInContextMenu = e.currentTarget === rootElem
+        || rootElem.contains(e.currentTarget as HTMLElement);
       if (clickInContextMenu)
         return;
-      rootElem.current!.style.display = "none";
+      hide();
     };
 
-    parentElement?.addEventListener("contextmenu", onRightClick);
-    parentElement?.addEventListener("click", onLeftClick);
+    parentElem?.addEventListener("contextmenu", onRightClick);
+    parentElem?.addEventListener("click", onLeftClick);
+    rootElem.addEventListener("mouseenter", onMouseEnter);
+    rootElem.addEventListener("mouseleave", onMouseLeave);
 
     return () => {
-      parentElement?.removeEventListener("contextmenu", onRightClick);
-      parentElement?.removeEventListener("click", onLeftClick);
+      parentElem?.removeEventListener("contextmenu", onRightClick);
+      parentElem?.removeEventListener("click", onLeftClick);
+      rootElem.removeEventListener("mouseenter", onMouseEnter);
+      rootElem.removeEventListener("mouseleave", onMouseLeave);
     };
   }, []);
 
-  return <div ref={rootElem} className={styles.contextMenuRoot}>{props.children}</div>;
+  return <div ref={rootElementRef} className={styles.contextMenuRoot}>{children}</div>;
 }
 
 namespace ContextMenu {
   export interface Props extends React.PropsWithChildren {
+    /** delay after un-hovering the context menu before it auto closes */
+    autoCloseDelay?: number;
   }
 }
 

@@ -9,3 +9,8 @@ declare module "*.module.css" {
 declare module "*.wasm?init" {
   export default function(): Promise<WebAssembly.Instance>;
 }
+
+declare module "*.svg" {
+  export const ReactComponent: import("react").DetailedHTMLProps<SVGElement>;
+  export default function(): Promise<WebAssembly.Instance>;
+}

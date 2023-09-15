@@ -1,4 +1,5 @@
 import react from "@vitejs/plugin-react";
+import svgr from "vite-plugin-svgr";
 import rollupVisualizer from "rollup-plugin-visualizer";
 import viteInspect from "vite-plugin-inspect";
 import { defineConfig, loadEnv } from "vite";
@@ -12,6 +13,15 @@ export default defineConfig(({ mode }) => {
       strictPort: true,
     },
     plugins: [
+      svgr({
+        svgrOptions: {
+          svgoConfig: {
+            plugins: [
+              "removedEditorsNSData",
+            ]
+          }
+        }
+      }),
       react(),
       ...(mode === "development" ? [viteInspect({ build: true })] : []),
     ],

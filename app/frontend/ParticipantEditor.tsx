@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect } from "react";
 import styles from "./ParticipantEditor.module.css";
 import { ContextMenu } from "./components/ContextMenu";
 import { IconSizes, useAppState } from "./AppState";
@@ -9,30 +9,15 @@ export namespace ProjectDataEditor {
   export interface Props {}
 }
 
-export const iconSizes = {
+export const iconSizes: Record<IconSizes, { label: string }> = {
   small: {
     label: "small",
-    styles: {
-      paddingBottom: "10%",
-      height: "0",
-      width: "10%",
-    },
   },
   medium: {
     label: "medium",
-    styles: {
-      paddingBottom: "20%",
-      height: "0",
-      width: "20%",
-    },
   },
   large: {
     label: "large",
-    styles: {
-      paddingBottom: "50%",
-      height: "0",
-      width: "50%",
-    },
   },
 } as const;
 
@@ -156,7 +141,19 @@ export function ParticipantEditor() {
   return (
     <div>
       <h1> Participants </h1>
-      <div className={styles.selectionGrid}>
+      <div
+        className={styles.selectionGrid}
+        style={{
+          gridTemplateColumns: `repeat(auto-fit, minmax(${
+            editorPrefs.iconSize === "small"
+            ? "40px"
+            : editorPrefs.iconSize === "large" 
+            ? "150px"
+            : "80px"
+          }, 1fr))`,
+          gridAutoRows: `fit-content`,
+        }}
+      >
         <ContextMenu>
           <div style={{ backgroundColor: "white", color: "black" }}>
             {Object.entries(iconSizes).map(([name, iconSize]) => 
@@ -171,12 +168,6 @@ export function ParticipantEditor() {
             key={p.name}
             className={styles.portraitImage}
             onClick={() => setSelectedName(p.name)}
-            style={
-              iconSizes?.[editorPrefs.iconSize]?.styles ?? {
-                height: "50px",
-                width: "50px",
-              }
-            }
           >
             <img
               src={p.portraitUrl}

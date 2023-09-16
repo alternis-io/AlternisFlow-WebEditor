@@ -1,9 +1,8 @@
 .selectionGrid {
   height: 100%;
   width: 100%;
-  display: flex;
-  /* FIXME: use grid instead */
-  min-height: 400px;
+  display: grid;
+  min-height: 300px;
   max-height: 0.3vh;
 
   flex-wrap: wrap;
@@ -11,7 +10,6 @@
 }
 
 .portraitImage {
-  overflow: hidden;
   border-radius: 5px;
   box-sizing: border-box;
   border: 1px solid black;

@@ -17,7 +17,7 @@ const testParticipants = new Array(100).fill(undefined).map((_, i) => ({
 const defaultAppState = {
   preferences: {
     participantEditor: {
-      iconSize: "medium",
+      iconSize: "medium" as IconSizes,
       lastSelected: undefined as undefined | string,
     },
   },

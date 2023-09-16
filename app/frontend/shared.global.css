@@ -16,6 +16,10 @@
   cursor: pointer;
 }
 
+.draggable {
+  cursor: grab;
+}
+
 .hoverable:hover {
   color: var(--fg-hover);
   fill: var(--fg-hover);

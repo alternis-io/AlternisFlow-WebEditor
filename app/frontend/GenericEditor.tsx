@@ -61,6 +61,7 @@ export function GenericEditor<T extends SupportedKeys>(
     }}>
       {Object.entries(generic).map(([name, data]) => (
         <Split
+          key={name}
           left={
             <span onDoubleClick={(e) => {
               //make it editable somehow?

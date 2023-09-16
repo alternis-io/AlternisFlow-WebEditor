@@ -61,9 +61,12 @@ const initialState: AppState = (() => {
 })();
 
 type SettableState<T extends object> = T & {
+  // FIXME: just use useAppState.setState
   set(
     cb: (s: T) => DeepPartial<T> | Promise<DeepPartial<T>>,
   ): void;
+  undo(): void;
+  redo(): void;
 };
 
 const UNDO_LIMIT = 1024;
@@ -98,6 +101,10 @@ export const useAppState = create<SettableState<AppState>>((set) => ({
   }
 }));
 
+// NOTE: consider making the undo stack implicitly updated by the store's exposed setter,
+// rather than as a side effect...
+
+// NOTE: should skip some kinds of updates, and focus the required UI for other kinds
 useAppState.subscribe((state) => {
   if (historyManipKind)
     return;

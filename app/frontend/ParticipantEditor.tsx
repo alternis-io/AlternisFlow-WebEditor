@@ -4,6 +4,8 @@ import { ContextMenu } from "./components/ContextMenu";
 import { IconSizes, useAppState } from "./AppState";
 import { useValidatedInput } from "./hooks/useValidatedInput";
 import { uploadFile } from "./localFileManip";
+import "./shared.global.css";
+import { classNames } from "./react-utils";
 
 export const iconSizes: Record<IconSizes, { label: string }> = {
   small: {
@@ -161,7 +163,7 @@ export function ParticipantEditor() {
         {participants.map((p, i) =>
           <div
             key={p.name}
-            className={styles.portraitImage}
+            {...classNames(styles.portraitImage, "hoverable", "draggable")}
             onClick={() => setSelectedName(p.name)}
             title={"Click to edit, drag to drop"}
           >

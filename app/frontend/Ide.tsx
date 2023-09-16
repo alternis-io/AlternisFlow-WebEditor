@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useLayoutEffect } from "react";
 import TestGraphEditor from "./TestGraphEditor";
 import styles from "./Ide.module.css";
 import { DialogueViewer } from "./DialogueViewer";
@@ -59,6 +59,32 @@ function Header() {
 }
 
 export function Ide(_props: Ide.Props) {
+  const redo = useAppState(s => s.redo);
+  const undo = useAppState(s => s.undo);
+
+  useLayoutEffect(() => {
+    const ctrlZUndo = (e: KeyboardEvent) => {
+      // FIXME: use code not string
+      if (e.key.toLowerCase() === "z" && e.ctrlKey) undo();
+    };
+    const ctrlShiftZRedo = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() === "z" && e.ctrlKey && e.shiftKey) redo();
+    };
+    const ctrlYRedo = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() === "y" && e.ctrlKey) redo();
+    };
+
+    document.addEventListener("keydown", ctrlZUndo);
+    document.addEventListener("keydown", ctrlShiftZRedo);
+    document.addEventListener("keydown", ctrlYRedo);
+
+    return () => {
+      document.removeEventListener("keydown", ctrlZUndo);
+      document.removeEventListener("keydown", ctrlShiftZRedo);
+      document.removeEventListener("keydown", ctrlYRedo);
+    };
+  });
+
   return (
     <div>
       <Header />

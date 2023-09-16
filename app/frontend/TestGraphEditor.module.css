@@ -1,19 +1,13 @@
 :root {
-  --toolbarHeight: 60px;
+  --toolbar-height: 60px;
+  --header-height: 31.25px;
 }
 
 .page {}
 
-.toolbar {
-  box-sizing: border-box;
-  height: var(--toolbarHeight);
-  display: flex;
-  padding: 11px 22px 11px 22px;
-  gap: 22px;
-}
-
 .graph {
-  height: calc(100vh - var(--toolbarHeight));
+  height: calc(100vh - var(--header-height));
+  position: relative;
 }
 
 :root {
@@ -34,6 +28,15 @@
   gap: 11px;
   align-items: center;
 }
+
+.node > label > textarea {
+  flex-grow: 2;
+}
+
+.node > label > input[type="text"] {
+  flex-grow: 2;
+}
+
 
 .nodeHeader {
   width: 100%;

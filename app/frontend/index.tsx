@@ -4,7 +4,6 @@ import ReactDOM from "react-dom";
 import Ide from "./Ide";
 import './userWorker';
 import { ReactFlowProvider } from "reactflow";
-//import { NoderProvider } from "./NoderContext";
 
 ReactDOM.render(
   //<NoderProvider>

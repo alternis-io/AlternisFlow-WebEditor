@@ -1,7 +1,6 @@
 import React, { useRef, useState } from "react";
 import styles from "./Ide.module.css";
 import { ParticipantEditor } from "./ParticipantEditor";
-import { GateEditor } from "./GateEditor";
 import { GenericEditor } from "./GenericEditor";
 
 const dataPanes = {
@@ -18,7 +17,7 @@ const dataPanes = {
       docPropKey="gates"
       extraActions={useRef(({ data, set }) => (
         <input
-          title={data.initial}
+          title={`Starts ${data.initial}`}
           checked={data.initial === "locked"}
           // NOTE: use custom checkbox with lock symbol
           type="checkbox"
@@ -59,8 +58,10 @@ export function ProjectDataEditor(_props: ProjectDataEditor.Props) {
         flexWrap: "wrap",
         gap: 11,
       }}>
-        {(Object.entries(dataPanes) as [DataPanes, DataPane][]) .map(([name, data]) => (
+        {(Object.entries(dataPanes) as [DataPanes, DataPane][]).map(([name, data]) => (
           <span
+            key={name}
+            className="hoverable"
             onClick={() => setOpenDataPane(name)}
             style={{
               borderBottom: "1px solid var(--fg-1)",

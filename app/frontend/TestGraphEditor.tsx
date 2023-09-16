@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useLayoutEffect, useRef } from 'react'
 import ReactFlow, {
   Handle,
   NodeProps,
@@ -19,6 +19,8 @@ import { downloadFile, uploadFile } from './localFileManip'
 import { classNames, deepCloneJson } from './react-utils'
 import { Center } from "./Center";
 import { resetAllAppState, useAppState } from "./AppState";
+
+import { ContextMenu } from './components/ContextMenu'
 
 // FIXME: consolidate with AppState.ts
 interface NodeData {
@@ -108,7 +110,7 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntryProps>) => {
       />
       <div className={styles.nodeHeader}>
         <div>{participant.name}</div>
-        <img width="50px" height="100px" src={participant.portraitUrl} />
+        <img height="80px" style={{ width: "auto" }} src={participant.portraitUrl} />
       </div>
       {/*
       <label>
@@ -221,9 +223,9 @@ const LockNode = (props: NodeProps<LockProps>) => {
         >
           {Object.entries(gates)
             .map(([gateName]) => (
-              <option value={gateName}>{gateName}</option>
-            ))
-            .concat(<option>none</option>)}
+              <option key={gateName} value={gateName}>{gateName}</option>
+            )
+          )}
         </select>
       </label>
       <Handle
@@ -330,8 +332,6 @@ const nodeTypes = {
   default: UnknownNode,
 };
 
-import { ContextMenu } from './components/ContextMenu'
-
 const CustomEdge = (props: EdgeProps) => {
   // TODO: draw path from boundary of handle box
   const [edgePath] = getBezierPath({ ...props })
@@ -345,7 +345,8 @@ const edgeTypes = {
 
 const TestGraphEditor = (props: TestGraphEditor.Props) => {
   // FIXME: use correct types
-  const graph = useReactFlow<DialogueEntryProps, {}>();
+  const graph = useReactFlow<DialogueEntryProps | LockProps | RandomSwitchProps, {}>();
+  // FIXME: document should proxy this state, not own it...
   const edges = useEdges<{}>();
   const nodes = useNodes<DialogueEntryProps>();
 
@@ -398,12 +399,20 @@ const TestGraphEditor = (props: TestGraphEditor.Props) => {
   const connectingNodeId = React.useRef<string>();
   const graphContainerElem = React.useRef<HTMLDivElement>(null);
 
+  // FIXME: mitigate a seeming firefox bug
+  useLayoutEffect(() => {
+    const reactFlowRenderer = document.querySelector(".react-flow") as HTMLDivElement | null;
+    if (reactFlowRenderer === null) return;
+    reactFlowRenderer.style.position = "initial";
+    setTimeout(() => (reactFlowRenderer.style.position = "relative"));
+  }, []);
+
   return (
     <div className={styles.page}>
       <ContextMenu>
         <div className={styles.addNodeMenu}>
           {Object.keys(nodeTypes)
-            .filter(key => key !== "default")
+            .filter(key => key !== "entry" && key !== "default")
             .map((nodeType) =>
               <em className={styles.addNodeMenuOption} key={nodeType} onClick={(e) => {
                 const { top, left } = graphContainerElem.current!.getBoundingClientRect();

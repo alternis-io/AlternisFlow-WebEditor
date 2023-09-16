@@ -418,39 +418,6 @@ const TestGraphEditor = (props: TestGraphEditor.Props) => {
           }
         </div>
       </ContextMenu>
-      <div className={styles.rightClickMenu} />
-      <div className={styles.toolbar}>
-        <button
-          onClick={() => {
-            downloadFile({
-              fileName: 'doc.name.json',
-              content: JSON.stringify({
-                nodes,
-                edges,
-              }, null, "  "),
-            })
-          }}
-        >
-          Save
-        </button>
-        <button
-          onClick={async () => {
-            const file = await uploadFile({ type: 'text' })
-            const json = JSON.parse(file.content)
-            graph.setNodes(Object.values(json.nodes));
-            graph.setEdges(json.edges);
-          }}
-        >
-          Load
-        </button>
-        <button
-          onClick={async () => {
-            resetAllAppState();
-          }}
-        >
-          Reset
-        </button>
-      </div>
       <div className={styles.graph} ref={graphContainerElem}>
         <ReactFlow
           defaultNodes={doc.nodes}

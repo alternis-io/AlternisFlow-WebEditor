@@ -11,6 +11,9 @@ import ReactFlow, {
   useReactFlow,
   MarkerType,
   BaseEdge,
+  applyNodeChanges,
+  applyEdgeChanges,
+  addEdge,
 } from 'reactflow'
 import 'reactflow/dist/base.css'
 import styles from './TestGraphEditor.module.css'
@@ -33,9 +36,10 @@ export interface DialogueEntry {
 }
 
 const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
-  const { data } = getNode<DialogueEntry>(props.id);
-  const participant = useAppState((s) => s.document.participants[data.speakerIndex]);
-  if (!participant) return "unknown participant";
+  const node = getNode<DialogueEntry>(props.id);
+
+  const data = node?.data;
+  const participant = useAppState((s) => data?.speakerIndex && s.document.participants[data.speakerIndex]);
   const set = makeNodeDataSetter<DialogueEntry>(props.id);
 
   // focus on first mount (FIXME: how does this react to document opening?)
@@ -52,28 +56,33 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
         className={styles.handle}
         isConnectable
       />
-      <div className={styles.nodeHeader}>
-        <div>{participant.name}</div>
-        <img height="80px" style={{ width: "auto" }} src={participant.portraitUrl} />
-      </div>
-      <label>
-        title
-        <input
-          className="nodrag"
-          onChange={(e) => set({ title: e.currentTarget.value })}
-          value={data.title}
-        />
-      </label>
-      <label>
-        text
-        <textarea
-          ref={textInput}
-          className="nodrag"
-          onChange={(e) => set({ text: e.currentTarget.value })}
-          // FIXME: why not use a controlled component?
-          value={data.text}
-        />
-      </label>
+      {participant
+        ? <>
+          <div className={styles.nodeHeader}>
+            <div>{participant.name}</div>
+            <img height="80px" style={{ width: "auto" }} src={participant.portraitUrl} />
+          </div>
+          <label>
+            title
+            <input
+              className="nodrag"
+              onChange={(e) => set({ title: e.currentTarget.value })}
+              value={data.title}
+            />
+          </label>
+          <label>
+            text
+            <textarea
+              ref={textInput}
+              className="nodrag"
+              onChange={(e) => set({ text: e.currentTarget.value })}
+              // FIXME: why not use a controlled component?
+              value={data.text}
+            />
+          </label>
+        </>
+      : <> unknown participant </>
+      }
       <Handle
         type="source"
         position="right"
@@ -91,13 +100,14 @@ export interface Lock {
 
 const LockNode = (props: NodeProps<Lock>) => {
   const gates = useAppState(s => s.document.gates);
-  const { data } = getNode<Lock>(props.id);
+  // REPORTME: react-flow seems to sometimes render non-existing nodes briefly?
+  const data = getNode<Lock>(props.id)?.data;
   const set = makeNodeDataSetter<Lock>(props.id);
 
   // FIXME: this might be low-performance? not sure it matters tbh
-  const Icon = data.action === "lock" ? LockIcon : UnlockIcon;
+  const Icon = data?.action === "lock" ? LockIcon : UnlockIcon;
 
-  return (
+  return !data ? null : (
     <div className={styles.node} style={{ width: "max-content" }}
       onContextMenu={(e) => {
         e.stopPropagation();
@@ -124,7 +134,7 @@ const LockNode = (props: NodeProps<Lock>) => {
       <label>
         variable
         <select
-          onChange={e => set(l => ({ variable: e.currentTarget.value }))}
+          onChange={e => set(() => ({ variable: e.currentTarget.value }))}
         >
           {Object.entries(gates)
             .map(([gateName]) => (
@@ -154,12 +164,13 @@ const defaultRandomSwitchProps = {
 const percentFmter = new Intl.NumberFormat(undefined, { maximumFractionDigits: 1, style: "percent" });
 
 const RandomSwitchNode = (props: NodeProps<RandomSwitch>) => {
-  // FIXME: why can't we use props.data?
-  const { data } = getNode<RandomSwitch>(props.id);
-  const totalProportion = data.proportions.reduce((prev, curr) => prev + curr, 0);
+  // REPORTME: react-flow seems to sometimes render non-existing nodes briefly?
+  const data = getNode<RandomSwitch>(props.id)?.data;
+  const totalProportion = data?.proportions.reduce((prev, curr) => prev + curr, 0);
   const set = makeNodeDataSetter<RandomSwitch>(props.id);
 
-  return (
+  const offset = 1.2;
+  return !data ? null : (
     <div className={styles.node} style={{ width: "max-content" }}>
       <Handle
         type="target"
@@ -168,6 +179,9 @@ const RandomSwitchNode = (props: NodeProps<RandomSwitch>) => {
         isConnectable
       />
       <div className={styles.randomSwitchBody}>
+        <Center>
+          <strong style={{fontSize: "2rem"}}>?</strong>
+        </Center>
         {data.proportions.map((proportion, index) => (
           <div className={styles.randomSwitchInput}>
             <input
@@ -193,7 +207,9 @@ const RandomSwitchNode = (props: NodeProps<RandomSwitch>) => {
             <Handle
               id={`${props.id}_${index}`}
               style={{
-                top: `${(index + 0.5) / data.proportions.length * 100}%`
+                // FIXME: hack
+                //top: `${(index + 0.5) / data.proportions.length * 100}%`
+                top: `${((index + 0.5 + offset) / (data.proportions.length + offset)) * 100}%`,
               }}
               type="source"
               position="right"
@@ -207,7 +223,7 @@ const RandomSwitchNode = (props: NodeProps<RandomSwitch>) => {
   )
 };
 
-const UnknownNode = (props: NodeProps<{}>) => {
+const UnknownNode = (_props: NodeProps<{}>) => {
   // TODO: store connections on data in case the correct type is restored
   return (
     <div className={styles.node}>
@@ -218,7 +234,7 @@ const UnknownNode = (props: NodeProps<{}>) => {
   )
 };
 
-const EntryNode = (props: NodeProps<{}>) => {
+const EntryNode = (_props: NodeProps<{}>) => {
   // TODO: store connections on data in case the correct type is restored
   return (
     <div className={styles.node}>
@@ -263,24 +279,27 @@ const TestGraphEditor = (props: TestGraphEditor.Props) => {
   const nodes = useAppState(s => s.document.nodes);
   const edges = useAppState(s => s.document.edges);
 
-  const doc = useAppState((s) => s.document);
-  const set = useAppState((s) => s.set);
-
   const addNode = React.useCallback(
     (nodeType: string, position: {x: number, y:number}, initData?: any) => {
       const newId = `${Math.round(Math.random() * Number.MAX_SAFE_INTEGER)}`
-      graph.addNodes({
-        id: newId,
-        type: nodeType,
-        data: {
-          ...nodeType === "lockNode" && {
-            action: "lock",
-          },
-          ...nodeType === "randomSwitch" && deepCloneJson(defaultRandomSwitchProps),
-          ...initData,
+      useAppState.setState((s) => ({
+        document: {
+          ...s.document,
+          nodes: s.document.nodes.concat({
+            id: newId,
+            type: nodeType,
+            data: {
+              ...nodeType === "lockNode"
+                ? { action: "lock" }
+                : nodeType === "randomSwitch"
+                ? deepCloneJson(defaultRandomSwitchProps)
+                : {},
+              ...initData,
+            },
+            position,
+          }),
         },
-        position,
-      });
+      }));
     },
     []
   );
@@ -288,7 +307,7 @@ const TestGraphEditor = (props: TestGraphEditor.Props) => {
   const connectingNodeId = React.useRef<string>();
   const graphContainerElem = React.useRef<HTMLDivElement>(null);
 
-  // FIXME: mitigate a seeming firefox bug
+  // FIXME: mitigate an apparent firefox bug
   useLayoutEffect(() => {
     const reactFlowRenderer = document.querySelector(".react-flow") as HTMLDivElement | null;
     if (reactFlowRenderer === null) return;
@@ -303,7 +322,7 @@ const TestGraphEditor = (props: TestGraphEditor.Props) => {
           {Object.keys(nodeTypes)
             .filter(key => key !== "entry" && key !== "default")
             .map((nodeType) =>
-              <em className={styles.addNodeMenuOption} key={nodeType} onClick={(e) => {
+              <em {...classNames(styles.addNodeMenuOption, "hoverable")} key={nodeType} onClick={(e) => {
                 const { top, left } = graphContainerElem.current!.getBoundingClientRect();
                 addNode(nodeType, graph.project({
                   x: e.clientX - left - 150/2,
@@ -318,13 +337,33 @@ const TestGraphEditor = (props: TestGraphEditor.Props) => {
       </ContextMenu>
       <div className={styles.graph} ref={graphContainerElem}>
         <ReactFlow
-          defaultNodes={nodes}
-          defaultEdges={edges}
+          nodes={nodes}
+          edges={edges}
           deleteKeyCode={"Delete"} /*DELETE key*/
+          onNodesChange={(changes) => useAppState.setState(s => ({
+            document: {
+              ...s.document,
+              nodes: applyNodeChanges(changes, s.document.nodes),
+            },
+          }))}
+          onEdgesChange={(changes) => useAppState.setState(s => ({
+            document: {
+              ...s.document,
+              edges: applyEdgeChanges(changes, s.document.edges),
+            },
+          }))}
+          onConnect={(connection) => useAppState.setState(s => ({
+            document: {
+              ...s.document,
+              edges: addEdge(connection, s.document.edges),
+            },
+          }))}
           snapToGrid
           snapGrid={[15, 15]}
+          minZoom={0.1}
+          maxZoom={1}
           nodeTypes={nodeTypes}
-          //edgeTypes={edgeTypes}
+          edgeTypes={edgeTypes}
           onDragOver={(e) => {
             e.preventDefault();
             e.dataTransfer.dropEffect = "move";
@@ -352,15 +391,6 @@ const TestGraphEditor = (props: TestGraphEditor.Props) => {
           onConnectStart={(_, { nodeId }) => connectingNodeId.current = nodeId ?? undefined}
           // TODO: context menu on edge drop
           onConnectEnd={() => connectingNodeId.current = undefined}
-          onEdgesDelete={(edges) => {
-            for (const edge of edges) {
-              graph.setNodes(nodes => nodes.map(n => {
-                if (n === edge.sourceNode)
-                  n.data = {...n.data}; // force update
-                return n;
-              }));
-            }
-          }}
         >
           <Controls />
           <MiniMap />

@@ -128,7 +128,7 @@ export function resetAllAppState() {
 
 /** throws on bad node id */
 export const getNode = <T extends object>(nodeId: string) =>
-  useAppState(s => s.document.nodes.find(n => n.id === nodeId)) as Node<T>;
+  useAppState(s => s.document.nodes.find(n => n.id === nodeId)) as Node<T> | undefined;
 
 export const makeNodeDataSetter = <T extends object>(nodeId: string) => (value: Partial<T> | ((s: T) => Partial<T>)) => {
   useAppState.setState((s) => {
@@ -143,7 +143,6 @@ export const makeNodeDataSetter = <T extends object>(nodeId: string) => (value: 
       },
     };
     return {
-      ...s,
       document: {
         ...s.document,
         nodes,

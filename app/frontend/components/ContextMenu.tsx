@@ -3,7 +3,7 @@ import styles from './ContextMenu.module.css'
 import { assert } from "../browser-utils";
 
 export const ContextMenu = ({
-  autoCloseDelay = 1_500,
+  autoCloseDelay = 1_000,
   children,
 }: ContextMenu.Props) => {
   const rootElementRef = useRef<HTMLDivElement>(null);

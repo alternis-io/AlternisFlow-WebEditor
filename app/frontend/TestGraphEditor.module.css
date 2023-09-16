@@ -176,10 +176,6 @@
   display: block;
 }
 
-.addNodeMenuOption:hover {
-  font-weight: bold;
-}
-
 .addNodeMenu {
   border: 1px solid black;
   padding: 8px;

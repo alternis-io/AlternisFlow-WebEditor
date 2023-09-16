@@ -121,16 +121,18 @@ const LockNode = (props: NodeProps<Lock>) => {
         className={styles.handle}
         isConnectable
       />
-      <Icon
-        style={{
-          height: 150,
-          width: 150,
-          // TODO: style all of this SVG's elements... also fix the SVG itself
-          stroke: "#000",
-          strokeLinecap: "round",
-        }}
-        viewBox="-2 -2 85 112"
-      />
+      <Center>
+        <Icon
+          style={{
+            height: 150,
+            width: 150,
+            // TODO: style all of this SVG's elements... also fix the SVG itself
+            stroke: "#000",
+            strokeLinecap: "round",
+          }}
+          viewBox="-2 -2 85 112"
+        />
+      </Center>
       <label>
         variable
         <select
@@ -139,6 +141,49 @@ const LockNode = (props: NodeProps<Lock>) => {
           {Object.entries(gates)
             .map(([gateName]) => (
               <option key={gateName} value={gateName}>{gateName}</option>
+            )
+          )}
+        </select>
+      </label>
+      <Handle
+        type="source"
+        position="right"
+        className={styles.handle}
+        isConnectable
+      />
+    </div>
+  )
+};
+
+export interface Emit {
+  event: string;
+}
+
+const EmitNode = (props: NodeProps<Lock>) => {
+  const events = useAppState(s => s.document.events);
+  // REPORTME: react-flow seems to sometimes render non-existing nodes briefly?
+  const data = getNode<Emit>(props.id)?.data;
+  const set = makeNodeDataSetter<Emit>(props.id);
+
+  return !data ? null : (
+    <div className={styles.node} style={{ width: "max-content" }}>
+      <Handle
+        type="target"
+        position="left"
+        className={styles.handle}
+        isConnectable
+      />
+      <Center>
+        <span style={{ fontSize: "4rem", fontWeight: "bold" }}>!</span>
+      </Center>
+      <label>
+        emit
+        <select
+          onChange={e => set(() => ({ event: e.currentTarget.value }))}
+        >
+          {Object.entries(events)
+            .map(([eventName]) => (
+              <option key={eventName} value={eventName}>{eventName}</option>
             )
           )}
         </select>
@@ -269,12 +314,12 @@ const EntryNode = (_props: NodeProps<{}>) => {
 };
 
 const nodeTypes = {
-  //FIXME: dialogue line?
+  //FIXME: rename to dialogue line?
   dialogueEntry: DialogueEntryNode,
   randomSwitch: RandomSwitchNode,
   //playerReplies: PlayerRepliesNode,
-  //emitEvent: EmitEventNode,
   lockNode: LockNode,
+  emitNode: EmitNode,
   entry: EntryNode,
   default: UnknownNode,
 };

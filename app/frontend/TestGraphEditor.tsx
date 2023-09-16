@@ -1,6 +1,7 @@
-import React, { useLayoutEffect, useRef } from 'react'
+import React, { useLayoutEffect } from 'react'
 import ReactFlow, {
   Handle,
+  Node,
   NodeProps,
   Controls,
   MiniMap,
@@ -10,74 +11,17 @@ import ReactFlow, {
   useReactFlow,
   MarkerType,
   BaseEdge,
-  useEdges,
-  useNodes,
 } from 'reactflow'
 import 'reactflow/dist/base.css'
 import styles from './TestGraphEditor.module.css'
-import { downloadFile, uploadFile } from './localFileManip'
 import { classNames, deepCloneJson } from './react-utils'
 import { Center } from "./Center";
-import { resetAllAppState, useAppState } from "./AppState";
+import { getNode, makeNodeDataSetter, useAppState } from "./AppState";
+import { ReactComponent as LockIcon } from "./resources/inkscape-lock.svg";
+import { ReactComponent as UnlockIcon } from "./resources/inkscape-unlock.svg";
+
 
 import { ContextMenu } from './components/ContextMenu'
-
-// FIXME: consolidate with AppState.ts
-interface NodeData {
-  comment?: string;
-}
-
-interface NodeState extends NodeData {
-  /** shallow merges in a patch to the data for that entry */
-  onChange(newData: Partial<NodeData>): void
-}
-
-const NodeHandle = (props: {
-  type: "source" | "target";
-  label: string;
-  owningNodeId: string;
-  index: number;
-}) => {
-  const isInput = props.type === "source";
-  const id = `${props.owningNodeId}_${isInput}_${props.index}`;
-  /*
-  const edges = useEdges();
-  const isConnected = React.useMemo(() =>
-    edges.find(e => e.sourceHandle === id || e.targetHandle === id),
-    [edges]
-  );
-  */
-
-  const label = <label>{props.label}</label>;
-
-  return (
-    <div 
-      {...classNames(styles.handle, isInput ? styles.inputHandle : styles.outputHandle)}
-    >
-      {!isInput && label}
-      <Handle
-        id={id}
-        type={props.type}
-        position={props.type === "source" ? "left" : "right"}
-        {...classNames(
-          styles.knob,
-          isInput
-            ? styles.inputHandle
-            : styles.outputHandle,
-        )}
-        style={{
-          backgroundColor: "#ff000",
-        }}
-      />
-    </div>
-  );
-};
-
-interface NodeBaseData<T> {
-  /** shallow merges in a patch to the data for that entry */
-  onChange(newData: Partial<T>): void
-  onDelete(): void
-}
 
 // FIXME: move to common/
 export interface DialogueEntry {
@@ -88,13 +32,13 @@ export interface DialogueEntry {
   customData?: any;
 }
 
-export type DialogueEntryProps = DialogueEntry & NodeBaseData<DialogueEntry>;
-
-const DialogueEntryNode = (props: NodeProps<DialogueEntryProps>) => {
-  const participant = useAppState((s) => s.document.participants[props.data.speakerIndex]);
+const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
+  const { data } = getNode<DialogueEntry>(props.id);
+  const participant = useAppState((s) => s.document.participants[data.speakerIndex]);
   if (!participant) return "unknown participant";
+  const set = makeNodeDataSetter<DialogueEntry>(props.id);
 
-  // focus on first mount (will be confusing on document open...)
+  // focus on first mount (FIXME: how does this react to document opening?)
   const textInput = React.useRef<HTMLTextAreaElement>(null);
   React.useEffect(() => {
     textInput.current?.focus();
@@ -112,30 +56,12 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntryProps>) => {
         <div>{participant.name}</div>
         <img height="80px" style={{ width: "auto" }} src={participant.portraitUrl} />
       </div>
-      {/*
-      <label>
-        portrait
-        <select
-          onChange={e =>
-            props.data.onChange({ portrait: e.currentTarget.value })
-          }
-        >
-          {[...appCtx.portraits]
-            .map(([imageName]) => (
-              <option value={imageName}>{imageName}</option>
-            ))
-            .concat(<option>none</option>)}
-        </select>
-      </label>
-      */}
       <label>
         title
         <input
           className="nodrag"
-          onChange={e =>
-            props.data.onChange({ ...props.data, title: e.currentTarget.value })
-          }
-          defaultValue={props.data.title}
+          onChange={(e) => set({ title: e.currentTarget.value })}
+          value={data.title}
         />
       </label>
       <label>
@@ -143,13 +69,11 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntryProps>) => {
         <textarea
           ref={textInput}
           className="nodrag"
-          onChange={e =>
-            props.data.onChange({ ...props.data, text: e.currentTarget.value })
-          }
-          defaultValue={props.data.text}
+          onChange={(e) => set({ text: e.currentTarget.value })}
+          // FIXME: why not use a controlled component?
+          value={data.text}
         />
       </label>
-      {/* will dynamically add handles potentially... */}
       <Handle
         type="source"
         position="right"
@@ -165,24 +89,20 @@ export interface Lock {
   action: "lock" | "unlock";
 }
 
-export type LockProps = Lock & NodeBaseData<Lock>;
-
-import { ReactComponent as LockIcon } from "./resources/inkscape-lock.svg";
-import { ReactComponent as UnlockIcon } from "./resources/inkscape-unlock.svg";
-
-const LockNode = (props: NodeProps<LockProps>) => {
+const LockNode = (props: NodeProps<Lock>) => {
   const gates = useAppState(s => s.document.gates);
-  const set = useAppState((s) => s.set);
-  const action = props.data.action
+  const { data } = getNode<Lock>(props.id);
+  const set = makeNodeDataSetter<Lock>(props.id);
+
   // FIXME: this might be low-performance? not sure it matters tbh
-  const Icon = action === "lock" ? LockIcon : UnlockIcon;
+  const Icon = data.action === "lock" ? LockIcon : UnlockIcon;
+
   return (
     <div className={styles.node} style={{ width: "max-content" }}
       onContextMenu={(e) => {
         e.stopPropagation();
         e.preventDefault();
-        const next = action === "lock" ? "unlock" : "lock";
-        props.data.onChange({ action: next });
+        set(({ action }) => ({ action: action === "lock" ? "unlock" : "lock" }));
       }}
     >
       <Handle
@@ -204,22 +124,7 @@ const LockNode = (props: NodeProps<LockProps>) => {
       <label>
         variable
         <select
-          onChange={e =>
-            set((s) => {
-              const nodes = s.document.nodes.slice();
-              const thisNodeIndex = nodes.findIndex(n => n.type === "lockNode");
-              const thisNode = nodes[thisNodeIndex];
-              nodes[thisNodeIndex] = {
-                ...thisNode,
-              };
-              return {
-                document: {
-                  ...s.document,
-                  nodes,
-                },
-              };
-            })
-          }
+          onChange={e => set(l => ({ variable: e.currentTarget.value }))}
         >
           {Object.entries(gates)
             .map(([gateName]) => (
@@ -246,10 +151,13 @@ const defaultRandomSwitchProps = {
   proportions: [1, 1],
 };
 
-export type RandomSwitchProps = RandomSwitch & NodeBaseData<RandomSwitch>;
+const percentFmter = new Intl.NumberFormat(undefined, { maximumFractionDigits: 1, style: "percent" });
 
-const RandomSwitchNode = (props: NodeProps<RandomSwitchProps>) => {
-  const totalProportion = props.data.proportions.reduce((prev, curr) => prev + curr, 0);
+const RandomSwitchNode = (props: NodeProps<RandomSwitch>) => {
+  // FIXME: why can't we use props.data?
+  const { data } = getNode<RandomSwitch>(props.id);
+  const totalProportion = data.proportions.reduce((prev, curr) => prev + curr, 0);
+  const set = makeNodeDataSetter<RandomSwitch>(props.id);
 
   return (
     <div className={styles.node} style={{ width: "max-content" }}>
@@ -260,7 +168,7 @@ const RandomSwitchNode = (props: NodeProps<RandomSwitchProps>) => {
         isConnectable
       />
       <div className={styles.randomSwitchBody}>
-        {props.data.proportions.map((proportion, index) => (
+        {data.proportions.map((proportion, index) => (
           <div className={styles.randomSwitchInput}>
             <input
               value={String(proportion)}
@@ -269,17 +177,23 @@ const RandomSwitchNode = (props: NodeProps<RandomSwitchProps>) => {
                 const next = parseInt(e.currentTarget.value);
                 if (Number.isNaN(next))
                   return;
-                const updatedList = props.data.proportions.slice();
-                updatedList[index] = next;
-                props.data.onChange({
-                  proportions: updatedList
-                });
+
+                set(({ proportions }) => {
+                  const updatedList = proportions.slice();
+                  updatedList[index] = next;
+                  return {
+                    proportions: updatedList
+                  };
+                })
               }}
             />
+            <span>
+              ({percentFmter.format(proportion / totalProportion)})
+            </span>
             <Handle
               id={`${props.id}_${index}`}
               style={{
-                top: `${(index + 0.5) / props.data.proportions.length * 100}%`
+                top: `${(index + 0.5) / data.proportions.length * 100}%`
               }}
               type="source"
               position="right"
@@ -293,7 +207,7 @@ const RandomSwitchNode = (props: NodeProps<RandomSwitchProps>) => {
   )
 };
 
-const UnknownNode = (props: NodeProps<NodeState>) => {
+const UnknownNode = (props: NodeProps<{}>) => {
   // TODO: store connections on data in case the correct type is restored
   return (
     <div className={styles.node}>
@@ -304,7 +218,7 @@ const UnknownNode = (props: NodeProps<NodeState>) => {
   )
 };
 
-const EntryNode = (props: NodeProps<NodeBaseData<{}>>) => {
+const EntryNode = (props: NodeProps<{}>) => {
   // TODO: store connections on data in case the correct type is restored
   return (
     <div className={styles.node}>
@@ -345,23 +259,12 @@ const edgeTypes = {
 
 const TestGraphEditor = (props: TestGraphEditor.Props) => {
   // FIXME: use correct types
-  const graph = useReactFlow<DialogueEntryProps | LockProps | RandomSwitchProps, {}>();
-  // FIXME: document should proxy this state, not own it...
-  const edges = useEdges<{}>();
-  const nodes = useNodes<DialogueEntryProps>();
+  const graph = useReactFlow<{}, {}>();
+  const nodes = useAppState(s => s.document.nodes);
+  const edges = useAppState(s => s.document.edges);
 
   const doc = useAppState((s) => s.document);
   const set = useAppState((s) => s.set);
-
-  React.useEffect(() => {
-    set((s) => ({
-      document: {
-        ...s.document,
-        nodes,
-        edges,
-      },
-    }));
-  }, [nodes, edges]);
 
   const addNode = React.useCallback(
     (nodeType: string, position: {x: number, y:number}, initData?: any) => {
@@ -370,25 +273,11 @@ const TestGraphEditor = (props: TestGraphEditor.Props) => {
         id: newId,
         type: nodeType,
         data: {
-          ...initData,
           ...nodeType === "lockNode" && {
             action: "lock",
           },
           ...nodeType === "randomSwitch" && deepCloneJson(defaultRandomSwitchProps),
-          onChange: (newVal: Partial<DialogueEntryProps | LockProps>) =>
-            graph.setNodes(prev => {
-              const copy = prev.slice();
-              const index = copy.findIndex(elem => elem.id === newId);
-              const elem = copy[index];
-              copy[index] = {
-                ...elem,
-                data: {
-                  ...elem.data,
-                  ...newVal,
-                },
-              };
-              return copy;
-            }),
+          ...initData,
         },
         position,
       });
@@ -429,8 +318,8 @@ const TestGraphEditor = (props: TestGraphEditor.Props) => {
       </ContextMenu>
       <div className={styles.graph} ref={graphContainerElem}>
         <ReactFlow
-          defaultNodes={doc.nodes}
-          defaultEdges={doc.edges}
+          defaultNodes={nodes}
+          defaultEdges={edges}
           deleteKeyCode={"Delete"} /*DELETE key*/
           snapToGrid
           snapGrid={[15, 15]}

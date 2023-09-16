@@ -125,3 +125,29 @@ useAppState.subscribe((state) =>
 export function resetAllAppState() {
   useAppState.setState(deepCloneJson(defaultAppState));
 }
+
+/** throws on bad node id */
+export const getNode = <T extends object>(nodeId: string) =>
+  useAppState(s => s.document.nodes.find(n => n.id === nodeId)) as Node<T>;
+
+export const makeNodeDataSetter = <T extends object>(nodeId: string) => (value: Partial<T> | ((s: T) => Partial<T>)) => {
+  useAppState.setState((s) => {
+    const nodes = s.document.nodes.slice();
+    const thisNodeIndex = s.document.nodes.findIndex(n => n.id === nodeId);
+    const thisNode = s.document.nodes[thisNodeIndex] as Node<T>;
+    nodes[thisNodeIndex] = {
+      ...thisNode,
+      data: {
+        ...thisNode.data,
+        ...typeof value === "function" ? value(thisNode.data) : value,
+      },
+    };
+    return {
+      ...s,
+      document: {
+        ...s.document,
+        nodes,
+      },
+    };
+  });
+};

@@ -1,36 +1,41 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useAppState } from "./AppState";
+import { AppState, useAppState } from "./AppState";
 import "./shared.global.css";
 import * as styles from "./GateEditor.module.css";
 import { Center } from "./Center";
 import { classNames } from "./react-utils";
 import { Split } from "./Split";
 
-export function ConstantEditor() {
-  const constants = useAppState((s) => s.document.constants);
+// all keys that are a simple record
+type SupportedKeys = "constants" | "gates" | "events";
+
+export function GenericEditor<T extends SupportedKeys>(
+  props: GenericEditor.Props<T>
+) {
+  const generic = useAppState((s) => s.document[props.docPropKey]);
   const set = useAppState((s) => s.set);
 
-  const [proposedConstantName, setProposedConstantName] = useState<string>();
+  const [proposedName, setProposedName] = useState<string>();
 
-  const setConstant = (name: string, value: (typeof constants)[string] = { type: "string" }) => set(s => ({
+  const setGeneric = (name: string, value: AppState["document"][T][string] = props.newInitialVal) => set(s => ({
     document: {
       ...s.document,
-      constants: {
+      [props.docPropKey]: {
         ...s.document.constants,
         [name]: value,
       },
     },
   }));
 
-  const addConstant = setConstant;
+  const addGeneric = setGeneric;
 
-  const deleteConstant = (name: string) => set(s => {
-    const constants = { ...s.document.constants };
-    delete constants[name];
+  const deleteGeneric = (name: string) => set(s => {
+    const generic = { ...s.document.constants };
+    delete generic[name];
     return {
       document: {
         ...s.document,
-        constants,
+        [props.docPropKey]: generic,
       },
     };
   });
@@ -38,13 +43,13 @@ export function ConstantEditor() {
   const proposedNameInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (proposedConstantName === "")
+    if (proposedName === "")
       proposedNameInputRef.current?.focus();
-  }, [proposedConstantName]);
+  }, [proposedName]);
 
-  const finishProposedConstant = (value: string) => {
-    addConstant(value);
-    setProposedConstantName(undefined);
+  const finishProposedGeneric = (value: string) => {
+    addGeneric(value);
+    setProposedName(undefined);
   };
 
   return (
@@ -52,7 +57,7 @@ export function ConstantEditor() {
       display: "grid",
       gap: "11px",
     }}>
-      {Object.entries(constants).map(([name, data]) => (
+      {Object.entries(generic).map(([name, data]) => (
         <Split
           left={
             <span onDoubleClick={(e) => {
@@ -65,9 +70,9 @@ export function ConstantEditor() {
             <div style={{display: "flex", flexDirection: "row"}}>
               <Center
                 className="hoverable"
-                title="Delete this constant"
+                title={`Delete this ${props.singularEntityName}`}
                 onClick={(e) => {
-                  deleteConstant(name);
+                  deleteGeneric(name);
                 }}
               >
                 <em>&times;</em>
@@ -76,25 +81,25 @@ export function ConstantEditor() {
           }
         />
       ))}
-      {proposedConstantName !== undefined
+      {proposedName !== undefined
       ? <div>
           <input
             ref={proposedNameInputRef}
-            value={proposedConstantName}
-            onChange={(e) => setProposedConstantName(e.currentTarget.value)}
+            value={proposedName}
+            onChange={(e) => setProposedName(e.currentTarget.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 e.preventDefault();
-                finishProposedConstant(e.currentTarget.value);
+                finishProposedGeneric(e.currentTarget.value);
               }
             }}
-            onBlur={(e) => finishProposedConstant(e.currentTarget.value)}
+            onBlur={(e) => finishProposedGeneric(e.currentTarget.value)}
           />
         </div>
       : <div
-          title="Add a new constant"
+          title={`Add a new ${props.singularEntityName}`}
           {...classNames(styles.newButton, "hoverable")}
-          onClick={() => setProposedConstantName("")}
+          onClick={() => setProposedName("")}
         >
           <Center>+</Center>
         </div>
@@ -103,3 +108,10 @@ export function ConstantEditor() {
   );
 }
 
+export namespace GenericEditor {
+  export interface Props<T extends SupportedKeys> {
+    singularEntityName: string;
+    docPropKey: T;
+    newInitialVal: AppState["document"][T][string];
+  }
+}

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import styles from "./Ide.module.css";
 import { ParticipantEditor } from "./ParticipantEditor";
 import { GateEditor } from "./GateEditor";
-import { ConstantEditor } from "./ConstantEditor";
+import { GenericEditor } from "./EventEditor";
 
 const dataPanes = {
   participants: {
@@ -16,11 +16,19 @@ const dataPanes = {
   },
   constants: {
     label: "Constants",
-    component: ConstantEditor,
+    component: () => <GenericEditor
+      newInitialVal={{ type: "string" }}
+      singularEntityName="constant"
+      docPropKey="constants"
+    />
   },
   events: {
     label: "Events",
-    component: () => null,
+    component: () => <GenericEditor
+      newInitialVal={{}}
+      singularEntityName="event"
+      docPropKey="events"
+    />
   },
 } as const;
 

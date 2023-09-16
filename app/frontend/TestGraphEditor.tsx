@@ -25,6 +25,7 @@ import { ReactComponent as UnlockIcon } from "./resources/inkscape-unlock.svg";
 
 
 import { ContextMenu } from './components/ContextMenu'
+import { assert } from './browser-utils'
 
 // FIXME: move to common/
 export interface DialogueEntry {
@@ -33,6 +34,42 @@ export interface DialogueEntry {
   title?: string;
   text: string;
   customData?: any;
+}
+
+class GraphErrorBoundary extends React.Component<React.PropsWithChildren<{}>, { error?: Error | undefined }> {
+  constructor(props: React.PropsWithChildren<{}>) {
+    super(props);
+    this.state = { error: undefined };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { error }
+  }
+
+  componentDidCatch(_error: Error, _errorInfo: React.ErrorInfo): void {
+    // FIXME: log error
+  }
+
+  onErrorReload() {
+    this.setState({ error: undefined })
+  }
+
+  render() {
+    return (this.state.error)
+      ? <div style={{ padding: 20 }}>
+          <p> An error has occurred. Maybe you should reset your document? </p>
+          <p> FIXME: add an option to undo here? (I think you can still hit ctrl-z right now)</p>
+          <p> Try contacting <a href="#FIXME">support</a> if this continues </p>
+          <button onClick={this.onErrorReload.bind(this)}>Reload the editor</button>
+          <pre>
+          {this.state.error.message}
+          <br/>
+          {this.state.error.stack}
+          </pre>
+        </div>
+      : this.props.children
+    ;
+  }
 }
 
 const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
@@ -48,7 +85,7 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
     textInput.current?.focus();
   }, []);
 
-  return (
+  return !data ? null : (
     <div className={styles.node} style={{ width: "max-content" }}>
       <Handle
         type="target"
@@ -285,6 +322,93 @@ const RandomSwitchNode = (props: NodeProps<RandomSwitch>) => {
   )
 };
 
+interface PlayerReplies {
+  replies: {
+    text: string;
+  }[];
+}
+
+const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
+  // REPORTME: react-flow seems to sometimes render non-existing nodes briefly?
+  const data = getNode<PlayerReplies>(props.id)?.data;
+  const set = makeNodeDataSetter<PlayerReplies>(props.id);
+
+  const nodeBodyRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const nodeBody = nodeBodyRef.current;
+    if (!nodeBody) return;
+    const lastOption = nodeBody.lastChild?.previousSibling
+    if (!lastOption) return;
+
+    const input = lastOption.firstElementChild;
+    assert(input.tagName === "INPUT");
+    input.focus();
+  }, [data?.replies.length]);
+
+  return !data ? null : (
+    <div className={styles.node} style={{ width: "max-content" }}>
+      <Handle
+        type="target"
+        position="left"
+        className={styles.handle}
+        isConnectable
+      />
+      <div className={styles.randomSwitchBody} ref={nodeBodyRef}>
+        {data.replies.map((reply, index) => (
+          <div className={styles.randomSwitchInput}>
+            <input
+              value={reply.text}
+              onChange={(e) => {
+                set(({ replies }) => {
+                  const updated = replies.slice();
+                  updated[index] = {
+                    ...updated[index],
+                    text: e.currentTarget.value,
+                  };
+                  return {
+                    replies: updated
+                  };
+                });
+              }}
+            />
+            <Center
+              className="hoverable"
+              title="Delete this option"
+              onClick={() => set(s => {
+                const replies = s.replies.slice();
+                replies.splice(index, 1);
+                return { replies };
+              })}
+            >
+              <em>&times;</em>
+            </Center>
+            <Handle
+              id={`${props.id}_${index}`}
+              style={{
+                position: "relative",
+              }}
+              type="source"
+              position="right"
+              className={styles.handle}
+              isConnectable
+            />
+          </div>
+        ))}
+        <div
+          title="Add a reply option"
+          {...classNames("newButton", "hoverable")}
+          onClick={() => set((s) => ({
+            replies: s.replies.concat({ text: "" }),
+          }))}
+        >
+          <Center>+</Center>
+        </div>
+      </div>
+    </div>
+  )
+};
+
 const UnknownNode = (_props: NodeProps<{}>) => {
   // TODO: store connections on data in case the correct type is restored
   return (
@@ -317,7 +441,7 @@ const nodeTypes = {
   //FIXME: rename to dialogue line?
   dialogueEntry: DialogueEntryNode,
   randomSwitch: RandomSwitchNode,
-  //playerReplies: PlayerRepliesNode,
+  playerReplies: PlayerRepliesNode,
   lockNode: LockNode,
   emitNode: EmitNode,
   entry: EntryNode,
@@ -355,6 +479,8 @@ const TestGraphEditor = (props: TestGraphEditor.Props) => {
                 ? { action: "lock" }
                 : nodeType === "randomSwitch"
                 ? deepCloneJson(defaultRandomSwitchProps)
+                : nodeType === "playerReplies"
+                ? { replies: [] }
                 : {},
               ...initData,
             },
@@ -378,88 +504,90 @@ const TestGraphEditor = (props: TestGraphEditor.Props) => {
   }, []);
 
   return (
-    <div className={styles.page}>
-      <ContextMenu>
-        <div className={styles.addNodeMenu}>
-          {Object.keys(nodeTypes)
-            .filter(key => key !== "entry" && key !== "default")
-            .map((nodeType) =>
-              <em {...classNames(styles.addNodeMenuOption, "hoverable")} key={nodeType} onClick={(e) => {
+    <GraphErrorBoundary>
+      <div className={styles.page}>
+        <ContextMenu>
+          <div className={styles.addNodeMenu}>
+            {Object.keys(nodeTypes)
+              .filter(key => key !== "entry" && key !== "default")
+              .map((nodeType) =>
+                <em {...classNames(styles.addNodeMenuOption, "hoverable")} key={nodeType} onClick={(e) => {
+                  const { top, left } = graphContainerElem.current!.getBoundingClientRect();
+                  addNode(nodeType, graph.project({
+                    x: e.clientX - left - 150/2,
+                    y: e.clientY - top,
+                  }))}
+                }>
+                  {nodeType}
+                </em>
+              )
+            }
+          </div>
+        </ContextMenu>
+        <div className={styles.graph} ref={graphContainerElem}>
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            deleteKeyCode={"Delete"} /*DELETE key*/
+            onNodesChange={(changes) => useAppState.setState(s => ({
+              document: {
+                ...s.document,
+                nodes: applyNodeChanges(changes, s.document.nodes),
+              },
+            }))}
+            onEdgesChange={(changes) => useAppState.setState(s => ({
+              document: {
+                ...s.document,
+                edges: applyEdgeChanges(changes, s.document.edges),
+              },
+            }))}
+            onConnect={(connection) => useAppState.setState(s => ({
+              document: {
+                ...s.document,
+                edges: addEdge(connection, s.document.edges),
+              },
+            }))}
+            snapToGrid
+            snapGrid={[15, 15]}
+            minZoom={0.1}
+            maxZoom={1}
+            nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
+            onDragOver={(e) => {
+              e.preventDefault();
+              e.dataTransfer.dropEffect = "move";
+            }}
+            onDrop={(e) => {
+              e.preventDefault();
+              const participantDataText = e.dataTransfer.getData("application/dialogical-participant");
+              if (participantDataText) {
+                const { index } = JSON.parse(participantDataText);
                 const { top, left } = graphContainerElem.current!.getBoundingClientRect();
-                addNode(nodeType, graph.project({
+                // FIXME: no hardcoded node width
+                const props: DialogueEntry = {
+                  speakerIndex: index,
+                  text: "this is default text"
+                };
+                addNode("dialogueEntry", graph.project({
                   x: e.clientX - left - 150/2,
                   y: e.clientY - top,
-                }))}
-              }>
-                {nodeType}
-              </em>
-            )
-          }
+                }), props);
+              }
+            }}
+            onEdgeClick={(_evt, edge) => {
+              graph.deleteElements({edges: [edge]})
+            }}
+            onConnectStart={(_, { nodeId }) => connectingNodeId.current = nodeId ?? undefined}
+            // TODO: context menu on edge drop
+            onConnectEnd={() => connectingNodeId.current = undefined}
+          >
+            <Controls />
+            <MiniMap />
+          </ReactFlow>
         </div>
-      </ContextMenu>
-      <div className={styles.graph} ref={graphContainerElem}>
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          deleteKeyCode={"Delete"} /*DELETE key*/
-          onNodesChange={(changes) => useAppState.setState(s => ({
-            document: {
-              ...s.document,
-              nodes: applyNodeChanges(changes, s.document.nodes),
-            },
-          }))}
-          onEdgesChange={(changes) => useAppState.setState(s => ({
-            document: {
-              ...s.document,
-              edges: applyEdgeChanges(changes, s.document.edges),
-            },
-          }))}
-          onConnect={(connection) => useAppState.setState(s => ({
-            document: {
-              ...s.document,
-              edges: addEdge(connection, s.document.edges),
-            },
-          }))}
-          snapToGrid
-          snapGrid={[15, 15]}
-          minZoom={0.1}
-          maxZoom={1}
-          nodeTypes={nodeTypes}
-          edgeTypes={edgeTypes}
-          onDragOver={(e) => {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = "move";
-          }}
-          onDrop={(e) => {
-            e.preventDefault();
-            const participantDataText = e.dataTransfer.getData("application/dialogical-participant");
-            if (participantDataText) {
-              const { index } = JSON.parse(participantDataText);
-              const { top, left } = graphContainerElem.current!.getBoundingClientRect();
-              // FIXME: no hardcoded node width
-              const props: DialogueEntry = {
-                speakerIndex: index,
-                text: "this is default text"
-              };
-              addNode("dialogueEntry", graph.project({
-                x: e.clientX - left - 150/2,
-                y: e.clientY - top,
-              }), props);
-            }
-          }}
-          onEdgeClick={(_evt, edge) => {
-            graph.deleteElements({edges: [edge]})
-          }}
-          onConnectStart={(_, { nodeId }) => connectingNodeId.current = nodeId ?? undefined}
-          // TODO: context menu on edge drop
-          onConnectEnd={() => connectingNodeId.current = undefined}
-        >
-          <Controls />
-          <MiniMap />
-        </ReactFlow>
       </div>
-    </div>
-  )
+    </GraphErrorBoundary>
+  );
 }
 
 namespace TestGraphEditor {

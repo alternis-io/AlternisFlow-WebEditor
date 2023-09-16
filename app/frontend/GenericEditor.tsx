@@ -13,7 +13,7 @@ export function GenericEditor<T extends SupportedKeys>(
   props: GenericEditor.Props<T>
 ) {
   const generic = useAppState((s) => s.document[props.docPropKey]);
-  const set = useAppState((s) => s.set);
+  const set = useAppState.setState;
 
   const [proposedName, setProposedName] = useState<string>();
 
@@ -76,7 +76,7 @@ export function GenericEditor<T extends SupportedKeys>(
             <div style={{display: "flex", flexDirection: "row"}}>
               <ExtraActions
                 data={data as any}
-                set={(d: AppState["document"][T][string]) => setGeneric(name, d)}
+                set={(d: Partial<AppState["document"][T][string]>) => setGeneric(name, d)}
               />
               <Center
                 className="hoverable"

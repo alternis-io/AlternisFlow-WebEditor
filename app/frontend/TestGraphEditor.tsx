@@ -166,10 +166,9 @@ const percentFmter = new Intl.NumberFormat(undefined, { maximumFractionDigits: 1
 const RandomSwitchNode = (props: NodeProps<RandomSwitch>) => {
   // REPORTME: react-flow seems to sometimes render non-existing nodes briefly?
   const data = getNode<RandomSwitch>(props.id)?.data;
-  const totalProportion = data?.proportions.reduce((prev, curr) => prev + curr, 0);
+  const totalProportion = data?.proportions.reduce((prev, curr) => prev + curr, 0) ?? 1;
   const set = makeNodeDataSetter<RandomSwitch>(props.id);
 
-  const offset = 1.2;
   return !data ? null : (
     <div className={styles.node} style={{ width: "max-content" }}>
       <Handle
@@ -204,12 +203,21 @@ const RandomSwitchNode = (props: NodeProps<RandomSwitch>) => {
             <span>
               ({percentFmter.format(proportion / totalProportion)})
             </span>
+            <Center
+                className="hoverable"
+                title="Delete this possibility"
+                onClick={() => set(s => {
+                  const proportions = s.proportions.slice();
+                  proportions.splice(index, 1); // remove
+                  return { proportions };
+                })}
+              >
+                <em>&times;</em>
+              </Center>
             <Handle
               id={`${props.id}_${index}`}
               style={{
-                // FIXME: hack
-                //top: `${(index + 0.5) / data.proportions.length * 100}%`
-                top: `${((index + 0.5 + offset) / (data.proportions.length + offset)) * 100}%`,
+                position: "relative",
               }}
               type="source"
               position="right"
@@ -218,6 +226,15 @@ const RandomSwitchNode = (props: NodeProps<RandomSwitch>) => {
             />
           </div>
         ))}
+        <div
+          title="Add a possibility"
+          {...classNames("newButton", "hoverable")}
+          onClick={() => set((s) => ({
+            proportions: s.proportions.concat(1),
+          }))}
+        >
+          <Center>+</Center>
+        </div>
       </div>
     </div>
   )

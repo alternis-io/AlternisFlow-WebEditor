@@ -17,12 +17,15 @@ export function GenericEditor<T extends SupportedKeys>(
 
   const [proposedName, setProposedName] = useState<string>();
 
-  const setGeneric = (name: string, value: AppState["document"][T][string] = props.newInitialVal) => set(s => ({
+  const setGeneric = (name: string, value: Partial<AppState["document"][T][string]> = props.newInitialVal) => set(s => ({
     document: {
       ...s.document,
       [props.docPropKey]: {
         ...s.document[props.docPropKey],
-        [name]: value,
+        [name]: {
+          ...s.document[props.docPropKey][name],
+          ...value,
+        },
       },
     },
   }));
@@ -123,7 +126,7 @@ export namespace GenericEditor {
     // FIXME: use correct react type that supports all possible components impls
     extraActions?: React.FunctionComponent<{
       data: AppState["document"][T][string];
-      set: (data: AppState["document"][T][string]) => void;
+      set: (data: Partial<AppState["document"][T][string]>) => void;
     }>;
   }
 }

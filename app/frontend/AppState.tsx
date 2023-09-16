@@ -3,16 +3,9 @@ import { Participant } from "../common/data-types/participant";
 import { deepCloneJson } from "./react-utils";
 import { create } from "zustand";
 import { DeepPartial } from "ts-essentials/dist/deep-partial";
-import defaultParticipantIconUrl from "./resources/participant-icon.svg";
 
 // FIXME: move out icon data and get type from that list
 export type IconSizes = "small" | "medium" | "large";
-
-// prepopulate during loading...
-const testParticipants = new Array(100).fill(undefined).map((_, i) => ({
-    name: `test_${i}`,
-    portraitUrl:defaultParticipantIconUrl,
-}));
 
 const defaultAppState = {
   preferences: {
@@ -29,10 +22,12 @@ const defaultAppState = {
       position: { x: 540, y: 100 },
     }] as Node<{}>[],
     edges: [] as Edge<{}>[],
-    participants: testParticipants as Participant[],
+    // should there be a special "player" participant?
+    participants: [] as Participant[],
     constants: {} as {
       [name: string]: {
         type: "number" | "string" | "boolean",
+        default: string,
       },
     },
     gates: {} as {
@@ -61,7 +56,7 @@ const initialState: AppState = (() => {
 })();
 
 type SettableState<T extends object> = T & {
-  // FIXME: just use useAppState.setState
+  /** @deprecated, just use useAppState.setState */
   set(
     cb: (s: T) => DeepPartial<T> | Promise<DeepPartial<T>>,
   ): void;

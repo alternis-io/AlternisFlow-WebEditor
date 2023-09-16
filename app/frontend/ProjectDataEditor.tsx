@@ -29,9 +29,17 @@ const dataPanes = {
   constants: {
     label: "Constants",
     component: () => <GenericEditor
-      newInitialVal={{ type: "string" }}
+      newInitialVal={{ type: "string", default: "value" }}
       singularEntityName="constant"
       docPropKey="constants"
+      // FIXME: make these inline components typed...
+      extraActions={useRef(({ data, set }) => (
+        <input
+          title="default"
+          value={data.default}
+          onChange={(e) => set({ default: e.currentTarget.value })}
+        />
+      )).current}
     />
   },
   events: {
@@ -65,6 +73,7 @@ export function ProjectDataEditor(_props: ProjectDataEditor.Props) {
             onClick={() => setOpenDataPane(name)}
             style={{
               borderBottom: "1px solid var(--fg-1)",
+              fontWeight: name === openDataPane ? "bold" : "normal",
             }}
           >
             {data.label}

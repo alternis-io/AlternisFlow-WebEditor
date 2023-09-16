@@ -1,11 +1,15 @@
 import React, { useCallback, useEffect } from "react";
 import styles from "./ParticipantEditor.module.css";
+import genericEditorStyles from "./GenericEditor.module.css";
 import { ContextMenu } from "./components/ContextMenu";
 import { IconSizes, useAppState } from "./AppState";
 import { useValidatedInput } from "./hooks/useValidatedInput";
 import { uploadFile } from "./localFileManip";
 import "./shared.global.css";
 import { classNames } from "./react-utils";
+import { Center } from "./Center";
+import { Participant } from "../common/data-types/participant";
+import defaultParticipantIconUrl from "./resources/participant-icon.svg";
 
 export const iconSizes: Record<IconSizes, { label: string }> = {
   small: {
@@ -50,6 +54,25 @@ export function ParticipantEditor() {
       return { valid: true };
     }, [participants, selectedName]),
   });
+
+  const newParticipantPrefix = "New participant";
+
+  const getAvailableNewParticipantName = useCallback(() => {
+    const [currentMax] = participants
+      .map(participant => {
+        const match = new RegExp(`^New participant (?<num>\\d+)`).exec(participant.name);
+        return {
+          participant,
+          num: match?.groups?.num ? +match.groups.num : undefined,
+        };
+      })
+      .filter(p => p.num !== undefined)
+      // descending sort (highest is first)
+      .sort((a, b) => b.num! - a.num!)
+
+    const nextNum = (currentMax?.num ?? 0) + 1;
+    return `${newParticipantPrefix} ${nextNum}`;
+  }, [participants]);
 
   useEffect(() => {
     if (name === null || !selectedName || selectedName === name)
@@ -166,6 +189,9 @@ export function ParticipantEditor() {
             {...classNames(styles.portraitImage, "hoverable", "draggable")}
             onClick={() => setSelectedName(p.name)}
             title={"Click to edit, drag to drop"}
+            onContextMenu={(e) => {
+              // FIXME: add a delete option here
+            }}
           >
             <img
               src={p.portraitUrl}
@@ -177,6 +203,28 @@ export function ParticipantEditor() {
             />
           </div>
         )}
+        <div
+          title={`Add a new participant`}
+          {...classNames(genericEditorStyles.newButton, "hoverable")}
+          onClick={() => {
+            const newPartipant: Participant = {
+              name: getAvailableNewParticipantName(),
+              portraitUrl: defaultParticipantIconUrl,
+            };
+
+            useAppState.setState((s) => ({
+              document: {
+                ...s.document,
+                participants: s.document.participants.concat(newPartipant),
+              },
+            }));
+
+            setSelectedName(newPartipant.name);
+          }}
+        >
+          <Center>+</Center>
+        </div>
+
       </div>
 
       {details}

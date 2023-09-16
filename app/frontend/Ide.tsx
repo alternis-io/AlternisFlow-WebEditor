@@ -23,6 +23,7 @@ function Header() {
         padding: 5,
       }}
       >
+        <button>Newsletter</button>
         <button>Feedback</button>
         <button
           onClick={() => {

@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import styles from "./Ide.module.css";
 import { ParticipantEditor } from "./ParticipantEditor";
 import { GateEditor } from "./GateEditor";
-import { GenericEditor } from "./EventEditor";
+import { GenericEditor } from "./GenericEditor";
 
 const dataPanes = {
   participants: {
@@ -12,7 +12,20 @@ const dataPanes = {
   },
   gates: {
     label: "Gates",
-    component: GateEditor,
+    component: () => <GenericEditor
+      newInitialVal={{ initial: "locked" }}
+      singularEntityName="gate"
+      docPropKey="gates"
+      extraActions={useRef(({ data, set }) => (
+        <input
+          title={data.initial}
+          checked={data.initial === "locked"}
+          // NOTE: use custom checkbox with lock symbol
+          type="checkbox"
+          onChange={() => set({ initial: data.initial === "locked" ? "unlocked" : "locked" })}
+        />
+      )).current}
+    />
   },
   constants: {
     label: "Constants",

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { AppState, useAppState } from "./AppState";
 import "./shared.global.css";
-import * as styles from "./GateEditor.module.css";
+import * as styles from "./GenericEditor.module.css";
 import { Center } from "./Center";
 import { classNames } from "./react-utils";
 import { Split } from "./Split";
@@ -21,7 +21,7 @@ export function GenericEditor<T extends SupportedKeys>(
     document: {
       ...s.document,
       [props.docPropKey]: {
-        ...s.document.constants,
+        ...s.document[props.docPropKey],
         [name]: value,
       },
     },
@@ -30,7 +30,7 @@ export function GenericEditor<T extends SupportedKeys>(
   const addGeneric = setGeneric;
 
   const deleteGeneric = (name: string) => set(s => {
-    const generic = { ...s.document.constants };
+    const generic = { ...s.document[props.docPropKey] };
     delete generic[name];
     return {
       document: {
@@ -52,6 +52,8 @@ export function GenericEditor<T extends SupportedKeys>(
     setProposedName(undefined);
   };
 
+  const ExtraActions = props.extraActions ?? ((_p: any) => null);
+
   return (
     <div style={{
       display: "grid",
@@ -68,10 +70,14 @@ export function GenericEditor<T extends SupportedKeys>(
           }
           right = {
             <div style={{display: "flex", flexDirection: "row"}}>
+              <ExtraActions
+                data={data as any}
+                set={(d: AppState["document"][T][string]) => setGeneric(name, d)}
+              />
               <Center
                 className="hoverable"
                 title={`Delete this ${props.singularEntityName}`}
-                onClick={(e) => {
+                onClick={() => {
                   deleteGeneric(name);
                 }}
               >
@@ -113,5 +119,10 @@ export namespace GenericEditor {
     singularEntityName: string;
     docPropKey: T;
     newInitialVal: AppState["document"][T][string];
+    // FIXME: use correct react type that supports all possible components impls
+    extraActions?: React.FunctionComponent<{
+      data: AppState["document"][T][string];
+      set: (data: AppState["document"][T][string]) => void;
+    }>;
   }
 }

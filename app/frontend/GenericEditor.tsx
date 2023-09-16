@@ -98,7 +98,7 @@ export function GenericEditor<T extends SupportedKeys>(
             value={proposedName}
             onChange={(e) => setProposedName(e.currentTarget.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter") {
+              if (e.key === "Enter" && e.currentTarget.value !== "") {
                 e.preventDefault();
                 finishProposedGeneric(e.currentTarget.value);
               }

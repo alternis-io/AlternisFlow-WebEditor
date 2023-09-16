@@ -25,6 +25,7 @@ function Header() {
       >
         <button>Newsletter</button>
         <button>Feedback</button>
+        <button>Search</button>
         <button
           onClick={() => {
             downloadFile({

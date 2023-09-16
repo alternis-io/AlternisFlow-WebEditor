@@ -5,10 +5,6 @@ import { IconSizes, useAppState } from "./AppState";
 import { useValidatedInput } from "./hooks/useValidatedInput";
 import { uploadFile } from "./localFileManip";
 
-export namespace ProjectDataEditor {
-  export interface Props {}
-}
-
 export const iconSizes: Record<IconSizes, { label: string }> = {
   small: {
     label: "small",
@@ -167,6 +163,7 @@ export function ParticipantEditor() {
             key={p.name}
             className={styles.portraitImage}
             onClick={() => setSelectedName(p.name)}
+            title={"Click to edit, drag to drop"}
           >
             <img
               src={p.portraitUrl}

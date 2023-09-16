@@ -8,7 +8,7 @@ import { useState } from "react";
  * @example
  * <div {...classNames("a", c && "d")} />
  */
-export const classNames = (cx: any[]) =>
+export const classNames = (...cx: any[]) =>
   ({ className: cx.filter(Boolean).map(String).join(" ") });
 
 export const makeInaccessibleObject = <T extends object>(message: string) => new Proxy({} as T, {

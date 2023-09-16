@@ -5,3 +5,19 @@
   height: 100%;
   width: 100%;
 }
+
+.split {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.hoverable {
+  cursor: pointer;
+}
+
+.hoverable:hover {
+  color: var(--fg-hover);
+  fill: var(--fg-hover);
+  stroke: var(--fg-hover);
+}

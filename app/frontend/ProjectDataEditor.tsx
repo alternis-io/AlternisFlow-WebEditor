@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import styles from "./Ide.module.css"; // FIXME: use separate file
+import styles from "./Ide.module.css";
 import { ParticipantEditor } from "./ParticipantEditor";
+import { GateEditor } from "./GateEditor";
 
 const dataPanes = {
   participants: {
@@ -10,7 +11,7 @@ const dataPanes = {
   },
   gates: {
     label: "Gates",
-    component: () => null,
+    component: GateEditor,
   },
   constants: {
     label: "Constants",
@@ -47,6 +48,7 @@ export function ProjectDataEditor(_props: ProjectDataEditor.Props) {
           </span>
         ))}
       </div>
+      <br />
       <PaneComponent />
     </div>
   );

@@ -16,7 +16,7 @@ import ReactFlow, {
 import 'reactflow/dist/base.css'
 import styles from './TestGraphEditor.module.css'
 import { downloadFile, uploadFile } from './localFileManip'
-import classNames from './classnames'
+import { classNames, deepCloneJson } from './react-utils'
 import { Center } from "./Center";
 import { resetAllAppState, useAppState } from "./AppState";
 
@@ -50,14 +50,14 @@ const NodeHandle = (props: {
 
   return (
     <div 
-      className={classNames(styles.handle, isInput ? styles.inputHandle : styles.outputHandle)}
+      {...classNames(styles.handle, isInput ? styles.inputHandle : styles.outputHandle)}
     >
       {!isInput && label}
       <Handle
         id={id}
         type={props.type}
         position={props.type === "source" ? "left" : "right"}
-        className={classNames(
+        {...classNames(
           styles.knob,
           isInput
             ? styles.inputHandle
@@ -331,7 +331,6 @@ const nodeTypes = {
 };
 
 import { ContextMenu } from './components/ContextMenu'
-import { deepCloneJson } from './react-utils'
 
 const CustomEdge = (props: EdgeProps) => {
   // TODO: draw path from boundary of handle box

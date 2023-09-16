@@ -38,7 +38,9 @@ const defaultAppState = {
         initial: "locked" | "unlocked"
       },
     },
-    events: [] as string[],
+    events: {} as {
+      [name: string]: {},
+    },
   },
 };
 

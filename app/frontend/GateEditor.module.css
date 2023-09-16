@@ -1,0 +1,6 @@
+.newButton {
+  padding: 0.7em;
+  height: 1em;
+  border: 1px solid var(--fg-1);
+  border-radius: 5px;
+}

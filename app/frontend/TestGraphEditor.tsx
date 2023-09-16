@@ -448,6 +448,16 @@ const nodeTypes = {
   default: UnknownNode,
 };
 
+const nodeTypeNames: Record<keyof typeof nodeTypes, string> = {
+  dialogueEntry: "Line",
+  randomSwitch: "Random",
+  playerReplies: "Player Replies",
+  lockNode: "Gate",
+  emitNode: "Emit",
+  entry: "Entry",
+  default: "Unknown"
+};
+
 const CustomEdge = (props: EdgeProps) => {
   // TODO: draw path from boundary of handle box
   const [edgePath] = getBezierPath({ ...props })
@@ -509,16 +519,20 @@ const TestGraphEditor = (props: TestGraphEditor.Props) => {
         <ContextMenu>
           <div className={styles.addNodeMenu}>
             {Object.keys(nodeTypes)
-              .filter(key => key !== "entry" && key !== "default")
+              .filter(key => key !== "entry" && key !== "default" && key !== "dialogueEntry")
               .map((nodeType) =>
-                <em {...classNames(styles.addNodeMenuOption, "hoverable")} key={nodeType} onClick={(e) => {
-                  const { top, left } = graphContainerElem.current!.getBoundingClientRect();
-                  addNode(nodeType, graph.project({
-                    x: e.clientX - left - 150/2,
-                    y: e.clientY - top,
-                  }))}
-                }>
-                  {nodeType}
+                <em
+                  {...classNames(styles.addNodeMenuOption, "hoverable")}
+                  key={nodeType}
+                  onClick={(e) => {
+                    const { top, left } = graphContainerElem.current!.getBoundingClientRect();
+                    addNode(nodeType, graph.project({
+                      x: e.clientX - left - 150/2,
+                      y: e.clientY - top,
+                    }));
+                  }}
+                >
+                  {nodeTypeNames[nodeType]}
                 </em>
               )
             }

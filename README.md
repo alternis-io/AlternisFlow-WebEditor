@@ -47,6 +47,8 @@ We probably need a function prefix
 
 ### App
 
+nginx proxied website and API, with a postgres persistence layer.
+
 #### Frontend
 
 - react

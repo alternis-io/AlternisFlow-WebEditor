@@ -18,6 +18,7 @@ function Header() {
     right={
       <div style={{
         display: "flex",
+        // 31.25px
         gap: 11,
         padding: 5,
       }}
@@ -59,7 +60,7 @@ export function Ide(_props: Ide.Props) {
   return (
     <div>
       <Header />
-      <div className={styles.split}>
+      <div className={styles.split} style={{ height: "calc(100vh - 31.25px)"}}>
         <ProjectDataEditor />
         {/*<DialogueViewer />*/}
         <span className={styles.graphEditor}>

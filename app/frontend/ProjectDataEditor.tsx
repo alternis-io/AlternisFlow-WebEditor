@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import styles from "./Ide.module.css";
 import { ParticipantEditor } from "./ParticipantEditor";
 import { GateEditor } from "./GateEditor";
+import { ConstantEditor } from "./ConstantEditor";
 
 const dataPanes = {
   participants: {
@@ -15,7 +16,7 @@ const dataPanes = {
   },
   constants: {
     label: "Constants",
-    component: () => null,
+    component: ConstantEditor,
   },
   events: {
     label: "Events",

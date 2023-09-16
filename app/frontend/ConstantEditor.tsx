@@ -6,31 +6,31 @@ import { Center } from "./Center";
 import { classNames } from "./react-utils";
 import { Split } from "./Split";
 
-export function GateEditor() {
-  const gates = useAppState((s) => s.document.gates);
+export function ConstantEditor() {
+  const constants = useAppState((s) => s.document.constants);
   const set = useAppState((s) => s.set);
 
-  const [proposedGateName, setProposedGateName] = useState<string>();
+  const [proposedConstantName, setProposedConstantName] = useState<string>();
 
-  const setGate = (name: string, value: (typeof gates)[string]) => set(s => ({
+  const setConstant = (name: string, value: (typeof constants)[string] = { type: "string" }) => set(s => ({
     document: {
       ...s.document,
-      gates: {
-        ...s.document.gates,
+      constants: {
+        ...s.document.constants,
         [name]: value,
       },
     },
   }));
 
-  const addGate = setGate;
+  const addConstant = setConstant;
 
-  const deleteGate = (name: string) => set(s => {
-    const gates = { ...s.document.gates };
-    delete gates[name];
+  const deleteConstant = (name: string) => set(s => {
+    const constants = { ...s.document.constants };
+    delete constants[name];
     return {
       document: {
         ...s.document,
-        gates,
+        constants,
       },
     };
   });
@@ -38,13 +38,13 @@ export function GateEditor() {
   const proposedNameInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (proposedGateName === "")
+    if (proposedConstantName === "")
       proposedNameInputRef.current?.focus();
-  }, [proposedGateName]);
+  }, [proposedConstantName]);
 
-  const finishProposedGate = (value: string) => {
-    addGate(value, { initial: "locked" });
-    setProposedGateName(undefined);
+  const finishProposedConstant = (value: string) => {
+    addConstant(value);
+    setProposedConstantName(undefined);
   };
 
   return (
@@ -52,7 +52,7 @@ export function GateEditor() {
       display: "grid",
       gap: "11px",
     }}>
-      {Object.entries(gates).map(([name, data]) => (
+      {Object.entries(constants).map(([name, data]) => (
         <Split
           left={
             <span onDoubleClick={(e) => {
@@ -63,18 +63,11 @@ export function GateEditor() {
           }
           right = {
             <div style={{display: "flex", flexDirection: "row"}}>
-              <input
-                title={data.initial}
-                checked={data.initial === "locked"}
-                // NOTE: use custom checkbox with lock symbol
-                type="checkbox"
-                onChange={() => setGate(name, { initial: data.initial === "locked" ? "unlocked" : "locked" })}
-              />
               <Center
                 className="hoverable"
-                title="Delete this gate"
+                title="Delete this constant"
                 onClick={(e) => {
-                  deleteGate(name);
+                  deleteConstant(name);
                 }}
               >
                 <em>&times;</em>
@@ -83,25 +76,25 @@ export function GateEditor() {
           }
         />
       ))}
-      {proposedGateName !== undefined
+      {proposedConstantName !== undefined
       ? <div>
           <input
             ref={proposedNameInputRef}
-            value={proposedGateName}
-            onChange={(e) => setProposedGateName(e.currentTarget.value)}
+            value={proposedConstantName}
+            onChange={(e) => setProposedConstantName(e.currentTarget.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 e.preventDefault();
-                finishProposedGate(e.currentTarget.value);
+                finishProposedConstant(e.currentTarget.value);
               }
             }}
-            onBlur={(e) => finishProposedGate(e.currentTarget.value)}
+            onBlur={(e) => finishProposedConstant(e.currentTarget.value)}
           />
         </div>
       : <div
-          title="Add a new gate"
+          title="Add a new constant"
           {...classNames(styles.newButton, "hoverable")}
-          onClick={() => setProposedGateName("")}
+          onClick={() => setProposedConstantName("")}
         >
           <Center>+</Center>
         </div>

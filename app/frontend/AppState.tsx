@@ -31,7 +31,9 @@ const defaultAppState = {
     edges: [] as Edge<{}>[],
     participants: testParticipants as Participant[],
     constants: {} as {
-      [name: string]: number | string | boolean,
+      [name: string]: {
+        type: "number" | "string" | "boolean",
+      },
     },
     gates: {} as {
       [name: string]: {

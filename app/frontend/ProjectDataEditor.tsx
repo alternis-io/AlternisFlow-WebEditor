@@ -8,6 +8,7 @@ const dataPanes = {
     // FIXME: i18n
     label: "Participants",
     component: ParticipantEditor,
+    desc: "Add, remove and edit participants of the dialogue",
   },
   gates: {
     label: "Gates",
@@ -26,12 +27,12 @@ const dataPanes = {
       )).current}
     />
   },
-  constants: {
-    label: "Constants",
+  variables: {
+    label: "Variables",
     component: () => <GenericEditor
       newInitialVal={{ type: "string", default: "value" }}
-      singularEntityName="constant"
-      docPropKey="constants"
+      singularEntityName="variable"
+      docPropKey="variables"
       // FIXME: make these inline components typed...
       extraActions={useRef(({ data, set }) => (
         <input

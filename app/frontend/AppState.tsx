@@ -24,7 +24,7 @@ const defaultAppState = {
     edges: [] as Edge<{}>[],
     // should there be a special "player" participant?
     participants: [] as Participant[],
-    constants: {} as {
+    variables: {} as {
       [name: string]: {
         type: "number" | "string" | "boolean",
         default: string,

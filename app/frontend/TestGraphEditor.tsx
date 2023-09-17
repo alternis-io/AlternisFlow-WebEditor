@@ -200,7 +200,10 @@ const LockNode = (props: NodeProps<Lock>) => {
   return !data ? null : (
     <div
       className={styles.node}
-      title={"Lock node"}
+      title={
+        "Lock node, changes the state of a gate.\n"
+        + "Right click to change whether it locks or unlocks it"
+      }
       style={{ width: "max-content" }}
       onContextMenuCapture={(e) => {
         e.stopPropagation();

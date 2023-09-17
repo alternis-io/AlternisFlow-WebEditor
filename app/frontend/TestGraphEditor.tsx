@@ -30,6 +30,7 @@ import { assert } from './browser-utils'
 
 function NodeHandle(props: HandleProps & Omit<React.HTMLAttributes<HTMLDivElement>, "id">) {
   // FIXME: doesn't seem to re-render with zoom...
+  // FIXME: make a transparent outer-zone that "expands/becomes-visible" on hover
   const graph = useReactFlow();
   return <Handle
     {...props}
@@ -465,6 +466,19 @@ const EntryNode = (_props: NodeProps<{}>) => {
   )
 };
 
+const RerouteNode = (_props: NodeProps<{}>) => {
+  // TODO: store connections on data in case the correct type is restored
+  return (
+    <div style={{ height: 5, width: 5 }}>
+      <NodeHandle
+        position="right"
+        className={styles.handle}
+        isConnectable
+      />
+    </div>
+  );
+};
+
 const nodeTypes = {
   //FIXME: rename to dialogue line?
   dialogueEntry: DialogueEntryNode,
@@ -473,6 +487,7 @@ const nodeTypes = {
   lockNode: LockNode,
   emitNode: EmitNode,
   entry: EntryNode,
+  reroute: RerouteNode,
   default: UnknownNode,
 };
 
@@ -483,7 +498,8 @@ const nodeTypeNames: Record<keyof typeof nodeTypes, string> = {
   lockNode: "Gate",
   emitNode: "Emit",
   entry: "Entry",
-  default: "Unknown"
+  default: "Unknown",
+  reroute: "Reroute"
 };
 
 const CustomEdge = (props: EdgeProps) => {

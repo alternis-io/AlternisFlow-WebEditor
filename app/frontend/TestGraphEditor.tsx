@@ -14,6 +14,7 @@ import ReactFlow, {
   applyNodeChanges,
   applyEdgeChanges,
   addEdge,
+  HandleProps,
 } from 'reactflow'
 import 'reactflow/dist/base.css'
 import styles from './TestGraphEditor.module.css'
@@ -26,6 +27,33 @@ import { ReactComponent as UnlockIcon } from "./resources/inkscape-unlock.svg";
 
 import { ContextMenu } from './components/ContextMenu'
 import { assert } from './browser-utils'
+
+function NodeHandle(props: HandleProps & Omit<React.HTMLAttributes<HTMLDivElement>, "id">) {
+  // FIXME: doesn't seem to re-render with zoom...
+  const graph = useReactFlow();
+  return <Handle
+    {...props}
+    {...classNames(props.className, styles.handle)}
+    style={{
+      //position: "relative",
+      height: graph.getZoom() * 10,
+      width: graph.getZoom() * 10,
+      //width: 20,
+      // FIXME: scale with zoom?
+      borderRadius: "50%",
+      //backgroundColor: "transparent",
+    }}
+  >
+    {/*
+    <div style={{
+      backgroundColor: "gray",
+      width: 10,
+      height: 10,
+      borderRadius: "50%",
+    }}/>
+*/}
+  </Handle>;
+}
 
 // FIXME: move to common/
 export interface DialogueEntry {
@@ -87,7 +115,7 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
 
   return !data ? null : (
     <div className={styles.node} style={{ width: "max-content" }}>
-      <Handle
+      <NodeHandle
         type="target"
         position="left"
         className={styles.handle}
@@ -120,7 +148,7 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
         </>
       : <> unknown participant </>
       }
-      <Handle
+      <NodeHandle
         type="source"
         position="right"
         className={styles.handle}
@@ -152,7 +180,7 @@ const LockNode = (props: NodeProps<Lock>) => {
         set(({ action }) => ({ action: action === "lock" ? "unlock" : "lock" }));
       }}
     >
-      <Handle
+      <NodeHandle
         type="target"
         position="left"
         className={styles.handle}
@@ -182,7 +210,7 @@ const LockNode = (props: NodeProps<Lock>) => {
           )}
         </select>
       </label>
-      <Handle
+      <NodeHandle
         type="source"
         position="right"
         className={styles.handle}
@@ -204,7 +232,7 @@ const EmitNode = (props: NodeProps<Lock>) => {
 
   return !data ? null : (
     <div className={styles.node} style={{ width: "max-content" }}>
-      <Handle
+      <NodeHandle
         type="target"
         position="left"
         className={styles.handle}
@@ -225,7 +253,7 @@ const EmitNode = (props: NodeProps<Lock>) => {
           )}
         </select>
       </label>
-      <Handle
+      <NodeHandle
         type="source"
         position="right"
         className={styles.handle}
@@ -253,7 +281,7 @@ const RandomSwitchNode = (props: NodeProps<RandomSwitch>) => {
 
   return !data ? null : (
     <div className={styles.node} style={{ width: "max-content" }}>
-      <Handle
+      <NodeHandle
         type="target"
         position="left"
         className={styles.handle}
@@ -296,7 +324,7 @@ const RandomSwitchNode = (props: NodeProps<RandomSwitch>) => {
               >
                 <em>&times;</em>
               </Center>
-            <Handle
+            <NodeHandle
               id={`${props.id}_${index}`}
               style={{
                 position: "relative",
@@ -348,7 +376,7 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
 
   return !data ? null : (
     <div className={styles.node} style={{ width: "max-content" }}>
-      <Handle
+      <NodeHandle
         type="target"
         position="left"
         className={styles.handle}
@@ -383,7 +411,7 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
             >
               <em>&times;</em>
             </Center>
-            <Handle
+            <NodeHandle
               id={`${props.id}_${index}`}
               style={{
                 position: "relative",
@@ -427,7 +455,7 @@ const EntryNode = (_props: NodeProps<{}>) => {
       <Center style={{ padding: 5 }}>
         <strong>Start</strong>
       </Center>
-      <Handle
+      <NodeHandle
         type="source"
         position="right"
         className={styles.handle}

@@ -363,6 +363,10 @@ interface PlayerReplies {
   }[];
 }
 
+const defaultPlayerRepliesProps = {
+  replies: [{ text: "" }],
+};
+
 const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
   // REPORTME: react-flow seems to sometimes render non-existing nodes briefly?
   const data = getNode<PlayerReplies>(props.id)?.data;
@@ -373,11 +377,11 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
   React.useEffect(() => {
     const nodeBody = nodeBodyRef.current;
     if (!nodeBody) return;
-    const lastOption = nodeBody.lastChild?.previousSibling
-    if (!lastOption) return;
+    const lastOption = nodeBody.lastChild?.previousSibling;
+    if (!lastOption || !(lastOption instanceof Element)) return;
 
     const input = lastOption.firstElementChild;
-    assert(input.tagName === "INPUT");
+    assert(input instanceof HTMLInputElement);
     input.focus();
   }, [data?.replies.length]);
 
@@ -559,7 +563,7 @@ const TestGraphEditor = (_props: TestGraphEditor.Props) => {
                   : nodeType === "randomSwitch"
                   ? deepCloneJson(defaultRandomSwitchProps)
                   : nodeType === "playerReplies"
-                  ? { replies: [] }
+                  ? deepCloneJson(defaultPlayerRepliesProps)
                   : {},
                 ...initData,
               },
@@ -657,8 +661,9 @@ const TestGraphEditor = (_props: TestGraphEditor.Props) => {
             }}
             connectionRadius={25}
             multiSelectionKeyCode="Shift"
-            // FIXME: doesn't this conflict with panning?
-            selectionOnDrag
+            // NOTE: make this configurable...
+            panOnDrag={[1]}
+            selectionOnDrag={true}
             selectionMode={SelectionMode.Partial}
             onDrop={(e) => {
               e.preventDefault();

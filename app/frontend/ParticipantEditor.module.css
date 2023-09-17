@@ -3,7 +3,7 @@
   width: 100%;
   display: grid;
   min-height: 300px;
-  max-height: 0.3vh;
+  max-height: 30vh;
 
   flex-wrap: wrap;
   overflow: scroll;
@@ -36,4 +36,5 @@
   object-fit: contain;
   width: 100%;
   overflow: hidden;
+  max-height: 30vh;
 }

@@ -50,6 +50,37 @@ const dataPanes = {
       docPropKey="events"
     />
   },
+  settings: {
+    label: "Preferences",
+    component: () => {
+      return (
+        <div>
+          <label title="Which (mouse) button you can click and drag to start a box selection of graph elements" className="split">
+            <span>
+              Drag select nodes button
+            </span>
+            <select value="none">
+              <option value="middle-mouse">middle mouse drag</option>
+              <option value="left-mouse">left mouse drag</option>
+              <option value="right-mouse">right mouse drag</option>
+              <option value="none">none</option>
+            </select>
+          </label>
+          <label title="Which (mouse) button you can click and drag to move around the graph" className="split">
+            <span>
+              Pan graph button
+            </span>
+            <select value="left-mouse">
+              <option value="middle-mouse">middle mouse drag</option>
+              <option value="left-mouse">left mouse drag</option>
+              <option value="right-mouse">right mouse drag</option>
+              <option value="none">none</option>
+            </select>
+          </label>
+        </div>
+      );
+    }
+  }
 } as const;
 
 type DataPanes = keyof typeof dataPanes;

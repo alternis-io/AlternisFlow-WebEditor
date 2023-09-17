@@ -1,4 +1,4 @@
-import React, { useLayoutEffect } from 'react'
+import React, { useEffect, useLayoutEffect } from 'react'
 import ReactFlow, {
   Handle,
   NodeProps,
@@ -28,33 +28,42 @@ import { ReactComponent as UnlockIcon } from "./resources/inkscape-unlock.svg";
 
 import { ContextMenu } from './components/ContextMenu'
 import { assert } from './browser-utils'
+import { useValidatedInput } from '@bentley/react-hooks'
+import { InputStatus } from './hooks/useValidatedInput'
 
 function NodeHandle(props: HandleProps & Omit<React.HTMLAttributes<HTMLDivElement>, "id">) {
-  const graph = useReactFlow();
+  //const graph = useReactFlow();
+  const radius = 20;
   return <Handle
     {...props}
-    {...classNames(props.className, styles.handle)}
+    {...classNames(styles.handle, props.className)}
     style={{
-      //position: "relative",
-      height: graph.getZoom() * 10,
-      width: graph.getZoom() * 10,
-      //width: 20,
+      ...props.style,
+      //left: props.style?.position === "relative"
+        //? undefined
+        //: `calc(${props.type === "source" ? 100 : 0}% - ${radius}px)`,
       // FIXME: scale with zoom?
-      borderRadius: "50%",
+      //width: 2 * radius,
+      //height: 2 * radius,
+      //borderRadius: "50%",
+      //border: `${radius}px solid transparent`,
       //backgroundColor: "transparent",
     }}
   >
-    <div
-      style={{
-        //position: "relative",
-        height: graph.getZoom() * 10,
-        width: graph.getZoom() * 10,
-        //width: 20,
-        // FIXME: scale with zoom?
-        borderRadius: "50%",
-        //backgroundColor: "transparent",
-      }}
-    />
+    {/*
+    <Center>
+      <div
+        style={{
+          height: "100%",
+          width: "100%",
+          borderRadius: "50%",
+          backgroundColor: "#888888",
+          pointerEvents: "none",
+          transform: "scale(0.5, 0.5)",
+        }}
+      />
+    </Center>
+    */}
   </Handle>;
 }
 
@@ -116,6 +125,8 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
     textInput.current?.focus();
   }, []);
 
+  const [showMore, setShowMore] = React.useState(false);
+
   return !data ? null : (
     <div className={styles.node} style={{ width: "max-content" }}>
       <NodeHandle
@@ -131,14 +142,6 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
             <img height="80px" style={{ width: "auto" }} src={participant.portraitUrl} />
           </div>
           <label>
-            title
-            <input
-              className="nodrag"
-              onChange={(e) => set({ title: e.currentTarget.value })}
-              value={data.title}
-            />
-          </label>
-          <label>
             text
             <textarea
               ref={textInput}
@@ -148,6 +151,25 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
               value={data.text}
             />
           </label>
+          {showMore && <>
+            <label>
+              title
+              <input
+                className="nodrag"
+                onChange={(e) => set({ title: e.currentTarget.value })}
+                value={data.title}
+              />
+            </label>
+          </>}
+          {/* FIXME: use an icon, this is ugly af */}
+          <Center
+            {...classNames(styles.entryNodeShowMoreIndicator, "hoverable")}
+            onClick={() => setShowMore(prev => !prev)}
+          >
+            <strong style={{ transform: "scale(2, 0.8)", display: "block", width: "100%", textAlign: "center" }}>
+              {showMore ? "^" : "V"}
+            </strong>
+          </Center>
         </>
       : <> unknown participant </>
       }
@@ -280,6 +302,67 @@ const defaultRandomSwitchProps = {
 
 const percentFmter = new Intl.NumberFormat(undefined, { maximumFractionDigits: 1, style: "percent" });
 
+const RandomSwitchInput = (props: {
+  nodeId: string;
+  totalProportion: number;
+  proportion: number;
+  index: number;
+}) => {
+  const { nodeId, totalProportion, proportion, index } = props;
+  const set = makeNodeDataSetter<RandomSwitch>(props.nodeId);
+  const [inputProportion, input, setInput, inputStatus, inputMessage] = useValidatedInput<number>(String(proportion));
+
+  useEffect(() => {
+    if (inputProportion === null)
+      return;
+
+    set(({ proportions }) => {
+      const updatedList = proportions.slice();
+      updatedList[index] = inputProportion;
+      return {
+        proportions: updatedList
+      };
+    });
+  }, [inputProportion]);
+
+  return (
+    <div key={index} className={styles.randomSwitchInput}>
+      <input
+        title={inputMessage ? inputMessage : undefined}
+        style={{
+          outline: inputStatus !== InputStatus.Success
+            ? "1px solid #ee2222"
+            : undefined,
+          width: "6em",
+        }}
+        value={input}
+        onChange={(e) => setInput(e.currentTarget.value)}
+      />
+      <span>
+        ({percentFmter.format(proportion / totalProportion)})
+      </span>
+      <Center
+          className="hoverable"
+          title="Delete this possibility"
+          onClick={() => set(s => {
+            const proportions = s.proportions.slice();
+            proportions.splice(index, 1); // remove
+            return { proportions };
+          })}
+        >
+          <em>&times;</em>
+        </Center>
+      <NodeHandle
+        id={`${nodeId}_${index}`}
+        type="source"
+        position="right"
+        className={styles.inlineHandle}
+        isConnectable
+      />
+    </div>
+  );
+};
+
 const RandomSwitchNode = (props: NodeProps<RandomSwitch>) => {
   // REPORTME: react-flow seems to sometimes render non-existing nodes briefly?
   const data = getNode<RandomSwitch>(props.id)?.data;
@@ -299,49 +382,12 @@ const RandomSwitchNode = (props: NodeProps<RandomSwitch>) => {
           <strong style={{fontSize: "2rem"}}>?</strong>
         </Center>
         {data.proportions.map((proportion, index) => (
-          <div key={index} className={styles.randomSwitchInput}>
-            <input
-              value={String(proportion)}
-              onChange={(e) => {
-                // FIXME: just useValidatedInput
-                const next = parseInt(e.currentTarget.value);
-                if (Number.isNaN(next))
-                  return;
-
-                set(({ proportions }) => {
-                  const updatedList = proportions.slice();
-                  updatedList[index] = next;
-                  return {
-                    proportions: updatedList
-                  };
-                })
-              }}
-            />
-            <span>
-              ({percentFmter.format(proportion / totalProportion)})
-            </span>
-            <Center
-                className="hoverable"
-                title="Delete this possibility"
-                onClick={() => set(s => {
-                  const proportions = s.proportions.slice();
-                  proportions.splice(index, 1); // remove
-                  return { proportions };
-                })}
-              >
-                <em>&times;</em>
-              </Center>
-            <NodeHandle
-              id={`${props.id}_${index}`}
-              style={{
-                position: "relative",
-              }}
-              type="source"
-              position="right"
-              className={styles.handle}
-              isConnectable
-            />
-          </div>
+          <RandomSwitchInput
+            nodeId={props.id}
+            proportion={proportion}
+            totalProportion={totalProportion}
+            index={index}
+          />
         ))}
         <div
           title="Add a possibility"
@@ -424,12 +470,9 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
             </Center>
             <NodeHandle
               id={`${props.id}_${index}`}
-              style={{
-                position: "relative",
-              }}
               type="source"
               position="right"
-              className={styles.handle}
+              className={styles.inlineHandle}
               isConnectable
             />
           </div>
@@ -477,12 +520,10 @@ const EntryNode = (_props: NodeProps<{}>) => {
 };
 
 const RerouteNode = (_props: NodeProps<{}>) => {
-  // TODO: store connections on data in case the correct type is restored
   return (
     <div style={{ height: 5, width: 5 }}>
       <NodeHandle
         position="right"
-        type="source"
         className={styles.handle}
         isConnectable
       />
@@ -514,11 +555,19 @@ const nodeTypeNames: Record<keyof typeof nodeTypes, string> = {
 };
 
 const CustomEdge = (props: EdgeProps) => {
-  // TODO: draw path from boundary of handle box
-  const [edgePath] = getBezierPath({ ...props })
-  const markerEnd = getMarkerEnd(MarkerType.Arrow, props.markerEnd)
+  const [edgePath] = getBezierPath({
+    ...props,
+    // HACK: tweak sizes
+    // FIXME: check all platforms and screen sizes
+    // FIXME: not aligned on relative-positioned handles
+    sourceX: props.sourceX + 5,
+    sourceY: props.sourceY + 5,
+    targetX: props.targetX + 5,
+    targetY: props.targetY + 5,
+  });
+  const markerEnd = getMarkerEnd(MarkerType.Arrow, props.markerEnd);
   return <BaseEdge
-    interactionWidth={3}
+    interactionWidth={20}
     path={edgePath}
     markerEnd={markerEnd}
     {...props}
@@ -661,8 +710,8 @@ const TestGraphEditor = (_props: TestGraphEditor.Props) => {
             }}
             connectionRadius={25}
             multiSelectionKeyCode="Shift"
-            // NOTE: make this configurable...
-            panOnDrag={[1]}
+            // FIXME: not good for laptops..., maybe we need a box select icon...
+            panOnDrag={[1]} // middle mouse, not great for laptops
             selectionOnDrag={true}
             selectionMode={SelectionMode.Partial}
             onDrop={(e) => {

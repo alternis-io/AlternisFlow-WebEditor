@@ -100,20 +100,26 @@
 }
 
 .handle {
-  width: fit-content;
-  height: fit-content;
-  border-radius: 5px;
-  padding: 5px;
-
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  box-sizing: border-box;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
   background-color: #a0a0a0;
+  transform: translate(0, -50%) scale(2, 2);
 }
 
 .handle > label {
   width: max-content;
+}
+
+.inlineHandle {
+  position: relative;
+  left: initial;
+  top: initial;
+  right: initial;
+  bottom: initial;
+  width: 20px; /* FIXME: Share CSS variable, note that handle is 10px height with a 2x scale */
+  height: 20px;
+  transform: initial;
 }
 
 .knob {
@@ -195,4 +201,5 @@
 .randomSwitchInput {
   display: flex;
   justify-content: space-between;
+  align-items: center;
 }

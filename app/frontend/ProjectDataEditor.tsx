@@ -8,7 +8,7 @@ const dataPanes = {
     // FIXME: i18n
     label: "Participants",
     component: ParticipantEditor,
-    desc: "Add, remove and edit participants of the dialogue",
+    desc: "Edit participants of the dialogue",
   },
   gates: {
     label: "Gates",
@@ -26,7 +26,11 @@ const dataPanes = {
           onChange={() => set({ initial: data.initial === "locked" ? "unlocked" : "locked" })}
         />
       )).current}
-    />
+    />,
+    desc: "Edit the gates in the dialogue.\n"
+      + "Gates are either 'locked' or 'unlocked', but the player can change the status, "
+      + "by hitting a lock/unlock node in the dialogue. This allows certain dialogue "
+      + "to only be reachable by replying in specific ways",
   },
   variables: {
     label: "Variables",
@@ -42,7 +46,10 @@ const dataPanes = {
       //     onChange={(e) => set({ default: e.currentTarget.value })}
       //   />
       // )).current}
-    />
+    />,
+    desc: "Edit the variables in the dialogue.\n"
+      + "Variables are values set at any time by the environment. "
+      + "They can be anything, and you can use the syntax {{variable_name}} to refer to them in text."
   },
   functions: {
     label: "Functions",
@@ -50,9 +57,12 @@ const dataPanes = {
       newInitialVal={{}}
       singularEntityName="function"
       docPropKey="functions"
-    />
+    />,
+    desc: "Edit the functions in the dialogue.\n"
+      + "Functions are callbacks into the environment that "
+      + "can invoke custom functionality during a dialogue."
   },
-  settings: {
+  preferences: {
     label: "Preferences",
     component: () => {
       return (
@@ -81,7 +91,8 @@ const dataPanes = {
           </label>
         </div>
       );
-    }
+    },
+    desc: "Editor preferences",
   }
 } as const;
 
@@ -101,6 +112,7 @@ export function ProjectDataEditor(_props: ProjectDataEditor.Props) {
       }}>
         {(Object.entries(dataPanes) as [DataPanes, DataPane][]).map(([name, data]) => (
           <span
+            title={data.desc}
             key={name}
             className="hoverable"
             onClick={() => setOpenDataPane(name)}

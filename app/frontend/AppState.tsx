@@ -30,6 +30,7 @@ const defaultAppState = {
         default: string,
       },
     },
+    // TODO: consider removing gates in favor of variables
     gates: {} as {
       [name: string]: {
         initial: "locked" | "unlocked"

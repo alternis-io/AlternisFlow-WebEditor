@@ -8,6 +8,9 @@ export const ContextMenu = ({
 }: ContextMenu.Props) => {
   const rootElementRef = useRef<HTMLDivElement>(null);
 
+  // HACK: there should be a better way... maybe custom mouseup/down handling?
+  const doBlockLeftClick = React.useRef(false);
+
   useLayoutEffect(() => {
     const rootElem = rootElementRef.current;
     assert(rootElem);
@@ -38,6 +41,10 @@ export const ContextMenu = ({
 
     const onRightClick = (e: MouseEvent) => {
       e.preventDefault();
+      if (e[Symbol.for("__isConnectEnd")]) {
+        doBlockLeftClick.current = true;
+        setTimeout(() => doBlockLeftClick.current = false, 1);
+      }
       // FIXME: null or delete?
       rootElem.style.top = `${e.pageY}`;
       rootElem.style.left = `${e.pageX}`;
@@ -46,6 +53,7 @@ export const ContextMenu = ({
 
     const onLeftClick = (e: MouseEvent) => {
       e.preventDefault();
+      if (doBlockLeftClick.current) return;
       const clickInContextMenu = e.currentTarget === rootElem
         || rootElem.contains(e.currentTarget as HTMLElement);
       if (clickInContextMenu)

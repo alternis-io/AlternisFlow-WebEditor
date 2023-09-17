@@ -1,7 +1,6 @@
 import React, { useLayoutEffect } from 'react'
 import ReactFlow, {
   Handle,
-  Node,
   NodeProps,
   Controls,
   MiniMap,
@@ -20,7 +19,7 @@ import 'reactflow/dist/base.css'
 import styles from './TestGraphEditor.module.css'
 import { classNames, deepCloneJson } from './react-utils'
 import { Center } from "./Center";
-import { getNode, makeNodeDataSetter, useAppState } from "./AppState";
+import { AppState, getNode, makeNodeDataSetter, useAppState } from "./AppState";
 import { ReactComponent as LockIcon } from "./resources/inkscape-lock.svg";
 import { ReactComponent as UnlockIcon } from "./resources/inkscape-unlock.svg";
 
@@ -177,8 +176,10 @@ const LockNode = (props: NodeProps<Lock>) => {
     <div className={styles.node} style={{ width: "max-content" }}
       onContextMenu={(e) => {
         e.stopPropagation();
+        e.stopPropagation();
         e.preventDefault();
         set(({ action }) => ({ action: action === "lock" ? "unlock" : "lock" }));
+        return false;
       }}
     >
       <NodeHandle
@@ -293,7 +294,7 @@ const RandomSwitchNode = (props: NodeProps<RandomSwitch>) => {
           <strong style={{fontSize: "2rem"}}>?</strong>
         </Center>
         {data.proportions.map((proportion, index) => (
-          <div className={styles.randomSwitchInput}>
+          <div key={index} className={styles.randomSwitchInput}>
             <input
               value={String(proportion)}
               onChange={(e) => {
@@ -385,7 +386,7 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
       />
       <div className={styles.randomSwitchBody} ref={nodeBodyRef}>
         {data.replies.map((reply, index) => (
-          <div className={styles.randomSwitchInput}>
+          <div key={index} className={styles.randomSwitchInput}>
             <input
               value={reply.text}
               onChange={(e) => {
@@ -506,42 +507,66 @@ const CustomEdge = (props: EdgeProps) => {
   // TODO: draw path from boundary of handle box
   const [edgePath] = getBezierPath({ ...props })
   const markerEnd = getMarkerEnd(MarkerType.Arrow, props.markerEnd)
-  return <BaseEdge path={edgePath} markerEnd={markerEnd} {...props} />
+  return <BaseEdge
+    interactionWidth={3}
+    path={edgePath}
+    markerEnd={markerEnd}
+    {...props}
+    style={{strokeWidth: 2, ...props.style}}
+  />;
 }
 
 const edgeTypes = {
   default: CustomEdge,
 } as const
 
-const TestGraphEditor = (props: TestGraphEditor.Props) => {
+/** only usable on elements where they all have an id that is a string containing an integer */
+function getNewId(nodes: { id: string }[]) {
+  const maxId = nodes.map(n => +n.id).reduce((prev, cur) => prev > cur ? prev : cur);
+  return `${maxId + 1}`;
+}
+
+const TestGraphEditor = (_props: TestGraphEditor.Props) => {
   // FIXME: use correct types
   const graph = useReactFlow<{}, {}>();
   const nodes = useAppState(s => s.document.nodes);
   const edges = useAppState(s => s.document.edges);
 
+
   const addNode = React.useCallback(
     (nodeType: string, position: {x: number, y:number}, initData?: any) => {
-      const newId = `${Math.round(Math.random() * Number.MAX_SAFE_INTEGER)}`
-      useAppState.setState((s) => ({
-        document: {
-          ...s.document,
-          nodes: s.document.nodes.concat({
-            id: newId,
-            type: nodeType,
-            data: {
-              ...nodeType === "lockNode"
-                ? { action: "lock" }
-                : nodeType === "randomSwitch"
-                ? deepCloneJson(defaultRandomSwitchProps)
-                : nodeType === "playerReplies"
-                ? { replies: [] }
-                : {},
-              ...initData,
-            },
-            position,
-          }),
-        },
-      }));
+      useAppState.setState((s) => {
+        const maybeSourceNode = connectingNodeId.current;
+        connectingNodeId.current = undefined;
+        const newNodeId = getNewId(s.document.nodes);
+        return {
+          document: {
+            ...s.document,
+            nodes: s.document.nodes.concat({
+              id: newNodeId,
+              type: nodeType,
+              data: {
+                ...nodeType === "lockNode"
+                  ? { action: "lock" }
+                  : nodeType === "randomSwitch"
+                  ? deepCloneJson(defaultRandomSwitchProps)
+                  : nodeType === "playerReplies"
+                  ? { replies: [] }
+                  : {},
+                ...initData,
+              },
+              position,
+            }),
+            edges: maybeSourceNode !== undefined
+              ? addEdge({
+                id: getNewId(s.document.edges),
+                source: maybeSourceNode,
+                target: newNodeId,
+              }, s.document.edges)
+              : s.document.edges
+          },
+        };
+      });
     },
     []
   );
@@ -557,9 +582,11 @@ const TestGraphEditor = (props: TestGraphEditor.Props) => {
     setTimeout(() => (reactFlowRenderer.style.position = "relative"));
   }, []);
 
+  const editorRef = React.useRef<HTMLDivElement>(null);
+
   return (
     <GraphErrorBoundary>
-      <div className={styles.page}>
+      <div ref={editorRef}>
         <ContextMenu>
           <div className={styles.addNodeMenu}>
             {Object.keys(nodeTypes)
@@ -635,9 +662,16 @@ const TestGraphEditor = (props: TestGraphEditor.Props) => {
             onEdgeClick={(_evt, edge) => {
               graph.deleteElements({edges: [edge]})
             }}
-            onConnectStart={(_, { nodeId }) => connectingNodeId.current = nodeId ?? undefined}
-            // TODO: context menu on edge drop
-            onConnectEnd={() => connectingNodeId.current = undefined}
+            onConnectStart={(_, { nodeId }) => { connectingNodeId.current = nodeId ?? undefined; }}
+            onConnectEnd={(e) => {
+              const targetIsPane = (e.target as Element | undefined)?.classList?.contains('react-flow__pane');
+              if (targetIsPane && graphContainerElem.current && editorRef.current) {
+                // FIXME: use custom event?
+                const ctxMenuEvent = new MouseEvent("contextmenu", e);
+                ctxMenuEvent[Symbol.for("__isConnectEnd")] = true;
+                editorRef.current.dispatchEvent(ctxMenuEvent);
+              }
+            }}
           >
             <Controls />
             <MiniMap />

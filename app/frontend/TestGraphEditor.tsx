@@ -14,6 +14,8 @@ import ReactFlow, {
   applyEdgeChanges,
   addEdge,
   HandleProps,
+  ConnectionMode,
+  SelectionMode,
 } from 'reactflow'
 import 'reactflow/dist/base.css'
 import styles from './TestGraphEditor.module.css'
@@ -28,8 +30,6 @@ import { ContextMenu } from './components/ContextMenu'
 import { assert } from './browser-utils'
 
 function NodeHandle(props: HandleProps & Omit<React.HTMLAttributes<HTMLDivElement>, "id">) {
-  // FIXME: doesn't seem to re-render with zoom...
-  // FIXME: make a transparent outer-zone that "expands/becomes-visible" on hover
   const graph = useReactFlow();
   return <Handle
     {...props}
@@ -44,14 +44,17 @@ function NodeHandle(props: HandleProps & Omit<React.HTMLAttributes<HTMLDivElemen
       //backgroundColor: "transparent",
     }}
   >
-    {/*
-    <div style={{
-      backgroundColor: "gray",
-      width: 10,
-      height: 10,
-      borderRadius: "50%",
-    }}/>
-*/}
+    <div
+      style={{
+        //position: "relative",
+        height: graph.getZoom() * 10,
+        width: graph.getZoom() * 10,
+        //width: 20,
+        // FIXME: scale with zoom?
+        borderRadius: "50%",
+        //backgroundColor: "transparent",
+      }}
+    />
   </Handle>;
 }
 
@@ -173,9 +176,11 @@ const LockNode = (props: NodeProps<Lock>) => {
   const Icon = data?.action === "lock" ? LockIcon : UnlockIcon;
 
   return !data ? null : (
-    <div className={styles.node} style={{ width: "max-content" }}
-      onContextMenu={(e) => {
-        e.stopPropagation();
+    <div
+      className={styles.node}
+      title={"Lock node"}
+      style={{ width: "max-content" }}
+      onContextMenuCapture={(e) => {
         e.stopPropagation();
         e.preventDefault();
         set(({ action }) => ({ action: action === "lock" ? "unlock" : "lock" }));
@@ -473,6 +478,7 @@ const RerouteNode = (_props: NodeProps<{}>) => {
     <div style={{ height: 5, width: 5 }}>
       <NodeHandle
         position="right"
+        type="source"
         className={styles.handle}
         isConnectable
       />
@@ -520,9 +526,12 @@ const edgeTypes = {
   default: CustomEdge,
 } as const
 
-/** only usable on elements where they all have an id that is a string containing an integer */
 function getNewId(nodes: { id: string }[]) {
-  const maxId = nodes.map(n => +n.id).reduce((prev, cur) => prev > cur ? prev : cur);
+  const maxId = nodes
+    .map(n => +n.id)
+    .filter(n => !Number.isNaN(n))
+    .reduce((prev, cur) => prev > cur ? prev : cur)
+    ?? 0;
   return `${maxId + 1}`;
 }
 
@@ -531,7 +540,6 @@ const TestGraphEditor = (_props: TestGraphEditor.Props) => {
   const graph = useReactFlow<{}, {}>();
   const nodes = useAppState(s => s.document.nodes);
   const edges = useAppState(s => s.document.edges);
-
 
   const addNode = React.useCallback(
     (nodeType: string, position: {x: number, y:number}, initData?: any) => {
@@ -642,6 +650,16 @@ const TestGraphEditor = (_props: TestGraphEditor.Props) => {
               e.preventDefault();
               e.dataTransfer.dropEffect = "move";
             }}
+            connectionMode={ConnectionMode.Loose}
+            isValidConnection={(connection) => {
+              // TODO: check source/target but go through reroute nodes
+              return true;
+            }}
+            connectionRadius={25}
+            multiSelectionKeyCode="Shift"
+            // FIXME: doesn't this conflict with panning?
+            selectionOnDrag
+            selectionMode={SelectionMode.Partial}
             onDrop={(e) => {
               e.preventDefault();
               const participantDataText = e.dataTransfer.getData("application/dialogical-participant");

@@ -52,6 +52,8 @@ export const ContextMenu = ({
     };
 
     const onLeftClick = (e: MouseEvent) => {
+      if (rootElem.style.display === "none")
+        return;
       e.preventDefault();
       if (doBlockLeftClick.current) return;
       const clickInContextMenu = e.currentTarget === rootElem

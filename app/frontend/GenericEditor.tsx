@@ -66,9 +66,27 @@ export function GenericEditor<T extends SupportedKeys>(
         <Split
           key={name}
           left={
-            <span onDoubleClick={(e) => {
-              //make it editable somehow?
-            }}>
+            <span
+              title={
+                `Double-click to edit.\n`
+                + "Drag into the graph to add a call node.\n"
+                + "Functions are callbacks into the environment that "
+                + "can invoke custom functionality during a dialogue."
+              }
+              className="hoverable"
+              onDoubleClick={(e) => {
+                //make it editable somehow?
+              }}
+              onDragStart={(e) => {
+                e.dataTransfer.setData("application/alternis-project-data-item", JSON.stringify({
+                  type: props.docPropKey,
+                  data,
+                  id: name,
+                }));
+                e.dataTransfer.effectAllowed = "move";
+              }}
+              draggable={"true"}
+            >
               {name}
             </span>
           }

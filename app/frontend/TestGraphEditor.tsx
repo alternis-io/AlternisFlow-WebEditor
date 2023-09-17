@@ -233,6 +233,7 @@ const LockNode = (props: NodeProps<Lock>) => {
       <label>
         variable
         <select
+          value={data.variable}
           onChange={e => set(() => ({ variable: e.currentTarget.value }))}
         >
           {Object.entries(gates)
@@ -257,7 +258,7 @@ export interface Emit {
   function: string;
 }
 
-const EmitNode = (props: NodeProps<Lock>) => {
+const EmitNode = (props: NodeProps<Emit>) => {
   const functions = useAppState(s => s.document.functions);
   // REPORTME: react-flow seems to sometimes render non-existing nodes briefly?
   const data = getNode<Emit>(props.id)?.data;
@@ -277,6 +278,7 @@ const EmitNode = (props: NodeProps<Lock>) => {
       <label>
         emit
         <select
+          value={data.function}
           onChange={e => set(() => ({ function: e.currentTarget.value }))}
         >
           {Object.entries(functions)
@@ -612,9 +614,14 @@ const TestGraphEditor = (_props: TestGraphEditor.Props) => {
               type: nodeType,
               data: {
                 ...nodeType === "lockNode"
-                  ? { action: "lock" }
+                  ? {
+                    variable: Object.keys(s.document.gates)[0],
+                    action: "lock",
+                  }
                   : nodeType === "randomSwitch"
                   ? deepCloneJson(defaultRandomSwitchProps)
+                  : nodeType === "emitNode"
+                  ? { function: Object.keys(s.document.functions)[0] } as Emit
                   : nodeType === "playerReplies"
                   ? deepCloneJson(defaultPlayerRepliesProps)
                   : {},
@@ -720,19 +727,39 @@ const TestGraphEditor = (_props: TestGraphEditor.Props) => {
             selectionMode={SelectionMode.Partial}
             onDrop={(e) => {
               e.preventDefault();
-              const participantDataText = e.dataTransfer.getData("application/dialogical-participant");
+              const participantDataText = e.dataTransfer.getData("application/alternis-project-data-item");
               if (participantDataText) {
-                const { index } = JSON.parse(participantDataText);
+                const { id, type } = JSON.parse(participantDataText);
+
+                const [nodeType, nodeData]
+                  = type === "participants"
+                  ? ["dialogueEntry", {
+                      speakerIndex: +id,
+                      text: "",
+                    } as DialogueEntry]
+                  // : type === "variables"
+                  // ? ["dialogueEntry", {
+                  //     speakerIndex: +id,
+                  //     text: "",
+                  //   } as DialogueEntry]
+                  : type === "gates"
+                  ? ["lockNode", {
+                      variable: id,
+                      action: "unlock",
+                    } as Lock]
+                  : type === "functions"
+                  ? ["emitNode", {
+                      function: id,
+                    } as Emit]
+                  : assert(false) as never;
+
                 const { top, left } = graphContainerElem.current!.getBoundingClientRect();
-                // FIXME: no hardcoded node width
-                const props: DialogueEntry = {
-                  speakerIndex: index,
-                  text: "this is default text"
-                };
-                addNode("dialogueEntry", graph.project({
+
+                // FIXME: better node width
+                addNode(nodeType, graph.project({
                   x: e.clientX - left - 150/2,
                   y: e.clientY - top,
-                }), props);
+                }), nodeData);
               }
             }}
             onEdgeClick={(_evt, edge) => {

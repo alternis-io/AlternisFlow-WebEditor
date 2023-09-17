@@ -190,15 +190,19 @@ export function ParticipantEditor() {
             onClick={() => setSelectedName(p.name)}
             title={"Click to edit, drag to drop"}
             onContextMenu={(e) => {
-              // FIXME: add a delete option here
+              // FIXME: add a delete here
             }}
           >
             <img
               src={p.portraitUrl}
               alt={p.name}
-              onDragStart={(event) => {
-                event.dataTransfer.setData("application/dialogical-participant", JSON.stringify({ participant: p, index: i }));
-                event.dataTransfer.effectAllowed = "move";
+              onDragStart={(e) => {
+                e.dataTransfer.setData("application/alternis-project-data-item", JSON.stringify({
+                  type: "participants",
+                  data: p,
+                  id: String(i),
+                }));
+                e.dataTransfer.effectAllowed = "move";
               }}
             />
           </div>

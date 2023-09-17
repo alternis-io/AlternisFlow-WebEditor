@@ -16,6 +16,7 @@ const dataPanes = {
       newInitialVal={{ initial: "locked" }}
       singularEntityName="gate"
       docPropKey="gates"
+      // FIXME: make these inline components typed...
       extraActions={useRef(({ data, set }) => (
         <input
           title={`Starts ${data.initial}`}
@@ -33,14 +34,14 @@ const dataPanes = {
       newInitialVal={{ type: "string", default: "value" }}
       singularEntityName="variable"
       docPropKey="variables"
-      // FIXME: make these inline components typed...
-      extraActions={useRef(({ data, set }) => (
-        <input
-          title="default"
-          value={data.default}
-          onChange={(e) => set({ default: e.currentTarget.value })}
-        />
-      )).current}
+      // NOTE: afaict no need for a default value yet
+      // extraActions={useRef(({ data, set }) => (
+      //   <input
+      //     title="default"
+      //     value={data.default}
+      //     onChange={(e) => set({ default: e.currentTarget.value })}
+      //   />
+      // )).current}
     />
   },
   functions: {

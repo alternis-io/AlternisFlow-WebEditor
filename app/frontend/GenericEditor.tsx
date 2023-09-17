@@ -7,7 +7,7 @@ import { classNames } from "./react-utils";
 import { Split } from "./Split";
 
 // all keys that are a simple record
-type SupportedKeys = "variables" | "gates" | "events";
+type SupportedKeys = "variables" | "gates" | "functions";
 
 export function GenericEditor<T extends SupportedKeys>(
   props: GenericEditor.Props<T>

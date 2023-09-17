@@ -43,12 +43,12 @@ const dataPanes = {
       )).current}
     />
   },
-  events: {
-    label: "Events",
+  functions: {
+    label: "Functions",
     component: () => <GenericEditor
       newInitialVal={{}}
-      singularEntityName="event"
-      docPropKey="events"
+      singularEntityName="function"
+      docPropKey="functions"
     />
   },
   settings: {

@@ -252,12 +252,13 @@ const LockNode = (props: NodeProps<Lock>) => {
   )
 };
 
+// FIXME: rename to function call?
 export interface Emit {
-  event: string;
+  function: string;
 }
 
 const EmitNode = (props: NodeProps<Lock>) => {
-  const events = useAppState(s => s.document.events);
+  const functions = useAppState(s => s.document.functions);
   // REPORTME: react-flow seems to sometimes render non-existing nodes briefly?
   const data = getNode<Emit>(props.id)?.data;
   const set = makeNodeDataSetter<Emit>(props.id);
@@ -276,11 +277,11 @@ const EmitNode = (props: NodeProps<Lock>) => {
       <label>
         emit
         <select
-          onChange={e => set(() => ({ event: e.currentTarget.value }))}
+          onChange={e => set(() => ({ function: e.currentTarget.value }))}
         >
-          {Object.entries(events)
-            .map(([eventName]) => (
-              <option key={eventName} value={eventName}>{eventName}</option>
+          {Object.entries(functions)
+            .map(([functionName]) => (
+              <option key={functionName} value={functionName}>{functionName}</option>
             )
           )}
         </select>

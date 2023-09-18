@@ -7,7 +7,7 @@ import { DeepPartial } from "ts-essentials/dist/deep-partial";
 // FIXME: move out icon data and get type from that list
 export type IconSizes = "small" | "medium" | "large";
 
-const defaultAppState = {
+export const defaultAppState = {
   preferences: {
     participantEditor: {
       iconSize: "medium" as IconSizes,
@@ -15,6 +15,9 @@ const defaultAppState = {
     },
   },
 
+  projectId: undefined as string | undefined,
+
+  // TODO: document should be optional...
   document: {
     nodes: [{
       id: '1',
@@ -22,7 +25,6 @@ const defaultAppState = {
       position: { x: 540, y: 100 },
     }] as Node<{}>[],
     edges: [] as Edge<{}>[],
-    // should there be a special "player" participant?
     participants: [] as Participant[],
     variables: {} as {
       [name: string]: {
@@ -41,6 +43,8 @@ const defaultAppState = {
     },
   },
 };
+
+Object.freeze(defaultAppState);
 
 export type AppState = typeof defaultAppState;
 

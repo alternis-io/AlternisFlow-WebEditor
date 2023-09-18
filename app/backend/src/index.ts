@@ -1,12 +1,16 @@
 // FIXME: rename file to api.ts
 
 import * as express from 'express';
+import * as cors from 'cors';
 import { connect } from "./db";
 import * as assert from "node:assert";
 import { Authed, Document, DocumentList, DocumentPost, IdRequest, User } from "../../common/api/types" ;
 
 const app = express()
   .use(express.json())
+  .use(cors({
+    origin: "http://localhost:3001",
+  }));
 
 export interface RunOpts {
   port?: number;
@@ -68,7 +72,7 @@ export async function run(opts: RunOpts = {}) {
   app.get<IdRequest, DocumentList>(
     '/users/me/documents',
     async function getMyDocumentList(req, res) {
-      const result = await conn.get(`
+      const result = await conn.all(`
         SELECT id, name
         FROM documents
       `, [req.params.id]);

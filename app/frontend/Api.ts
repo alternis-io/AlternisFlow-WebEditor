@@ -1,9 +1,11 @@
 import { AppState } from "./AppState";
+import { Document } from "../common/api/types";
 
 export function useApi({
   // FIXME: change this dynamically between prod and development?
   baseUrl = "http://localhost:4222",
-}) {
+} = {}) {
+  // FIXME: use a local zustand store optimistically?
   return {
     async registerUser() {
       await fetch(`${baseUrl}/users/me`, { method: "POST" });
@@ -29,8 +31,14 @@ export function useApi({
       await fetch(`${baseUrl}/users/me/documents/${id}`)
     },
 
-    async createDocument() {
-      await fetch(`${baseUrl}/users/me/documents`, { method: "POST" });
+    async createDocument(doc: Document) {
+      await fetch(`${baseUrl}/users/me/documents`, {
+        method: "POST",
+        body: JSON.stringify(doc),
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
     },
   };
 }

@@ -17,9 +17,11 @@ export async function init(conn: DbConn) {
 
     CREATE TABLE IF NOT EXISTS documents (
       id INTEGER PRIMARY KEY,
+      owner INTEGER,
       name TEXT NOT NULL UNIQUE,
-      json_contents TEXT
-      -- NOTE: created_from FOREIGN KEY CASCADE NULL
+      json_contents TEXT,
+      -- NOTE: created_from FOREIGN KEY CASCADE NULL,
+      FOREIGN KEY (owner) REFERENCES users(id)
     );
 
     CREATE TABLE IF NOT EXISTS errors (
@@ -29,8 +31,16 @@ export async function init(conn: DbConn) {
       context TEXT NOT NULL,
       client_version TEXT NOT NULL,
       backend_version TEXT NOT NULL,
-      count INTEGER DEFAULT (0),
+      count INTEGER DEFAULT (1),
       UNIQUE(message, stack, context, client_version, backend_version)
+    );
+
+    CREATE TABLE IF NOT EXISTS feature_tracking (
+      id INTEGER PRIMARY KEY,
+      feature TEXT NOT NULL,
+      context TEXT NOT NULL,
+      count INTEGER DEFAULT (1),
+      UNIQUE(feature, context)
     );
   `);
 

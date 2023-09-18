@@ -33,7 +33,7 @@ import { InputStatus } from './hooks/useValidatedInput'
 
 function NodeHandle(props: HandleProps & Omit<React.HTMLAttributes<HTMLDivElement>, "id">) {
   //const graph = useReactFlow();
-  const radius = 20;
+  const radius = 12;
   return <Handle
     {...props}
     {...classNames(styles.handle, props.className)}
@@ -112,6 +112,7 @@ class GraphErrorBoundary extends React.Component<React.PropsWithChildren<{}>, { 
   }
 }
 
+// FIXME: rename
 const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
   const node = getNode<DialogueEntry>(props.id);
 
@@ -128,7 +129,14 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
   const [showMore, setShowMore] = React.useState(false);
 
   return !data ? null : (
-    <div className={styles.node} style={{ width: "max-content" }}>
+    <div
+      className={styles.node}
+      style={{ width: "max-content" }}
+      title={
+        "The 'Dialogue Entry' node, has a participant say a particular line.\n"
+        + "The line may be locked by a gate."
+      }
+    >
       <NodeHandle
         type="target"
         position="left"
@@ -201,7 +209,7 @@ const LockNode = (props: NodeProps<Lock>) => {
     <div
       className={styles.node}
       title={
-        "Lock node, changes the state of a gate.\n"
+        "The 'Lock' node, changes the state of a gate.\n"
         + "Right click to change whether it locks or unlocks it"
       }
       style={{ width: "max-content" }}
@@ -221,8 +229,8 @@ const LockNode = (props: NodeProps<Lock>) => {
       <Center>
         <Icon
           style={{
-            height: 150,
-            width: 150,
+            height: 80,
+            width: 80,
             // TODO: style all of this SVG's elements... also fix the SVG itself
             stroke: "#000",
             strokeLinecap: "round",
@@ -265,7 +273,13 @@ const EmitNode = (props: NodeProps<Emit>) => {
   const set = makeNodeDataSetter<Emit>(props.id);
 
   return !data ? null : (
-    <div className={styles.node} style={{ width: "max-content" }}>
+    <div
+      className={styles.node}
+      style={{ width: "max-content" }}
+      title={
+        "The 'Function Call' node, triggers environment-registered handlers to run custom logic"
+      }
+    >
       <NodeHandle
         type="target"
         position="left"
@@ -306,7 +320,7 @@ const defaultRandomSwitchProps = {
   proportions: [1, 1],
 };
 
-const percentFmter = new Intl.NumberFormat(undefined, { maximumFractionDigits: 1, style: "percent" });
+const percentFmter = new Intl.NumberFormat(undefined, { maximumFractionDigits: 2, style: "percent" });
 
 const RandomSwitchInput = (props: {
   nodeId: string;
@@ -376,7 +390,15 @@ const RandomSwitchNode = (props: NodeProps<RandomSwitch>) => {
   const set = makeNodeDataSetter<RandomSwitch>(props.id);
 
   return !data ? null : (
-    <div className={styles.node} style={{ width: "max-content" }}>
+    <div
+      className={styles.node}
+      style={{ width: "max-content" }}
+      title={
+        "The 'Random Switch' node picks a random output.\n"
+        + "Each output has a number of chances compared out of the total to be reached. "
+        + "You can see the exact chance in each option's calculated percentage."
+      }
+    >
       <NodeHandle
         type="target"
         position="left"
@@ -438,7 +460,15 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
   }, [data?.replies.length]);
 
   return !data ? null : (
-    <div className={styles.node} style={{ width: "max-content" }}>
+    <div
+      className={styles.node}
+      style={{ width: "max-content" }}
+      title={
+        "The 'Player Replies' node gives a player participant."
+        + "Each output has a number of chances compared out of the total to be reached. "
+        + "You can see the exact chance in each option's calculated percentage."
+      }
+    >
       <NodeHandle
         type="target"
         position="left"
@@ -502,8 +532,12 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
 
 const UnknownNode = (_props: NodeProps<{}>) => {
   // TODO: store connections on data in case the correct type is restored
+  // FIXME: log to support immediately
   return (
-    <div className={styles.node}>
+    <div
+      className={styles.node}
+      title="This is an error. Please contact support"
+    >
       <Center>
         <strong>Unknown node</strong>
       </Center>
@@ -512,9 +546,12 @@ const UnknownNode = (_props: NodeProps<{}>) => {
 };
 
 const EntryNode = (_props: NodeProps<{}>) => {
-  // TODO: store connections on data in case the correct type is restored
   return (
-    <div className={styles.node}>
+    <div
+      className={styles.node}
+      // FIXME: for a particular participant
+      title="The node that defines the beginning of the dialogue"
+    >
       <Center style={{ padding: 5 }}>
         <strong>Start</strong>
       </Center>
@@ -530,7 +567,13 @@ const EntryNode = (_props: NodeProps<{}>) => {
 
 const RerouteNode = (_props: NodeProps<{}>) => {
   return (
-    <div style={{ height: 5, width: 5 }}>
+    <div
+      className={styles.node}
+      // FIXME: for a particular participant
+      title="The 'Reroute' node helps you organize curvier dialogues with cycles"
+      // FIXME: not very usable
+      style={{ height: 5, width: 5 }}
+    >
       <NodeHandle
         position="right"
         className={styles.handle}
@@ -569,10 +612,10 @@ const CustomEdge = (props: EdgeProps) => {
     // HACK: tweak sizes
     // FIXME: check all platforms and screen sizes
     // FIXME: not aligned on relative-positioned handles
-    sourceX: props.sourceX + 5,
-    sourceY: props.sourceY + 5,
-    targetX: props.targetX + 5,
-    targetY: props.targetY + 5,
+    //sourceX: props.sourceX + 5,
+    //sourceY: props.sourceY + 5,
+    //targetX: props.targetX + 5,
+    //targetY: props.targetY + 5,
   });
   const markerEnd = getMarkerEnd(MarkerType.Arrow, props.markerEnd);
   return <BaseEdge

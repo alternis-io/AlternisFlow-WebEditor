@@ -104,7 +104,7 @@
   height: 10px;
   border-radius: 50%;
   background-color: #a0a0a0;
-  transform: translate(0, -50%) scale(2, 2);
+  transform: translate(0, -50%) scale(1.2, 1.2);
 }
 
 .handle > label {
@@ -117,8 +117,8 @@
   top: initial;
   right: initial;
   bottom: initial;
-  width: 20px; /* FIXME: Share CSS variable, note that handle is 10px height with a 2x scale */
-  height: 20px;
+  width: 12px; /* FIXME: Share CSS variable, note that handle is 10px height with a 1.2x scale */
+  height: 12px;
   transform: initial;
 }
 

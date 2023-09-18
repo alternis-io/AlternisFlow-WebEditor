@@ -35,6 +35,7 @@
     "vite-plugin-svgr": "^3.2.0"
   },
   "dependencies": {
+    "@stardazed/streams-compression": "^1.0.0",
     "zustand": "^4.4.1"
   }
 }

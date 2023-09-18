@@ -68,6 +68,9 @@ importers:
 
   frontend:
     dependencies:
+      '@stardazed/streams-compression':
+        specifier: ^1.0.0
+        version: 1.0.0
       zustand:
         specifier: ^4.4.1
         version: 4.4.1(@types/react@18.2.14)(react@18.2.0)
@@ -827,6 +830,16 @@ packages:
   /@sinonjs/text-encoding@0.7.2:
     resolution: {integrity: sha512-sXXKG+uL9IrKqViTtao2Ws6dy0znu9sOaP1di/jKGW1M6VssO8vlpXCQcpZ+jisQ1tTFAC5Jo/EOzFbggBagFQ==}
     dev: true
+
+  /@stardazed/streams-compression@1.0.0:
+    resolution: {integrity: sha512-SQCiwxdIVJ5xxUBYptN+fc+tJpSDbxQuJ0+3u2SmHjIzr6JIRZ28AVFtFnGy6x6j3UBlaLx73w9rC6UAFxnd1g==}
+    dependencies:
+      '@stardazed/zlib': 1.0.1
+    dev: false
+
+  /@stardazed/zlib@1.0.1:
+    resolution: {integrity: sha512-MS6PCYiRNJ32c69+3NPyL+bu7LpiFDvMcBXnlhQnF8CKMG0R/xRVCCo422NPkQ0+Cox3xKpk5Lc1LfWFS4b3cw==}
+    dev: false
 
   /@svgr/babel-plugin-add-jsx-attribute@7.0.0(@babel/core@7.22.17):
     resolution: {integrity: sha512-khWbXesWIP9v8HuKCl2NU2HNAyqpSQ/vkIl36Nbn4HIwEYSRWL0H7Gs6idJdha2DkpFDWlsqMELvoCE8lfFY6Q==}

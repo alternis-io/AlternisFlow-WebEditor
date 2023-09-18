@@ -1,5 +1,6 @@
 import { AppState } from "./AppState";
 import { Document } from "../common/api/types";
+import * as polyfills from "./polyfills";
 
 export function useApi({
   // FIXME: change this dynamically between prod and development?
@@ -32,11 +33,18 @@ export function useApi({
     },
 
     async createDocument(doc: Document) {
+      const { CompressionStream } = await polyfills.getCompressionStreamImpl();
+
+      const docBlob = new Blob([JSON.stringify(doc)]);
+      const compressedDocument = docBlob.stream().pipeThrough(
+        new CompressionStream('gzip')
+      );
+
       await fetch(`${baseUrl}/users/me/documents`, {
         method: "POST",
         body: JSON.stringify(doc),
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/octet-stream',
         }
       });
     },

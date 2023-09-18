@@ -1,16 +1,19 @@
 import fetch from "node-fetch";
 import { expect } from "chai";
 import { API_TEST_BASE_URL } from "./global-setup";
+import { Document, DocumentPost } from "../../../common/api/types";
+
+// FIXME: replace with e2e playwright tests
 
 describe("document", () => {
   it("insert roundtrip", async () => {
-    const documentsUrl = `${API_TEST_BASE_URL}/documents`;
-    const newDocData = {
+    const newDocData: DocumentPost = {
       name: "My dialogue",
-      json_contents: "{}",
+      jsonContents: JSON.stringify({}),
     };
 
-    const postResp = await fetch(documentsUrl, {
+    // FIXME: use isomorphic fetch package
+    const postResp = await fetch(`${API_TEST_BASE_URL}/users/me/documents`, {
       method: "POST",
       body: JSON.stringify(newDocData),
       headers: {
@@ -18,8 +21,8 @@ describe("document", () => {
       },
     }).then(r => r.json());
 
-    const newDocUrl = `${API_TEST_BASE_URL}/documents/${postResp.id}`;
-    const getResp = await fetch(newDocUrl).then(r => r.json());
+    const getResp = await fetch(`${API_TEST_BASE_URL}/users/me/documents/${postResp.id}`)
+      .then(r => r.json() as Promise<Document>);
 
     expect(getResp).to.deep.equal({
       id: postResp.id,

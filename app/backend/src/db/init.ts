@@ -9,7 +9,7 @@ export async function init(conn: DbConn) {
   await conn.exec(`
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY,
-      email TEXT,
+      email TEXT UNIQUE,
       -- might be an OTP
       login_credential TEXT,
       login_credential_expiry INTEGER DEFAULT (julianday('now'))

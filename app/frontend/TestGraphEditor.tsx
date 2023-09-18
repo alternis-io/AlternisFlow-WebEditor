@@ -445,6 +445,7 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
         className={styles.handle}
         isConnectable
       />
+      <p>Player</p>
       <div className={styles.randomSwitchBody} ref={nodeBodyRef}>
         {data.replies.map((reply, index) => (
           <div key={index} className={styles.randomSwitchInput}>
@@ -471,6 +472,8 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
                 replies.splice(index, 1);
                 return { replies };
               })}
+              // hide close on first reply
+              style={{ display: index === 0 ? "none" : undefined }}
             >
               <em>&times;</em>
             </Center>

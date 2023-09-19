@@ -1,2 +1,5 @@
 # typescript output
 lib/
+
+# prisma
+dev.db*

@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "dev": "cross-env PORT=4222 ts-node src/index.ts",
     "test": "mocha --config ./.mocharc.js tests/unit/**/*.test.ts",
-    "test:e2e": "npm run build:tests:e2e && mocha --config tests/e2e/.mocharc.js tests/e2e/**/*.test.js"
+    "test:e2e": "npm run build:tests:e2e && mocha --config tests/e2e/.mocharc.js tests/e2e/**/*.test.js",
+    "prisma:migrate": "prisma migrate dev --name init"
   },
   "devDependencies": {
     "@types/chai": "^4.3.4",
@@ -27,10 +28,12 @@
     "typescript": "5.0.0-beta"
   },
   "dependencies": {
+    "@prisma/client": "5.3.1",
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "http-server": "^14.1.1",
     "node-fetch": "^2.0.0",
+    "prisma": "^5.3.1",
     "sqlite": "^5.0.1",
     "sqlite3": "^5.1.6"
   }

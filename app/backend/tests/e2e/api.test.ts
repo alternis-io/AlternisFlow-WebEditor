@@ -15,27 +15,31 @@ describe("document", () => {
       method: "POST",
       body: JSON.stringify(newUser),
       headers: { 'Content-Type': 'application/json' },
-    }).then(r => r.json()) as User;
+    }).then(r => r.json() as Promise<User>);
 
     expect(newUserResp.token);
 
     const newDoc: Partial<Document & WithToken> = {
       name: "My dialogue",
       jsonContents: JSON.stringify({}),
-      token: newUserResp.token!,
     };
 
     // FIXME: use isomorphic fetch package
     const postResp = await fetch(`${API_TEST_BASE_URL}/users/me/documents`, {
       method: "POST",
       body: JSON.stringify(newDoc),
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Mike ${newUserResp.token}`,
+      },
     }).then(r => r.json());
 
-    const getResp = await fetch(`${API_TEST_BASE_URL}/users/me/documents/${postResp.id}`)
+    const getResp = await fetch(`${API_TEST_BASE_URL}/users/me/documents/${postResp.id}`, {
+      headers: { 'Authorization': `Mike ${newUserResp.token}` },
+    })
       .then(r => r.json() as Promise<Document>);
 
-    expect(getResp).to.deep.equal({
+    expect(getResp).to.contain({
       id: postResp.id,
       ...newDoc,
     });

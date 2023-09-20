@@ -1,5 +1,7 @@
 # typescript output
 lib/
 
-# prisma
+# prisma local dev
 dev.db*
+tests/e2e/test.db
+

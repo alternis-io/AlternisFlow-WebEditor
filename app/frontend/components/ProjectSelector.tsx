@@ -1,8 +1,8 @@
 import React from "react";
-import { useApi } from "../Api";
-import { defaultAppState } from "../AppState";
+import { useApi } from "../hooks/useApi";
+import { defaultAppState, useAppState } from "../AppState";
 import { useAsyncEffect } from "@bentley/react-hooks";
-import { Document } from "../../common/api/types";
+import type { Document } from "dialogue-middleware-app-backend/lib/prisma";
 import { Center } from "../Center";
 import { classNames } from "../react-utils";
 
@@ -24,9 +24,23 @@ export function ProjectSelector(props: ProjectSelector.Props) {
       display: "grid",
       gridTemplateColumns: "repeat(auto-fit, minmax(150px, 300px))",
       gridAutoRows: `fit-content`,
+      gap: 22,
     }}>
-      {projectsList?.map(project => (
-        <div>{project.name}</div>
+      {projectsList?.map((project) => (
+        <div
+          key={project.name}
+          onClick={() => {
+            props.onSelectProject(project);
+          }}
+          style={{
+            padding: 22,
+            minHeight: "25vh",
+          }}
+        >
+          <Center>
+            {project.name}
+          </Center>
+        </div>
       ))}
       <div
         {...classNames("newButton", "hoverable")}
@@ -36,6 +50,10 @@ export function ProjectSelector(props: ProjectSelector.Props) {
             name: `name_${Math.random()}`,
             jsonContents: JSON.stringify(defaultAppState),
           });
+        }}
+        style={{
+          padding: 22,
+          minHeight: "25vh",
         }}
       >
         <Center>+</Center>

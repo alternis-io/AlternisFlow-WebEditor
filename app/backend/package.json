@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc -p .",
     "preview": "vite preview",
-    "dev": "cross-env PORT=4222 ts-node src/index.ts",
+    "dev": "cross-env PORT=4222 ts-node src/api.ts",
     "test": "mocha --config ./.mocharc.js tests/unit/**/*.test.ts",
     "test:e2e": "mocha --config tests/e2e/.mocharc.js tests/e2e/**/*.test.ts",
     "prisma:migrate": "prisma migrate dev --name init",

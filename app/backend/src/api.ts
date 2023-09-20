@@ -8,6 +8,11 @@ import { PrismaClient, Document, User, WithId, WithToken, DocumentList } from '.
 
 const prisma = new PrismaClient();
 
+// 401
+class AuthorizationError extends Error {}
+// 400
+class ApiMisuseError extends Error {}
+
 const app = express()
   .use(express.json())
   .use(cors({
@@ -18,10 +23,24 @@ export interface RunOpts {
   port?: number;
 }
 
+// handle promises in express@<5
+function expressFixAsyncify<Req, Res>(
+  cb: (
+    req: Req,
+    res: Res,
+  ) => Promise<void>
+) {
+  return (
+    req: Req,
+    res: Res,
+    next: express.NextFunction
+  ) => cb(req, res).catch(next);
+}
+
 export async function run(opts: RunOpts = {}) {
   app.get<{}, User | null, WithToken>(
     '/users/me',
-    async function getMyUser(req, res) {
+    expressFixAsyncify(async function getMyUser(req, res) {
       assert(req.headers.authorization, "can't create a document if not logged in");
       const me = await prisma.user.findUniqueOrThrow({
         where: {
@@ -30,7 +49,7 @@ export async function run(opts: RunOpts = {}) {
       });
       res.json(me);
       res.end();
-    }
+    })
   );
 
   app.post<{}, WithId & WithToken, User>(
@@ -53,7 +72,7 @@ export async function run(opts: RunOpts = {}) {
 
   app.post<{}, Partial<Document>, Partial<Document> & WithToken>(
     '/users/me/documents',
-    async function createDocument(req, res) {
+    expressFixAsyncify(async function createDocument(req, res) {
       // FIXME: 400
       assert(req.body.name, "must have a name");
       // FIXME: 401
@@ -77,7 +96,7 @@ export async function run(opts: RunOpts = {}) {
 
       res.json(doc);
       res.end();
-    }
+    })
   );
 
   app.get<{}, DocumentList, WithToken>(

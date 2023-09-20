@@ -5,6 +5,7 @@ import * as cors from 'cors';
 import { connect } from "./db";
 import * as assert from "node:assert";
 import { Authed, Document, DocumentList, DocumentPost, IdRequest, User } from "../../common/api/types" ;
+import { PrismaClient } from '@prisma/client';
 
 const app = express()
   .use(express.json())

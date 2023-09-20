@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,9 +7,40 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {in
+model User {
   id Int @id @default(autoincrement())
   email String @unique
   name String?
   credential String
+  documents Document[]
+}
+
+model Document {
+  id Int @id @default(autoincrement())
+  name String
+  created DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  jsonContents String
+  owner User @relation(fields: [ownerId], references: [id])
+  ownerId Int
+}
+
+model ClientError{
+  id Int @id @default(autoincrement())
+  lastOccurrence DateTime @updatedAt
+  message String
+  stack String
+  context String
+  clientVersion String
+  serverVersion String
+  count Int @default(1)
+  @@unique([message, stack, context, clientVersion, serverVersion])
+}
+
+model FeatureTracking {
+  id Int @id @default(autoincrement())
+  feature String
+  context String
+  count Int @default(1)
+  @@unique([feature, context])
 }

@@ -2,8 +2,8 @@
   "name": "dialogue-middleware-app-backend",
   "version": "1.0.0",
   "description": "",
-  "main": "lib/backend/src/index.js",
-  "types": "lib/backend/src/index.d.ts",
+  "main": "lib/backend/src/api.js",
+  "types": "lib/backend/src/api.d.ts",
   "scripts": {
     "build": "tsc -p .",
     "build:tests:e2e": "tsc -p tests/e2e/tsconfig.json",

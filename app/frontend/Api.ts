@@ -1,6 +1,7 @@
 import { AppState } from "./AppState";
 import { Document } from "../common/api/types";
 import * as polyfills from "./polyfills";
+import type { User } from "dialogue-middleware-app-backend/lib/backend/src"
 
 export function useApi({
   // FIXME: change this dynamically between prod and development?

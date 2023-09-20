@@ -19,6 +19,7 @@
     "@types/sinon": "^10.0.13",
     "@vitejs/plugin-react": "^3.0.1",
     "chai": "^4.3.7",
+    "dialogue-middleware-app-backend": "workspace:*",
     "jsdom": "^21.1.0",
     "jsdom-global": "^3.0.2",
     "mocha": "^10.2.0",

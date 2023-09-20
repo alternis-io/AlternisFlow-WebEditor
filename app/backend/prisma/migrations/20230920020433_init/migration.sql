@@ -1,4 +1,11 @@
 -- CreateTable
+CREATE TABLE "User" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "email" TEXT NOT NULL,
+    "token" TEXT
+);
+
+-- CreateTable
 CREATE TABLE "Document" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "name" TEXT NOT NULL,
@@ -28,6 +35,12 @@ CREATE TABLE "FeatureTracking" (
     "context" TEXT NOT NULL,
     "count" INTEGER NOT NULL DEFAULT 1
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_token_key" ON "User"("token");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "ClientError_message_stack_context_clientVersion_serverVersion_key" ON "ClientError"("message", "stack", "context", "clientVersion", "serverVersion");

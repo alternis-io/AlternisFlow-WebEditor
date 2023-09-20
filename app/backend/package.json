@@ -2,16 +2,16 @@
   "name": "dialogue-middleware-app-backend",
   "version": "1.0.0",
   "description": "",
-  "main": "lib/backend/src/api.js",
-  "types": "lib/backend/src/api.d.ts",
+  "main": "lib/api.js",
+  "types": "lib/api.d.ts",
   "scripts": {
     "build": "tsc -p .",
-    "build:tests:e2e": "tsc -p tests/e2e/tsconfig.json",
     "preview": "vite preview",
     "dev": "cross-env PORT=4222 ts-node src/index.ts",
     "test": "mocha --config ./.mocharc.js tests/unit/**/*.test.ts",
-    "test:e2e": "npm run build:tests:e2e && mocha --config tests/e2e/.mocharc.js tests/e2e/**/*.test.js",
-    "prisma:migrate": "prisma migrate dev --name init"
+    "test:e2e": "mocha --config tests/e2e/.mocharc.js tests/e2e/**/*.test.ts",
+    "prisma:migrate": "prisma migrate dev --name init",
+    "clean": "rm -rf lib tests/e2e/lib"
   },
   "devDependencies": {
     "@types/chai": "^4.3.4",

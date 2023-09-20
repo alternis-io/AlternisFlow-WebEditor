@@ -5,7 +5,7 @@
 import { Worker } from "node:worker_threads";
 import { timeoutReject } from "../../../common/promise-utils";
 
-const service_main = require.resolve("../../../../service-worker.js");
+const service_main = require.resolve("./service-worker.js");
 
 let worker: Worker;
 

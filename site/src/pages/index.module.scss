@@ -1,0 +1,73 @@
+@import "../constants.scss";
+
+.pageWrapper {
+  @media only screen {
+    @media (max-width: 700px) {
+      padding: 12px;
+    }
+    @media (min-width: 700px) {
+      padding: 1in;
+      padding-top: 22px;
+    }
+  }
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  
+  .left {
+    display: flex;
+
+    flex-direction: row;
+    flex-wrap: wrap;
+
+    // HACK: spaced items without left buffer
+    margin-left: -22px;
+    padding: 11px;
+    .navLink {
+      margin: 11px;
+    }
+
+    .navLink {
+      &, &:link, &:visited {
+        font-size: 2rem;
+        @media only screen and (max-width: 700px) {
+          font-size: 1.5rem;
+        }
+        color: $body;
+        text-decoration: initial;
+        font-style: italic;
+        font-weight: 700;
+        transition: font-size 100ms ease;
+        height: 2.5rem;
+        vertical-align: middle;
+      }
+      &:hover {
+        color: orange;
+        font-size: 2.5em;
+      }
+    }
+  }
+}
+
+h1 {
+  font-size: 1.4em;
+  font-style: italic;
+  font-weight: bold;
+}
+
+h3 {
+  font-size: 1em;
+  font-style: italic;
+  font-weight: initial;
+}
+
+h1 + h3 {
+  margin-top: -8px;
+}
+
+hr {
+  color: rgba($body-var, 0.3);
+}

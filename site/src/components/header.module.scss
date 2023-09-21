@@ -1,5 +1,6 @@
 @import "../constants.scss";
 
+// FIXME: dedup from layout.module.scss
 .pageWrapper {
   @media only screen {
     @media (max-width: 700px) {
@@ -12,24 +13,23 @@
   }
 }
 
+// FIXME: use shared css for this common thing
 .separate {
   display: flex;
   align-items: center;
   justify-content: space-between;
   
-  .left {
+  .left, .right {
     display: flex;
 
     flex-direction: row;
     flex-wrap: wrap;
 
     // HACK: spaced items without left buffer
-    margin-left: -22px;
-    padding: 11px;
-    .navLink {
-      margin: 11px;
-    }
+    padding: 22px;
+    gap: 22px;
 
+    // FIXME: gross nested CSS... remove
     .navLink {
       &, &:link, &:visited {
         font-size: 2rem;
@@ -44,9 +44,10 @@
         height: 2.5rem;
         vertical-align: middle;
       }
+
       &:hover {
         color: orange;
-        font-size: 2.5em;
+        //font-size: 2.5em;
       }
     }
   }

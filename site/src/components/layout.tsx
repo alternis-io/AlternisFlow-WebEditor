@@ -24,10 +24,12 @@ const Layout = ({
   `)
 
   return (
-    <div className={styles.pageWrapper}>
-      <SEO title={pageTitle} />
+    <div>
       <Header siteTitle={data.site.siteMetadata.title} />
-      <main>{children}</main>
+      <SEO title={pageTitle} />
+      <div className={styles.pageWrapper}>
+        <main>{children}</main>
+      </div>
     </div>
   )
 }

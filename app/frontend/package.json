@@ -37,6 +37,7 @@
   },
   "dependencies": {
     "@stardazed/streams-compression": "^1.0.0",
+    "react-router-dom": "^6.16.0",
     "zustand": "^4.4.1"
   }
 }

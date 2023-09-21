@@ -1,6 +1,6 @@
 import { AppState } from "./AppState";
 import { Document } from "../common/api/types";
-import * as polyfills from "./polyfills";
+//import * as polyfills from "./polyfills";
 import type { User } from "dialogue-middleware-app-backend/lib/backend/src"
 
 export function useApi({
@@ -34,12 +34,12 @@ export function useApi({
     },
 
     async createDocument(doc: Document) {
-      const { CompressionStream } = await polyfills.getCompressionStreamImpl();
+      //const { CompressionStream } = await polyfills.getCompressionStreamImpl();
 
-      const docBlob = new Blob([JSON.stringify(doc)]);
-      const compressedDocument = docBlob.stream().pipeThrough(
-        new CompressionStream('gzip')
-      );
+      // const docBlob = new Blob([JSON.stringify(doc)]);
+      // const compressedDocument = docBlob.stream().pipeThrough(
+      //   new CompressionStream('gzip')
+      // );
 
       await fetch(`${baseUrl}/users/me/documents`, {
         method: "POST",

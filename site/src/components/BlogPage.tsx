@@ -11,6 +11,8 @@ export default function BlogPost(props: any) {
 
   return (
     <Layout pageTitle={post.frontmatter.title}>
+      <SEO title={post.frontmatter.title} description={post.frontmatter.description} />
+      {/*
       <Helmet>
         <link
           rel="stylesheet"
@@ -18,9 +20,11 @@ export default function BlogPost(props: any) {
           crossOrigin="anonymous"
         />
       </Helmet>
+      */}
       <div className={styles.post}>
-        <h1>{post.frontmatter.title}</h1>
-        <h3>{post.frontmatter.date}</h3>
+        <h1 className="center">{post.frontmatter.title}</h1>
+        <h3 className="center">{post.frontmatter.date}</h3>
+        <br />
         <div dangerouslySetInnerHTML={{ __html: post.html }} />
       </div>
     </Layout>

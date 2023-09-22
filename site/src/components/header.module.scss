@@ -39,23 +39,3 @@
     }
   }
 }
-
-h1 {
-  font-size: 1.4em;
-  font-style: italic;
-  font-weight: bold;
-}
-
-h3 {
-  font-size: 1em;
-  font-style: italic;
-  font-weight: initial;
-}
-
-h1 + h3 {
-  margin-top: -8px;
-}
-
-hr {
-  color: rgba($body-var, 0.3);
-}

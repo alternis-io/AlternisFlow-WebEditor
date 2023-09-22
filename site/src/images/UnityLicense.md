@@ -1,0 +1,2 @@
+- NOTE: I bypassed the required login by deleting the element
+- https://unity.com/legal/branding-trademarks

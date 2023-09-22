@@ -21,3 +21,9 @@ p {
   margin-right: calc(var(--horiz-padding-eqt));
 }
 
+.split {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+

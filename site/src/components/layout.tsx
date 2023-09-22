@@ -30,6 +30,9 @@ const Layout = ({
       <div className={styles.pageWrapper}>
         <main>{children}</main>
       </div>
+      <footer className="center">
+        &copy; Michael Belousov 2023
+      </footer>
     </div>
   )
 }

@@ -20,7 +20,6 @@ const Homepage = () => {
         </strong>
       </p>
 
-      {/*// FIXME: disable scroll somehow in the site using query params */}
       <iframe
         src={process.env.NODE_ENV === "development"
           ? "http://localhost:3001/index.html?disable-scroll"
@@ -31,23 +30,24 @@ const Homepage = () => {
           height: "50vh",
           width: "100vw",
           margin: "0.25in 0",
-          pointerEvents: "none",
+          // FIXME: disable scroll somehow in the app using query params
+          //pointerEvents: "none",
         }}
       />
 
       <p>
-        Let writers express the logic of their
-        dialogs&mdash;<br/>
-        all visually and without writing <em>any</em> code.
+        Let your writers express the logic of their
+        dialogs with intuitive <strong>path-locking</strong>, random switches, and more&mdash;<br/>
+        All visually and without writing code.
       </p>
 
       <p>
-        But give programmers the flexibility they need by declaring variables and functions
-        that your dialogues include.
+        But give your programmers the flexibility they need
+        by <strong>declaring variables and functions</strong> for them to fill-in.
       </p>
 
       <p>
-        All in a tiny native library with a C API that embeds in any platform easily,
+        All in a <strong>tiny native library with a C API</strong> that embeds in any platform easily,
         with many existing integrations: for Godot, Unreal, Unity and the web.
       </p>
 
@@ -63,6 +63,12 @@ const Homepage = () => {
 
 
       {/* iframed feature show case? */}
+
+      <p style={{ fontSize: "18pt", textAlign: "center", }}>
+        <strong>
+          Join our <a href="FIXME">newsletter</a> to receive product updates.
+        </strong>
+      </p>
 
       <p>
       Want custom pricing, or support for a specific engine or environment?

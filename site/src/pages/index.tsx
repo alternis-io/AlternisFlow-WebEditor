@@ -4,25 +4,10 @@ import "../shared.css";
 
 const MailLink = (props: { email: string }) => <a href={`mailto:${props.email}`}>{props.email}</a>;
 
-const extraWide: React.CSSProperties = {
-  width: "100vw",
-  left: "calc(-1 * var(--horiz-padding-eqt))",
-  paddingLeft: "calc((var(--horiz-padding-eqt)) / 2)",
-  paddingRight: "calc((var(--horiz-padding-eqt)) / 2)",
-  position: "relative",
-}
-
 const Homepage = () => {
   return (
     <Layout pageTitle="Home" style={{ overflow: "hidden" }}>
-      <div style={{
-        paddingTop: "0.5in",
-        paddingBottom: "0.5in",
-        textAlign: "center",
-        ...extraWide,
-        boxSizing: "border-box",
-        backgroundColor: "#1a1a1d",
-      }}>
+      <div>
         <p style={{ fontSize: "18pt" }}>
           <strong>
           Alternis is the intuitive, no-scripting dialogue editor
@@ -38,11 +23,9 @@ const Homepage = () => {
           : process.env.APP_BASEURL
         }
         style={{
-          ...extraWide,
-          paddingLeft: 0,
-          paddingRight: 0,
           border: 0,
           height: "50vh",
+          width: "100vw",
         }}
       />
 

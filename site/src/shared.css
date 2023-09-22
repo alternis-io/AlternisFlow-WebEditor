@@ -17,9 +17,7 @@
 }
 
 p {
-  width: 100vw;
-  left: calc(-1 * var(--horiz-padding-eqt));
-  padding-left: calc((var(--horiz-padding-eqt)) / 2);
-  padding-right: calc((var(--horiz-padding-eqt)) / 2);
+  margin-left: calc(var(--horiz-padding-eqt));
+  margin-right: calc(var(--horiz-padding-eqt));
 }
 

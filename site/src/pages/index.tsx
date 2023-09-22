@@ -3,6 +3,7 @@ import Layout from '../components/layout'
 import "../shared.css";
 import * as styles from "./index.module.scss";
 import unityLogoUrl from "../images/U_Logo_Small_White_RGB_1C.svg";
+import godotLogoUrl from "../images/godot_logo_large_color_dark.svg";
 import html5LogoUrl from "../images/HTML5_Logo.svg";
 
 const MailLink = (props: { email: string }) => <a href={`mailto:${props.email}`}>{props.email}</a>;
@@ -43,18 +44,17 @@ const Homepage = () => {
 
       <p>
         All in a tiny native library with a C API that embeds in any platform easily,
-        with many existing integrations; for Unreal, Unity, Godot, and the web.
-        INSERT LOGOS
+        with many existing integrations; for Godot, Unreal, Unity and the web.
       </p>
 
-      <div
-        className={styles.supportedPlatformLogos}
-        style={{
-        }}
-      >
-        <img alt="unity-logo" src={unityLogoUrl} />
-        <img alt="unreal-logo" src="https://cdn2.unrealengine.com/ue-logo-stacked-unreal-engine-w-677x545-fac11de0943f.png" />
-        <img alt="html5-logo" src={html5LogoUrl} />
+      <div className="center">
+        <div className={styles.supportedPlatformLogos}>
+          <img alt="godot-logo" src={godotLogoUrl} />
+          {/* FIXME: haven't asked for permission for unreal logo usage! */}
+          <img alt="unreal-logo" src="https://cdn2.unrealengine.com/ue-logo-stacked-unreal-engine-w-677x545-fac11de0943f.png" />
+          <img alt="unity-logo" src={unityLogoUrl} />
+          <img alt="html5-logo" src={html5LogoUrl} />
+        </div>
       </div>
 
 

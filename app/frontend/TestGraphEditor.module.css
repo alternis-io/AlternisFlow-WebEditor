@@ -113,7 +113,7 @@
 
 .inlineHandle {
   position: relative;
-  left: initial;
+  left: 12px;
   top: initial;
   right: initial;
   bottom: initial;
@@ -197,6 +197,14 @@
   flex-direction: column;
   gap: 11px;
 }
+
+.playerRepliesBody {
+  display: grid;
+  grid-template-columns: repeat(5, auto);
+  grid-auto-rows: auto;
+  gap: 5px;
+}
+
 
 .randomSwitchInput {
   display: flex;

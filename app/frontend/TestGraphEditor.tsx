@@ -479,16 +479,20 @@ const ReplyLock = (props: {
       >
         <Icon width="1em" height="1em" />
       </Center>
-      {props.reply.lockingVariable !== undefined &&
-        <select
-          value={props.reply.lockingVariable}
-          onChange={(e) => props.set({ lockingVariable: e.currentTarget.value })}
-        >
-          {bools.map(([varName]) => (
-            <option key={varName} value={varName}>{varName}</option>
-          ))}
-        </select>
-      }
+      <select
+        value={props.reply.lockingVariable}
+        onChange={(e) => props.set({ lockingVariable: e.currentTarget.value })}
+        style={{
+          // can't use "display: none" or the grid is broken
+          ...props.reply.lockingVariable === undefined
+            ? { opacity: 0, width: 0, padding: 0, margin: 0 }
+            : { opacity: 1 },
+        }}
+      >
+        {bools.map(([varName]) => (
+          <option key={varName} value={varName}>{varName}</option>
+        ))}
+      </select>
     </>
   );
 }
@@ -501,14 +505,13 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
   const nodeBodyRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
+    // FIXME: reenable
     const nodeBody = nodeBodyRef.current;
     if (!nodeBody) return;
-    const lastOption = nodeBody.lastChild?.previousSibling;
-    if (!lastOption || !(lastOption instanceof Element)) return;
 
-    const input = lastOption.firstElementChild;
-    assert(input instanceof HTMLInputElement);
-    input.focus();
+    const firstInput = nodeBody.querySelector("input");
+    if (!firstInput) return;
+    firstInput.focus();
   }, [data?.replies.length]);
 
   return !data ? null : (
@@ -528,9 +531,10 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
         isConnectable
       />
       <p>Player</p>
-      <div className={styles.randomSwitchBody} ref={nodeBodyRef}>
+      <div className={styles.playerRepliesBody} ref={nodeBodyRef}>
         {data.replies.map((reply, index) => (
-          <div key={index} className={styles.randomSwitchInput}>
+          //<div key={index} className={styles.randomSwitchInput}>
+          <>
             <input
               value={reply.text}
               onChange={(e) => {
@@ -566,8 +570,13 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
                 replies.splice(index, 1);
                 return { replies };
               })}
-              // hide close on first reply
-              style={{ display: index === 0 ? "none" : undefined }}
+              style={{
+                // hide close on first reply
+                ...index === 0
+                  // can't use "display: none" or the grid is broken
+                  ? { opacity: 0, width: 0, padding: 0, margin: 0 }
+                  : { opacity: 1, width: undefined },
+              }}
             >
               <em>&times;</em>
             </Center>
@@ -578,7 +587,7 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
               className={styles.inlineHandle}
               isConnectable
             />
-          </div>
+          </>
         ))}
         <div
           title="Add a reply option"

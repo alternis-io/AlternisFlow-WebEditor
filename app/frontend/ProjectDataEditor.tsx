@@ -10,42 +10,32 @@ const dataPanes = {
     component: ParticipantEditor,
     desc: "Edit participants of the dialogue",
   },
-  gates: {
-    label: "Gates",
-    component: () => <GenericEditor
-      newInitialVal={{ initial: "locked" }}
-      singularEntityName="gate"
-      docPropKey="gates"
-      // FIXME: make these inline components typed...
-      extraActions={useRef(({ data, set }) => (
-        <input
-          title={`Starts ${data.initial}`}
-          checked={data.initial === "locked"}
-          // NOTE: use custom checkbox with lock symbol
-          type="checkbox"
-          onChange={() => set({ initial: data.initial === "locked" ? "unlocked" : "locked" })}
-        />
-      )).current}
-    />,
-    desc: "Edit the gates in the dialogue.\n"
-      + "Gates are either 'locked' or 'unlocked', but the player can change the status, "
-      + "by hitting a lock/unlock node in the dialogue. This allows certain dialogue "
-      + "to only be reachable by replying in specific ways",
-  },
   variables: {
     label: "Variables",
     component: () => <GenericEditor
-      newInitialVal={{ type: "string", default: "value" }}
+      newInitialVal={{ type: "boolean", default: "value" }}
       singularEntityName="variable"
       docPropKey="variables"
-      // NOTE: afaict no need for a default value yet
-      // extraActions={useRef(({ data, set }) => (
-      //   <input
-      //     title="default"
-      //     value={data.default}
-      //     onChange={(e) => set({ default: e.currentTarget.value })}
-      //   />
-      // )).current}
+      extraActions={useRef(({ data, set }) => (
+        <>
+          <select
+            value={data.type}
+            onChange={(e) => {
+              set({ type: e.currentTarget.value });
+            }}
+          >
+            <option value="boolean" title="true/false">Boolean</option>
+            <option value="number" title="number">Number</option>
+            <option value="string" title="text">Text</option>
+          </select>
+        </>
+        // // NOTE: afaict no need for a default value yet
+        // <input
+        //   title="default"
+        //   value={data.default}
+        //   onChange={(e) => set({ default: e.currentTarget.value })}
+        // />
+      )).current}
     />,
     desc: "Edit the variables in the dialogue.\n"
       + "Variables are values set at any time by the environment. "

@@ -134,7 +134,7 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
       style={{ width: "max-content" }}
       title={
         "The 'Dialogue Entry' node, has a participant say a particular line.\n"
-        + "The line may be locked by a gate."
+        + "The line may be locked by a true/false variable."
       }
     >
       <NodeHandle
@@ -197,7 +197,8 @@ export interface Lock {
 }
 
 const LockNode = (props: NodeProps<Lock>) => {
-  const gates = useAppState(s => s.document.gates);
+  const variables = useAppState(s => s.document.variables);
+  const bools = Object.entries(variables).filter(([, v]) => v.type === "boolean");
   // REPORTME: react-flow seems to sometimes render non-existing nodes briefly?
   const data = getNode<Lock>(props.id)?.data;
   const set = makeNodeDataSetter<Lock>(props.id);
@@ -244,9 +245,8 @@ const LockNode = (props: NodeProps<Lock>) => {
           value={data.variable}
           onChange={e => set(() => ({ variable: e.currentTarget.value }))}
         >
-          {Object.entries(gates)
-            .map(([gateName]) => (
-              <option key={gateName} value={gateName}>{gateName}</option>
+          {bools.map(([boolName]) => (
+              <option key={boolName} value={boolName}>{boolName}</option>
             )
           )}
         </select>
@@ -431,15 +431,67 @@ const RandomSwitchNode = (props: NodeProps<RandomSwitch>) => {
   )
 };
 
-interface PlayerReplies {
-  replies: {
-    text: string;
-  }[];
+interface PlayerReply {
+  text: string;
+  lockingVariable: string | undefined;
 }
 
-const defaultPlayerRepliesProps = {
-  replies: [{ text: "" }],
+interface PlayerReplies {
+  replies: PlayerReply[];
+}
+
+const defaultPlayerRepliesProps: PlayerReplies = {
+  replies: [
+    {
+      text: "",
+      lockingVariable: undefined,
+    },
+  ],
 };
+
+const ReplyLock = (props: {
+  reply: PlayerReply;
+  set: (s: Partial<PlayerReply> | ((s: PlayerReply) => Partial<PlayerReply>)) => void;
+  index: number;
+}) => {
+  const variables = useAppState(s => s.document.variables);
+  const bools = Object.entries(variables).filter(([, v]) => v.type === "boolean");
+  const Icon = props.reply.lockingVariable === undefined ? UnlockIcon : LockIcon;
+
+  return (
+    <>
+      <Center
+        className="hoverable"
+        title={
+          props.reply.lockingVariable === undefined
+          ? "Add a lock to this option"
+          : "Remove the lock from this option"
+        }
+        onClick={() => {
+          if (props.reply.lockingVariable === undefined) {
+            if (bools.length <= 0)
+              return;
+            props.set({ lockingVariable: bools[0][0] });
+          } else {
+            props.set({ lockingVariable: undefined });
+          }
+        }}
+      >
+        <Icon width="1em" height="1em" />
+      </Center>
+      {props.reply.lockingVariable !== undefined &&
+        <select
+          value={props.reply.lockingVariable}
+          onChange={(e) => props.set({ lockingVariable: e.currentTarget.value })}
+        >
+          {bools.map(([varName]) => (
+            <option key={varName} value={varName}>{varName}</option>
+          ))}
+        </select>
+      }
+    </>
+  );
+}
 
 const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
   // REPORTME: react-flow seems to sometimes render non-existing nodes briefly?
@@ -493,6 +545,18 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
                   };
                 });
               }}
+            />
+            <ReplyLock
+              reply={reply}
+              set={(s) => set((prevReplies) => {
+                const nextReplies = prevReplies.replies.slice();
+                nextReplies[index] = {
+                  ...prevReplies[index],
+                  ...typeof s === "function" ? s(prevReplies[index]) : s,
+                };
+                return { replies: nextReplies };
+              })}
+              index={index}
             />
             <Center
               className="hoverable"
@@ -599,7 +663,7 @@ const nodeTypeNames: Record<keyof typeof nodeTypes, string> = {
   dialogueEntry: "Line",
   randomSwitch: "Random",
   playerReplies: "Player Replies",
-  lockNode: "Gate",
+  lockNode: "Lock",
   emitNode: "Emit",
   entry: "Entry",
   default: "Unknown",
@@ -635,7 +699,7 @@ function getNewId(nodes: { id: string }[]) {
   const maxId = nodes
     .map(n => +n.id)
     .filter(n => !Number.isNaN(n))
-    .reduce((prev, cur) => prev > cur ? prev : cur)
+    .reduce((prev, cur) => prev > cur ? prev : cur, 0)
     ?? 0;
   return `${maxId + 1}`;
 }
@@ -821,7 +885,16 @@ const TestGraphEditor = (_props: TestGraphEditor.Props) => {
             }}
           >
             <Controls />
-            <MiniMap />
+            {/* FIXME: can use custom icons to show e.g. lock nodes */}
+            {/* FIXME: get color from global style variables */}
+            <MiniMap
+              zoomable pannable
+              color="var(--fg-1)"
+              maskColor="#363636aa" // FIXME: reference var(--bg-1-hover)
+              style={{
+                backgroundColor: "var(--bg-1)",
+              }}
+            />
           </ReactFlow>
         </div>
       </div>

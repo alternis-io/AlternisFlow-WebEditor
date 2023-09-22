@@ -32,7 +32,7 @@ export const defaultAppState = {
         default: string,
       },
     },
-    // TODO: consider removing gates in favor of variables
+    // FIXME: remove, no longer used
     gates: {} as {
       [name: string]: {
         initial: "locked" | "unlocked"

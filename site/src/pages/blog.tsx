@@ -6,13 +6,16 @@ import * as styles from './blog.module.scss'
 export default function(props: any) {
   const perYear = React.useMemo(
     () =>
-      props.data.allMarkdownRemark.edges.reduce((prev, { node }) => {
-        const [year] = node.frontmatter.date.match(/\d+$/)
-        const key = year
-        if (!prev.has(key)) prev.set(key, [])
-        prev.get(key).push(node)
-        return prev
-      }, new Map<string, string[]>()),
+      props.data.allMarkdownRemark.edges
+        // path is null in repo markdown files that aren't blogs and should be ignored
+        .filter(({ node }) => node.frontmatter.path !== null)
+        .reduce((prev, { node }) => {
+          const [year] = node.frontmatter.date.match(/\d+$/)
+          const key = year
+          if (!prev.has(key)) prev.set(key, [])
+          prev.get(key).push(node)
+          return prev
+        }, new Map<string, string[]>()),
     []
   )
 

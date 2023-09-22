@@ -33,3 +33,19 @@ p {
   align-items: center;
 }
 
+.hoverable {
+  cursor: pointer;
+}
+
+.draggable {
+  cursor: grab;
+}
+
+.hoverable:hover {
+  color: var(--hover);
+  fill: var(--hover);
+  stroke: var(--hover);
+  border-color: var(--hover);
+  background-color: var(--hover);
+}
+

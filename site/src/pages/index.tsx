@@ -9,6 +9,7 @@ import html5LogoUrl from "../images/HTML5_Logo.svg";
 import { MailLink } from '../components/MailLink';
 
 const Homepage = () => {
+  const [iframeInteractable, setIframeInteractable] = React.useState(false);
   return (
     <Layout pageTitle="Home">
       <p style={{ fontSize: "18pt", textAlign: "center", }}>
@@ -19,20 +20,54 @@ const Homepage = () => {
         </strong>
       </p>
 
-      <iframe
-        src={process.env.NODE_ENV === "development"
-          ? "http://localhost:3001/index.html?disable-scroll"
-          : process.env.APP_BASEURL
-        }
+      <div
         style={{
-          border: 0,
+          position: "relative",
           height: "50vh",
           width: "100vw",
           margin: "0.25in 0",
-          // FIXME: disable scroll somehow in the app using query params
-          //pointerEvents: "none",
         }}
-      />
+        onClick={() => {
+          setIframeInteractable(true);
+        }}
+        onMouseLeave={() => {
+          // FIXME: use generic onExternalClick and disable pointer events again
+          // debounce this so it doesn't happen immediately if they get back in the editor
+          setIframeInteractable(false);
+        }}
+      >
+        <iframe
+          src={process.env.NODE_ENV === "development"
+            ? "http://localhost:3001/index.html?disable-scroll"
+            : process.env.APP_BASEURL
+          }
+          style={{
+            width: "100%",
+            height: "100%",
+            border: 0,
+            // FIXME: disable scroll somehow in the app using query params
+            // or add a "click to play" overlay that turns on pointerEvents
+            pointerEvents: iframeInteractable ? undefined : "none",
+          }}
+        />
+        <div
+          style={{
+            left: 0,
+            top: 0,
+            width: "100%",
+            height: "100%",
+            position: "absolute",
+            opacity: iframeInteractable ? 0 : 1,
+            transition: "all 100ms ease",
+            backgroundColor: iframeInteractable ? undefined : "#000000aa",
+            zIndex: 1000,
+            pointerEvents: iframeInteractable ? "none" : undefined,
+          }}
+          className="center hoverable"
+        >
+          Click to activate
+        </div>
+      </div>
 
       <p>
         Let your writers express the logic of their
@@ -41,7 +76,7 @@ const Homepage = () => {
       </p>
 
       <p>
-        But give your programmers the flexibility they need
+        Give your programmers the flexibility they need
         by <strong>declaring variables and functions</strong> for them to fill-in.
       </p>
 

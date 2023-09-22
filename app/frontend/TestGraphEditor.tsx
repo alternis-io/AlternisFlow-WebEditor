@@ -433,7 +433,10 @@ const RandomSwitchNode = (props: NodeProps<RandomSwitch>) => {
 
 interface PlayerReply {
   text: string;
-  lockingVariable: string | undefined;
+  lockVariable: string | undefined;
+  // FIXME: replace with "lock negation"... this is not an action, it's whether the gate must
+  // be "locked" or "unlocked" for this reply to be locked or unlocked
+  lockAction: "none" | "lock" | "unlock";
 }
 
 interface PlayerReplies {
@@ -444,10 +447,21 @@ const defaultPlayerRepliesProps: PlayerReplies = {
   replies: [
     {
       text: "",
-      lockingVariable: undefined,
+      lockVariable: undefined,
+      lockAction: "none",
     },
   ],
 };
+
+// FIXME: replace with the lock icon but crossed-out
+const AddLockIcon = (props: { width?: number, height?: number }) => <div
+  style={{
+    borderRadius: "50%",
+    border: "2px solid var(--fg-1)",
+    height: props.height,
+    width: props.width,
+  }}
+/>;
 
 const ReplyLock = (props: {
   reply: PlayerReply;
@@ -456,35 +470,60 @@ const ReplyLock = (props: {
 }) => {
   const variables = useAppState(s => s.document.variables);
   const bools = Object.entries(variables).filter(([, v]) => v.type === "boolean");
-  const Icon = props.reply.lockingVariable === undefined ? UnlockIcon : LockIcon;
+  const Icon
+    = props.reply.lockAction === "none"
+    ? AddLockIcon
+    : props.reply.lockAction === "unlock"
+    ? UnlockIcon
+    : LockIcon;
 
   return (
     <>
       <Center
         className="hoverable"
-        title={
-          props.reply.lockingVariable === undefined
-          ? "Add a lock to this option"
-          : "Remove the lock from this option"
-        }
-        onClick={() => {
-          if (props.reply.lockingVariable === undefined) {
-            if (bools.length <= 0)
-              return;
-            props.set({ lockingVariable: bools[0][0] });
-          } else {
-            props.set({ lockingVariable: undefined });
+        {...props.reply.lockAction === "none"
+          ? {
+            title: "Add a lock event to this option",
+            onClick: () => {
+              // FIXME: error toast on no available bool variables? Or just hide this entirely?
+              // or even offer to create a new variable then and there...
+              if (bools.length <= 0) return;
+              const [firstBoolVarName] = bools[0];
+              props.set({
+                lockVariable: firstBoolVarName,
+                lockAction: "lock",
+              });
+            },
           }
-        }}
+          : props.reply.lockAction === "lock"
+          ? {
+            title: "Make this an unlock event",
+            onClick: () => {
+              props.set({
+                lockAction: "unlock",
+              });
+            },
+          }
+          // props.reply.lockAction === "unlock"
+          : {
+            title: "Remove the unlock event from this option",
+            onClick: () => {
+              props.set({
+                lockVariable: undefined,
+                lockAction: "none",
+              });
+            },
+          }
+        }
       >
         <Icon width="1em" height="1em" />
       </Center>
       <select
-        value={props.reply.lockingVariable}
-        onChange={(e) => props.set({ lockingVariable: e.currentTarget.value })}
+        value={props.reply.lockVariable}
+        onChange={(e) => props.set({ lockVariable: e.currentTarget.value })}
         style={{
           // can't use "display: none" or the grid is broken
-          ...props.reply.lockingVariable === undefined
+          ...props.reply.lockAction === "none"
             ? { opacity: 0, width: 0, padding: 0, margin: 0 }
             : { opacity: 1 },
         }}

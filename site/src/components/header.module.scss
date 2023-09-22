@@ -1,18 +1,5 @@
 @import "../constants.scss";
 
-// FIXME: dedup from layout.module.scss
-.pageWrapper {
-  @media only screen {
-    @media (max-width: 700px) {
-      padding: 12px;
-    }
-    @media (min-width: 700px) {
-      padding: 1in;
-      padding-top: 22px;
-    }
-  }
-}
-
 // FIXME: use shared css for this common thing
 .separate {
   display: flex;

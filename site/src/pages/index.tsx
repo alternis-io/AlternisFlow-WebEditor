@@ -1,5 +1,6 @@
 import React from 'react'
 import Layout from '../components/layout'
+import "../shared.css";
 
 const MailLink = (props: { email: string }) => <a href={`mailto:${props.email}`}>{props.email}</a>;
 
@@ -8,18 +9,18 @@ const extraWide: React.CSSProperties = {
   left: "calc(-1 * var(--horiz-padding-eqt))",
   paddingLeft: "calc((var(--horiz-padding-eqt)) / 2)",
   paddingRight: "calc((var(--horiz-padding-eqt)) / 2)",
+  position: "relative",
 }
 
 const Homepage = () => {
   return (
-    <Layout pageTitle="Home">
+    <Layout pageTitle="Home" style={{ overflow: "hidden" }}>
       <div style={{
         paddingTop: "0.5in",
         paddingBottom: "0.5in",
         textAlign: "center",
         ...extraWide,
         boxSizing: "border-box",
-        position: "relative",
         backgroundColor: "#1a1a1d",
       }}>
         <p style={{ fontSize: "18pt" }}>
@@ -29,14 +30,21 @@ const Homepage = () => {
           or input environment.
           </strong>
         </p>
+      </div>
 
-        <iframe src="http://localhost:3001/index.html" style={{
+      <iframe
+        src={process.env.NODE_ENV === "development"
+          ? "http://localhost:3001/index.html?project-data-panel=false"
+          : process.env.APP_BASEURL
+        }
+        style={{
           ...extraWide,
           paddingLeft: 0,
           paddingRight: 0,
-          left: 0,
-        }} />
-      </div>
+          border: 0,
+          height: "50vh",
+        }}
+      />
 
       <p>
         Let writers express the logic of their

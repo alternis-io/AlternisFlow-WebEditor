@@ -1,17 +1,5 @@
 @import "../constants.scss";
 
-.pageWrapper {
-  @media only screen {
-    @media (max-width: 700px) {
-      padding: 12px;
-    }
-    @media (min-width: 700px) {
-      padding: 1in;
-      padding-top: 22px;
-    }
-  }
-}
-
 header {
   display: flex;
   align-items: center;

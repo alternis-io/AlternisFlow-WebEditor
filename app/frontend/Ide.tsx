@@ -6,12 +6,11 @@ import { ProjectDataEditor } from "./ProjectDataEditor";
 import { Split } from "./Split";
 import { resetAllAppState, useAppState } from "./AppState";
 import downloadFile, { uploadFile } from "./localFileManip";
-import { ProjectSelector } from "./components/ProjectSelector";
 
 // FIXME: use vite feature to get port from env
 const apiBaseUrl = "http://localhost:3001"
 
-function Header(props: { onOpenProjectSelector(): void }) {
+function Header() {
   return <Split
     style={{
       boxShadow: "black 0 0 5px",
@@ -27,7 +26,7 @@ function Header(props: { onOpenProjectSelector(): void }) {
         <button>Newsletter</button>
         <button>Feedback</button>
         <button>Search</button>
-        <button onClick={props.onOpenProjectSelector}>Projects</button>
+        <button onClick={() => history.go("/documents")}>Projects</button>
         <button
           onClick={() => {
             downloadFile({
@@ -61,10 +60,6 @@ function Header(props: { onOpenProjectSelector(): void }) {
 }
 
 export function Ide(_props: Ide.Props) {
-  // TODO: should be part of router/url state as well?
-  const projectId = useAppState(s => s.projectId);
-  const inProjectSelector = projectId === undefined;
-
   const redo = useAppState(s => s.redo);
   const undo = useAppState(s => s.undo);
 
@@ -93,17 +88,14 @@ export function Ide(_props: Ide.Props) {
 
   return (
     <div>
-      <Header onOpenProjectSelector={() => useAppState.setState({ projectId: undefined })}/>
-      {inProjectSelector
-      ? <ProjectSelector onSelectProject={(project) => useAppState.setState({ projectId: project })} />
-      : <div className={styles.split} style={{ height: "calc(100vh - 31.25px)"}}>
-          <ProjectDataEditor />
-          {/*<DialogueViewer />*/}
-          <span className={styles.graphEditor}>
-            <TestGraphEditor />
-          </span>
-        </div>
-      }
+      <Header />
+      <div className={styles.split} style={{ height: "calc(100vh - 31.25px)"}}>
+        <ProjectDataEditor />
+        {/*<DialogueViewer />*/}
+        <span className={styles.graphEditor}>
+          <TestGraphEditor />
+        </span>
+      </div>
     </div>
   );
 }

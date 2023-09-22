@@ -1,0 +1,25 @@
+
+:root {
+  /* maybe? */
+  /* @media only screen { */
+
+  @media (max-width: 8in) {
+    --text-width: fit-content;
+    /** must be used with calc */
+    --horiz-padding-eqt: 22px;
+  }
+
+  @media (min-width: 8in) {
+    --text-width: 8in;
+    /** must be used with calc */
+    --horiz-padding-eqt: ((100vw - var(--text-width))/2);
+  }
+}
+
+p {
+  width: 100vw;
+  left: calc(-1 * var(--horiz-padding-eqt));
+  padding-left: calc((var(--horiz-padding-eqt)) / 2);
+  padding-right: calc((var(--horiz-padding-eqt)) / 2);
+}
+

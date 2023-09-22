@@ -1,0 +1,30 @@
+
+.roadmapMilestones {
+  margin-top: 0.5in;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-evenly;
+  max-width: 12in;
+  overflow-x: hidden;
+  padding: 0 1in;
+  gap: 22px;
+}
+
+.roadmapMilestones > * {
+  width: 20%;
+  min-width: 150px;
+  height: 100px;
+  border-radius: 15px; 
+  border: 1px solid rgb(var(--body-rgb));
+  padding: 15px;
+
+  /* center */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  flex-direction: column;
+  gap: 11px;
+}

@@ -175,7 +175,18 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
             onClick={() => setShowMore(prev => !prev)}
           >
             <strong style={{ transform: "scale(2, 0.8)", display: "block", width: "100%", textAlign: "center" }}>
-              {showMore ? "^" : "V"}
+              <svg
+                viewBox="-5 -5 15 15"
+                height="15px" width="30px"
+                strokeWidth={"2px"}
+                strokeLinecap="round"
+                style={{
+                  transform: showMore ? "scale(1, -1)" : undefined, stroke: "white", fill: "none"
+                }}
+                className={"hoverable"}
+              >
+                <path d="M0 0 l5 5 l5 -5" />
+              </svg>
             </strong>
           </Center>
         </>
@@ -497,7 +508,7 @@ const ReplyLock = (props: {
           }
           : props.reply.lockAction === "lock"
           ? {
-            title: "Make this an unlock event",
+            title: "Lock this reply on a locked variable",
             onClick: () => {
               props.set({
                 lockAction: "unlock",
@@ -506,7 +517,7 @@ const ReplyLock = (props: {
           }
           // props.reply.lockAction === "unlock"
           : {
-            title: "Remove the unlock event from this option",
+            title: "Lock this reply on a unlocked variable",
             onClick: () => {
               props.set({
                 lockVariable: undefined,

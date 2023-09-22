@@ -26,7 +26,7 @@ import { ReactComponent as LockIcon } from "./resources/inkscape-lock.svg";
 import { ReactComponent as UnlockIcon } from "./resources/inkscape-unlock.svg";
 
 
-import { ContextMenu } from './components/ContextMenu'
+import { ContextMenu, ContextMenuOptions } from './components/ContextMenu'
 import { assert } from './browser-utils'
 import { useValidatedInput } from '@bentley/react-hooks'
 import { InputStatus } from './hooks/useValidatedInput'
@@ -706,26 +706,24 @@ const TestGraphEditor = (_props: TestGraphEditor.Props) => {
     <GraphErrorBoundary>
       <div ref={editorRef}>
         <ContextMenu>
-          <div className={styles.addNodeMenu}>
-            {Object.keys(nodeTypes)
+          <ContextMenuOptions
+            className={styles.addNodeMenu}
+            options={Object.keys(nodeTypes)
               .filter(key => key !== "entry" && key !== "default" && key !== "dialogueEntry")
-              .map((nodeType) =>
-                <em
-                  {...classNames(styles.addNodeMenuOption, "hoverable")}
-                  key={nodeType}
-                  onClick={(e) => {
+              .map((nodeType) => ({
+                  id: nodeType,
+                  label: nodeTypeNames[nodeType],
+                  onSelect(e) {
                     const { top, left } = graphContainerElem.current!.getBoundingClientRect();
                     addNode(nodeType, graph.project({
                       x: e.clientX - left - 150/2,
                       y: e.clientY - top,
                     }));
-                  }}
-                >
-                  {nodeTypeNames[nodeType]}
-                </em>
+                  },
+                })
               )
             }
-          </div>
+          />
         </ContextMenu>
         <div className={styles.graph} ref={graphContainerElem}>
           <ReactFlow

@@ -19,7 +19,7 @@ const Homepage = () => {
 
       <iframe
         src={process.env.NODE_ENV === "development"
-          ? "http://localhost:3001/index.html?project-data-panel=false"
+          ? "http://localhost:3001/index.html"
           : process.env.APP_BASEURL
         }
         style={{

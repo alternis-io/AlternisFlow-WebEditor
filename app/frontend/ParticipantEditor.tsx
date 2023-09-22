@@ -28,7 +28,7 @@ export function ParticipantEditor() {
   const editorPrefs = useAppState((s) => s.preferences.participantEditor);
   const set = useAppState((s) => s.set);
 
-  const setIconSize = (val: IconSizes) => set((s) => ({
+  const setIconSize = (val: IconSizes) => useAppState.setState((s) => ({
     preferences: {
       ...s.preferences,
       participantEditor: {

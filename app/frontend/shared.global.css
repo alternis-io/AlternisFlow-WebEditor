@@ -25,6 +25,7 @@
   fill: var(--fg-hover);
   stroke: var(--fg-hover);
   border-color: var(--fg-hover);
+  background-color: var(--bg-1-hover);
 }
 
 .newButton {

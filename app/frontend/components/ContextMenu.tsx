@@ -1,6 +1,7 @@
 import React, { useLayoutEffect, useRef, useState } from "react"
 import styles from './ContextMenu.module.css'
 import { assert } from "../browser-utils";
+import { classNames } from "../react-utils";
 
 export const ContextMenu = ({
   autoCloseDelay = 1_000,
@@ -79,10 +80,38 @@ export const ContextMenu = ({
   return <div ref={rootElementRef} className={styles.contextMenuRoot}>{children}</div>;
 }
 
-namespace ContextMenu {
+export namespace ContextMenu {
   export interface Props extends React.PropsWithChildren {
     /** delay after un-hovering the context menu before it auto closes */
     autoCloseDelay?: number;
   }
 }
 
+
+export function ContextMenuOptions(props: ContextMenuOptions.Props) {
+  return (
+    <div {...props} {...classNames(styles.contextMenuOptions, props.className)}>
+      {props.options.map(option => (
+        <li
+          key={option.id}
+          onClick={option.onSelect}
+          {...classNames(styles.contextMenuOption, "hoverable")}
+        >
+          <a style={{ color: "inherit" }}>{option.label ?? option.id}</a>
+        </li>
+      ))}
+    </div>
+  );
+}
+
+export namespace ContextMenuOptions {
+  export interface Option {
+    id: string;
+    label?: string;
+    onSelect: React.MouseEventHandler<HTMLLIElement>;
+  }
+
+  export interface Props extends React.HTMLProps<HTMLDivElement> {
+    options: Option[];
+  }
+}

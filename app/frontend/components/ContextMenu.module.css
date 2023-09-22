@@ -5,3 +5,21 @@
   pointer-events: all;
   z-index: 100;
 }
+
+.contextMenuOptions {
+  box-shadow: var(--fg-1) 0 0 3px 1px;
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+.contextMenuOption {
+  padding: 3px 0;
+}
+
+.contextMenuOption::marker {
+  content: '';
+}
+
+.contextMenuOption:hover {
+  background-color: var(--bg-1-hover);
+}

@@ -1,2 +1,5 @@
 # pnpm workspace
 node_modules
+
+# blender backups
+*.blend[0-9]

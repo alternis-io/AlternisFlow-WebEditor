@@ -4,9 +4,9 @@ const path = require("path");
 module.exports = {
   siteMetadata: {
     title: `Alternis`,
-    description: `Mike Belousov's Website`,
+    description: `Alternis dialogue editor`,
     author: `Mike Belousov`,
-    siteUrl: `https://mikemikeb.com`,
+    siteUrl: `https://alternis.io`,
   },
   plugins: [
     `gatsby-plugin-react-helmet`,
@@ -23,7 +23,7 @@ module.exports = {
       resolve: `gatsby-plugin-manifest`,
       options: {
         name: `gatsby-starter-default`,
-        short_name: `mikemikeb.com`,
+        short_name: `alternis.io`,
         start_url: `/`,
         background_color: `#663399`,
         theme_color: `#663399`,
@@ -59,17 +59,36 @@ module.exports = {
         ],
       },
     },
-    /*
     // incomplete copy of the following:
     // https://www.npmjs.com/package/gatsby-plugin-feed
     // which shows how to generate an RSS feed from our blog data
     {
       resolve: `gatsby-plugin-feed`,
-      /** @type {import("gatsby-plugin-pnpm").IPluginOptions} /
+      /** @type {import("gatsby-plugin-pnpm").IPluginOptions} */
       options: {
         feeds: [
           {
+            query: `
+              {
+                allMarkdownRemark(
+                  sort: { order: DESC, fields: [frontmatter___date] },
+                ) {
+                  nodes {
+                    excerpt
+                    html
+                    fields {
+                      slug
+                    }
+                    frontmatter {
+                      title
+                      date
+                    }
+                  }
+                }
+              }
+            `,
             serialize: ({ query: { site, allMarkdownRemark } }) => {
+              console.log(allMarkdownRemark);
               return allMarkdownRemark.nodes.map(node => ({
                 ...node.frontmatter,
                 description: node.excerpt,
@@ -79,11 +98,12 @@ module.exports = {
                 custom_elements: [{ "content:encoded": node.html }],
               }));
             },
+            output: "/rss.xml",
+            title: "Alternis dev blog RSS feed",
           }
-        ]
-      }
+        ],
+      },
     },
-    */
     'gatsby-plugin-pnpm'
   ],
 }

@@ -3,7 +3,7 @@ import { AppState, useAppState } from "./AppState";
 import "./shared.global.css";
 import * as styles from "./GenericEditor.module.css";
 import { Center } from "./Center";
-import { classNames } from "./react-utils";
+import { classNames } from "js-utils/lib/react-utils";
 import { Split } from "./Split";
 
 // all keys that are a simple record

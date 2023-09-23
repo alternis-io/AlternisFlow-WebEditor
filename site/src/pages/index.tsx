@@ -7,9 +7,14 @@ import unrealLogoUrl from "../images/UE_Logo_stacked_unreal-engine_white.svg";
 import godotLogoUrl from "../images/godot_logo_large_color_dark.svg";
 import html5LogoUrl from "../images/HTML5_Logo.svg";
 import { MailLink } from '../components/MailLink';
+import { useOnNoLongerMouseInteracted } from "js-utils/lib/react-utils";
 
 const Homepage = () => {
   const [iframeInteractable, setIframeInteractable] = React.useState(false);
+  const mouseInteractProps = useOnNoLongerMouseInteracted({
+    onUninterested: () => setIframeInteractable(false),
+  });
+
   return (
     <Layout pageTitle="Home">
       <p style={{ fontSize: "18pt", textAlign: "center", }}>
@@ -25,11 +30,7 @@ const Homepage = () => {
         onClick={() => {
           setIframeInteractable(true);
         }}
-        onMouseLeave={() => {
-          // FIXME: use generic onExternalClick and disable pointer events again
-          // debounce this so it doesn't happen immediately if they get back in the editor
-          setIframeInteractable(false);
-        }}
+        {...mouseInteractProps}
       >
         <iframe
           src={process.env.NODE_ENV === "development"

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react"
-import { assert } from "../browser-utils";
+import { assert } from "js-utils/lib/browser-utils";
 
 export function usePrevValue<T>(current: T): T | undefined {
   const prevRef = useRef<T | undefined>(undefined);

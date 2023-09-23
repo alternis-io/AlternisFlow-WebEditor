@@ -6,7 +6,7 @@ import { IconSizes, useAppState } from "./AppState";
 import { useValidatedInput } from "./hooks/useValidatedInput";
 import { uploadFile } from "./localFileManip";
 import "./shared.global.css";
-import { classNames } from "./react-utils";
+import { classNames } from "js-utils/lib/react-utils";
 import { Center } from "./Center";
 import { Participant } from "../common/data-types/participant";
 import defaultParticipantIconUrl from "./images/participant-icon.svg";

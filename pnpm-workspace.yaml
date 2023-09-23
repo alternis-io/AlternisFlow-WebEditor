@@ -3,3 +3,4 @@ packages:
   - app/backend
   - app/common
   - site
+  - js-utils

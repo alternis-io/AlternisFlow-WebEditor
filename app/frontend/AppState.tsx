@@ -1,6 +1,6 @@
 import type { Node, Edge } from 'reactflow'
 import { Participant } from "../common/data-types/participant";
-import { deepCloneJson } from "./react-utils";
+import { deepCloneJson } from "js-utils/lib/react-utils";
 import { create } from "zustand";
 import { DeepPartial } from "ts-essentials/dist/deep-partial";
 

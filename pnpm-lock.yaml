@@ -6,6 +6,12 @@ settings:
 
 importers:
 
+  app:
+    dependencies:
+      js-utils:
+        specifier: workspace:^
+        version: link:../js-utils
+
   app/backend:
     dependencies:
       '@prisma/client':
@@ -194,6 +200,22 @@ importers:
         specifier: ^3.2.0
         version: 3.2.0(typescript@5.0.0-beta)(vite@4.0.4)
 
+  js-utils:
+    optionalDependencies:
+      react:
+        specifier: ^18.2.0
+        version: 18.2.0
+    devDependencies:
+      '@types/node':
+        specifier: ^18.11.18
+        version: 18.11.18
+      '@types/react':
+        specifier: ^18.2.14
+        version: 18.2.22
+      typescript:
+        specifier: ^5.0.0
+        version: 5.2.2
+
   site:
     dependencies:
       gatsby:
@@ -272,6 +294,9 @@ importers:
       image-webpack-loader:
         specifier: ^6.0.0
         version: 6.0.0
+      js-utils:
+        specifier: workspace:*
+        version: link:../js-utils
       markdown-loader:
         specifier: ^5.1.0
         version: 5.1.0
@@ -12495,6 +12520,7 @@ packages:
   /react@18.2.0:
     resolution: {integrity: sha512-/3IjMdb2L9QbBdWiW5e3P2/npwMBaU9mHCSCUzNln0ZCYbcfTsGbTJrU/kGemdH2IWmB2ioZ+zkxtmq6g09fGQ==}
     engines: {node: '>=0.10.0'}
+    requiresBuild: true
     dependencies:
       loose-envify: 1.4.0
 

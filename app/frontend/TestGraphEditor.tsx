@@ -19,7 +19,7 @@ import ReactFlow, {
 } from 'reactflow'
 import 'reactflow/dist/base.css'
 import styles from './TestGraphEditor.module.css'
-import { classNames, deepCloneJson } from './react-utils'
+import { classNames, deepCloneJson } from 'js-utils/lib/react-utils'
 import { Center } from "./Center";
 import { AppState, getNode, makeNodeDataSetter, useAppState } from "./AppState";
 import { ReactComponent as LockIcon } from "./images/inkscape-lock.svg";
@@ -27,7 +27,7 @@ import { ReactComponent as UnlockIcon } from "./images/inkscape-unlock.svg";
 
 
 import { ContextMenu, ContextMenuOptions } from './components/ContextMenu'
-import { assert } from './browser-utils'
+import { assert } from 'js-utils/lib/browser-utils'
 import { useValidatedInput } from '@bentley/react-hooks'
 import { InputStatus } from './hooks/useValidatedInput'
 
@@ -770,7 +770,6 @@ const TestGraphEditor = (_props: TestGraphEditor.Props) => {
     (nodeType: string, position: {x: number, y:number}, initData?: any) => {
       useAppState.setState((s) => {
         const maybeSourceNode = connectingNodeId.current;
-        connectingNodeId.current = undefined;
         const newNodeId = getNewId(s.document.nodes);
         return {
           document: {
@@ -819,6 +818,9 @@ const TestGraphEditor = (_props: TestGraphEditor.Props) => {
     reactFlowRenderer.style.position = "initial";
     setTimeout(() => (reactFlowRenderer.style.position = "relative"));
   }, []);
+
+  // if any nodes changed, invalidate the drag-drop source node
+  useEffect(() => connectingNodeId.current = undefined, [nodes])
 
   const editorRef = React.useRef<HTMLDivElement>(null);
 

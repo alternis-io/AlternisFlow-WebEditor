@@ -9,7 +9,7 @@ const Header = () => (
       <div className={styles.left}>
         {/* FIXME: make svg logo */}
         <Link className={`${styles.navLink} ${styles.alternisLogo}`} to="/">
-          Alternis <img src={alternisLogoPath} width="50px" />
+           <img src={alternisLogoPath} width="50px" /> Alternis
         </Link>
       </div>
       <nav className={styles.right}>

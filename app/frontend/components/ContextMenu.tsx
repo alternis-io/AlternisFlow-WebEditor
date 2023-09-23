@@ -1,7 +1,7 @@
 import React, { useLayoutEffect, useRef, useState } from "react"
 import styles from './ContextMenu.module.css'
-import { assert } from "../browser-utils";
-import { classNames } from "../react-utils";
+import { assert } from "js-utils/lib/browser-utils";
+import { classNames } from "js-utils/lib/react-utils";
 
 export const ContextMenu = ({
   autoCloseDelay = 1_000,
@@ -22,11 +22,10 @@ export const ContextMenu = ({
     // FIXME: this does in fact not happen before mount first paint
     rootElem.style.display = "none";
 
-    // TODO: lodash debounce delayed close if user doesn't hover the context menu for long?
-
     const hide = () => (rootElem.style.display = "none");
     const show = () => ((rootElem.style as any).display = null);
 
+    // FIXME: use js-utils/useOnNoLongerMouseInteracted
     let timeout: NodeJS.Timeout | undefined;
 
     const onMouseEnter = (e: MouseEvent) => {

@@ -1,5 +1,5 @@
 import React from "react";
-import { classNames } from "./react-utils";
+import { classNames } from "js-utils/lib/react-utils";
 
 export function Split(props: Split.Props) {
   return <div {...props} {...classNames("split", ...props.className ?? [])}>

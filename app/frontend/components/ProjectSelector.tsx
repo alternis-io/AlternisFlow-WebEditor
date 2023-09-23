@@ -4,7 +4,7 @@ import { defaultAppState, useAppState } from "../AppState";
 import { useAsyncEffect } from "@bentley/react-hooks";
 import type { Document } from "dialogue-middleware-app-backend/lib/prisma";
 import { Center } from "../Center";
-import { classNames } from "../react-utils";
+import { classNames } from "js-utils/lib/react-utils";
 
 export function ProjectSelector(props: ProjectSelector.Props) {
   const api = useApi();

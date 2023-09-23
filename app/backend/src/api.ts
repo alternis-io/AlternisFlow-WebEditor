@@ -1,6 +1,8 @@
+// FIXME: use bun for better promise support
 import * as express from 'express';
 import * as cors from 'cors';
 import * as assert from "node:assert";
+import * as path from "node:path";
 import { apiV1 } from './apiV1';
 
 // 401
@@ -9,9 +11,9 @@ class AuthorizationError extends Error {}
 class ApiMisuseError extends Error {}
 
 const app = express()
-  // FIXME: the api should all be under the api route...
-  // FIXME: use bun?
-  .use("/", express.static("../../../site/public"))
+  // FIXME: resolve resource url better, maybe an env var?
+  .use("/", express.static(path.join(__dirname, "../../../site/public")))
+  .use("/app", express.static(path.join(__dirname, "../../../app/frontend/dist")))
   .use(express.json())
   .use(cors({
     origin: "http://localhost:3001",

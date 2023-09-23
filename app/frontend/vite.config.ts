@@ -8,6 +8,7 @@ export default defineConfig(({ mode }) => {
   Object.assign(process.env, loadEnv(mode, process.cwd(), ""));
 
   return {
+    base: "/app",
     server: {
       port: 3000,
       strictPort: true,

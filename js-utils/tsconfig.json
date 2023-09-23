@@ -3,7 +3,7 @@
     "outDir": "lib",
     "declaration": true,
     "target": "es2015",
-    "module": "CommonJS",
+    "module": "ES2022",
     "moduleResolution": "node",
     "lib": ["DOM", "ScriptHost", "ES2020"],
     "strict": true,

@@ -6,12 +6,6 @@ settings:
 
 importers:
 
-  .:
-    devDependencies:
-      ts-essentials:
-        specifier: ^9.4.0
-        version: 9.4.0
-
   app/backend:
     dependencies:
       '@prisma/client':
@@ -14108,15 +14102,6 @@ packages:
 
   /true-case-path@2.2.1:
     resolution: {integrity: sha512-0z3j8R7MCjy10kc/g+qg7Ln3alJTodw9aDuVWZa3uiWqfuBMKeAeP2ocWcxoyM3D73yz3Jt/Pu4qPr4wHSdB/Q==}
-
-  /ts-essentials@9.4.0:
-    resolution: {integrity: sha512-s4BzWZmTh926caZO7XF7MMbwCn1BioT3s3r9hT8ARnwW//30OD0XioEsMyq3ORAHP/deN4Zkst2ZvxXmL+tG6g==}
-    peerDependencies:
-      typescript: '>=4.1.0'
-    peerDependenciesMeta:
-      typescript:
-        optional: true
-    dev: true
 
   /ts-node@10.9.1(@types/node@18.11.18)(typescript@5.0.0-beta):
     resolution: {integrity: sha512-NtVysVPkxxrwFGUUxGYhfux8k78pQB3JqYBXlLRZgdGUqTO5wU/UyHop5p70iEbGhB7q5KmiZiU0Y3KlJrScEw==}

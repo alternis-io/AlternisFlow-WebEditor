@@ -12,30 +12,46 @@
     flex-direction: row;
     flex-wrap: wrap;
 
+    padding: 22px 44px;
     // HACK: spaced items without left buffer
-    padding: 22px;
     gap: 22px;
+  }
+}
 
-    // FIXME: gross nested CSS... remove
-    .navLink {
-      &, &:link, &:visited {
-        font-size: 2rem;
-        @media only screen and (max-width: 700px) {
-          font-size: 1.5rem;
-        }
-        color: $body;
-        text-decoration: initial;
-        font-style: italic;
-        font-weight: 700;
-        transition: font-size 100ms ease;
-        height: 2.5rem;
-        vertical-align: middle;
-      }
-
-      &:hover {
-        color: orange;
-        //font-size: 2.5em;
-      }
+.navLink {
+  &, &:link, &:visited {
+    font-size: 2rem;
+    @media only screen and (max-width: 700px) {
+      font-size: 1.5rem;
     }
+    color: $body;
+    text-decoration: initial;
+    // font-style: italic;
+    font-weight: 700;
+    transition: font-size 100ms ease;
+    height: 2.5rem;
+    @media only screen and (max-width: 700px) {
+      height: 2.0rem;
+    }
+    vertical-align: middle;
+  }
+
+  &:hover {
+    color: orange;
+    //font-size: 2.5em;
+  }
+}
+
+.alternisLogo {
+  display: flex;
+  flex-direction: row;
+  gap: 11px;
+  align-items: center;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 3rem !important; // FIXME: not important
+  font-weight: 500 !important;
+
+  > img {
+    width: 50px;
   }
 }

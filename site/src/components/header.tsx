@@ -1,13 +1,16 @@
 import { Link } from 'gatsby';
 import React from 'react';
 import * as styles from './header.module.scss';
-import alternisLogoPath from '../images/logo1.png';
+import alternisLogoPath from '../../../resources/logo2.png';
 
 const Header = () => (
   <header>
     <div className={styles.separate}>
       <div className={styles.left}>
-        <Link className={styles.navLink} to="/"><img src={alternisLogoPath} width="250px" /></Link>
+        {/* FIXME: make svg logo */}
+        <Link className={`${styles.navLink} ${styles.alternisLogo}`} to="/">
+          Alternis <img src={alternisLogoPath} width="50px" />
+        </Link>
       </div>
       <nav className={styles.right}>
         <Link className={styles.navLink} to="/app">Try it</Link>

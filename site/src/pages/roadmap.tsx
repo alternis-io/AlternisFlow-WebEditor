@@ -3,6 +3,7 @@ import Layout from '../components/layout'
 import { MailLink } from '../components/MailLink';
 import "../shared.css";
 import * as styles from "./roadmap.module.scss";
+import { classNames } from 'js-utils/lib/react-utils';
 
 const Homepage = () => {
   return (
@@ -17,7 +18,7 @@ const Homepage = () => {
       </p>
 
       <div className="center">
-        <div className={styles.roadmapMilestones}>
+        <div {...classNames(styles.roadmapMilestones, "full-size")}>
           <div>
             wasm-powered npm package for the browser and Node.js
             <div><em>Q4-2023</em></div>

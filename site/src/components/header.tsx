@@ -13,7 +13,11 @@ const Header = () => (
         </Link>
       </div>
       <nav className={styles.right}>
-        <Link className={styles.navLink} to="/app">Try it</Link>
+        <Link className={styles.navLink}
+          to={process.env.NODE_ENV === "development" ? "http://localhost:3001" : "/app"}
+        >
+          Try it
+        </Link>
         <Link className={styles.navLink} to="/roadmap">Roadmap</Link>
         <Link className={styles.navLink} to="/blog">Blog</Link>
       </nav>

@@ -21,12 +21,7 @@ const Homepage = () => {
       </p>
 
       <div
-        style={{
-          position: "relative",
-          height: "50vh",
-          width: "100vw",
-          margin: "0.25in 0",
-        }}
+        className="full-size"
         onClick={() => {
           setIframeInteractable(true);
         }}
@@ -38,7 +33,7 @@ const Homepage = () => {
       >
         <iframe
           src={process.env.NODE_ENV === "development"
-            ? "http://localhost:3001/index.html?disable-scroll"
+            ? "/app?disable-scroll"
             : process.env.APP_BASEURL
           }
           style={{
@@ -85,7 +80,7 @@ const Homepage = () => {
         with many existing integrations: for Godot, Unreal, Unity and the web.
       </p>
 
-      <div className="center">
+      <div className="center full-size">
         <div className={styles.supportedPlatformLogos}>
           <img alt="godot-logo" src={godotLogoUrl} />
           {/* FIXME: haven't asked for permission for unreal logo usage! */}

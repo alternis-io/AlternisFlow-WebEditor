@@ -9,4 +9,5 @@
 .projectDataEditor {
   padding: 10px;
   box-shadow: black 0 5px 5px;
+  overflow-y: scroll;
 }

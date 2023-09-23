@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect } from "react";
 import styles from "./ParticipantEditor.module.css";
 import genericEditorStyles from "./GenericEditor.module.css";
-import { ContextMenu } from "./components/ContextMenu";
+import { ContextMenu, ContextMenuOptions } from "./components/ContextMenu";
 import { IconSizes, useAppState } from "./AppState";
 import { useValidatedInput } from "./hooks/useValidatedInput";
 import { uploadFile } from "./localFileManip";
@@ -9,7 +9,7 @@ import "./shared.global.css";
 import { classNames } from "./react-utils";
 import { Center } from "./Center";
 import { Participant } from "../common/data-types/participant";
-import defaultParticipantIconUrl from "./resources/participant-icon.svg";
+import defaultParticipantIconUrl from "./images/participant-icon.svg";
 
 export const iconSizes: Record<IconSizes, { label: string }> = {
   small: {
@@ -175,13 +175,14 @@ export function ParticipantEditor() {
         }}
       >
         <ContextMenu>
-          <div style={{ backgroundColor: "white", color: "black" }}>
-            {Object.entries(iconSizes).map(([name, iconSize]) => 
-              <div key={name} onClick={() => setIconSize(name as IconSizes)}>
-                Make icons {iconSize.label}
-              </div>
-            )}
-          </div>
+          <ContextMenuOptions options={Object.entries(iconSizes).map(([name, iconSize]) =>
+            ({
+              id: name,
+              "label": `Make icons ${iconSize.label}`,
+              onSelect: () => setIconSize(name as IconSizes)
+            })
+          )}
+          />
         </ContextMenu>
         {participants.map((p, i) =>
           <div
@@ -210,6 +211,7 @@ export function ParticipantEditor() {
         <div
           title={`Add a new participant`}
           {...classNames(genericEditorStyles.newButton, "hoverable")}
+          style={{ height: "100%" }}
           onClick={() => {
             const newPartipant: Participant = {
               name: getAvailableNewParticipantName(),

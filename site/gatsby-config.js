@@ -3,7 +3,7 @@ const path = require("path");
 /** @type {import("gatsby").GatsbyConfig} */
 module.exports = {
   siteMetadata: {
-    title: `Mike Belousov's Website`,
+    title: `Alternis`,
     description: `Mike Belousov's Website`,
     author: `Mike Belousov`,
     siteUrl: `https://mikemikeb.com`,

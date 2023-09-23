@@ -14,10 +14,15 @@ class AuthorizationError extends Error {}
 class ApiMisuseError extends Error {}
 
 const app = express()
+  // FIXME: the api should all be under the api route...
+  // FIXME: use bun?
+  .use("/", express.static("../../../site/public"))
   .use(express.json())
   .use(cors({
     origin: "http://localhost:3001",
   }));
+
+const apiV1 = express.Router();
 
 export interface RunOpts {
   port?: number;
@@ -38,7 +43,7 @@ function expressFixAsyncify<Req, Res>(
 }
 
 export async function run(opts: RunOpts = {}) {
-  app.get<{}, User | null, WithToken>(
+  apiV1.get<{}, User | null, WithToken>(
     '/users/me',
     expressFixAsyncify(async function getMyUser(req, res) {
       assert(req.headers.authorization, "can't create a document if not logged in");
@@ -52,7 +57,7 @@ export async function run(opts: RunOpts = {}) {
     })
   );
 
-  app.post<{}, WithId & WithToken, User>(
+  apiV1.post<{}, WithId & WithToken, User>(
     '/users/me',
     async function register(req, res) {
       // FIXME: horrible temp token gen
@@ -70,7 +75,7 @@ export async function run(opts: RunOpts = {}) {
     }
   );
 
-  app.post<{}, Partial<Document>, Partial<Document> & WithToken>(
+  apiV1.post<{}, Partial<Document>, Partial<Document> & WithToken>(
     '/users/me/documents',
     expressFixAsyncify(async function createDocument(req, res) {
       // FIXME: 400
@@ -99,7 +104,7 @@ export async function run(opts: RunOpts = {}) {
     })
   );
 
-  app.get<{}, DocumentList, WithToken>(
+  apiV1.get<{}, DocumentList, WithToken>(
     '/users/me/documents',
     async function getMyDocumentList(req, res) {
       // FIXME: 401
@@ -126,7 +131,7 @@ export async function run(opts: RunOpts = {}) {
     }
   );
 
-  app.get<{}, DocumentList, WithToken>(
+  apiV1.get<{}, DocumentList, WithToken>(
     '/users/me/documents/recent',
     async function getMyRecentDocumentList(req, res) {
       // FIXME: 401
@@ -155,7 +160,7 @@ export async function run(opts: RunOpts = {}) {
     }
   );
 
-  app.get<WithId, Document>(
+  apiV1.get<WithId, Document>(
     '/users/me/documents/:id',
     async function getMyDocument(req, res){
       // FIXME: 401
@@ -183,7 +188,7 @@ export async function run(opts: RunOpts = {}) {
   const port = opts.port ?? Number(process.env.PORT);
   assert(port, "No port was set, either set PORT in the environment or pass one explicitly through the API");
 
-  await new Promise<void>((resolve) => app.listen(port, resolve));
+  await new Promise<void>((resolve) => apiV1.listen(port, resolve));
 
   console.log(`Service listening on port ${port}`);
 }

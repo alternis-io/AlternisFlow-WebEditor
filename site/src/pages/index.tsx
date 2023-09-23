@@ -106,7 +106,7 @@ const Homepage = () => {
 
       <p>
       Want custom pricing, or support for a specific engine or environment?
-      Reach out to our team at <MailLink email="support@alternis.com" />
+      Reach out to us at <MailLink email="support@alternis.com" />
       </p>
 
     </Layout>

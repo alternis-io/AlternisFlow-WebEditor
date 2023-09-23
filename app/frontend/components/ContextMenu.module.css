@@ -8,8 +8,10 @@
 
 .contextMenuOptions {
   box-shadow: var(--fg-1) 0 0 3px 1px;
+  background-color: var(--bg-1);
   display: grid;
   grid-template-columns: 1fr;
+  border: 0;
 }
 
 .contextMenuOption {

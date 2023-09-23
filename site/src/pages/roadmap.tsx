@@ -13,7 +13,7 @@ const Homepage = () => {
 
       <p>
         Think your feature or platform request should be here?
-        Reach out to our team at <MailLink email="support@alternis.com" />
+        Reach out to us at <MailLink email="support@alternis.com" />
       </p>
 
       <div className="center">

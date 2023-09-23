@@ -1,9 +1,8 @@
 .selectionGrid {
-  height: 100%;
   width: 100%;
   display: grid;
-  min-height: 300px;
-  max-height: 30vh;
+  grid-auto-rows: min-content;
+  max-height: 31vh;
 
   flex-wrap: wrap;
   overflow: scroll;

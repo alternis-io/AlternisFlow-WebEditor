@@ -22,8 +22,8 @@ import styles from './TestGraphEditor.module.css'
 import { classNames, deepCloneJson } from './react-utils'
 import { Center } from "./Center";
 import { AppState, getNode, makeNodeDataSetter, useAppState } from "./AppState";
-import { ReactComponent as LockIcon } from "./resources/inkscape-lock.svg";
-import { ReactComponent as UnlockIcon } from "./resources/inkscape-unlock.svg";
+import { ReactComponent as LockIcon } from "./images/inkscape-lock.svg";
+import { ReactComponent as UnlockIcon } from "./images/inkscape-unlock.svg";
 
 
 import { ContextMenu, ContextMenuOptions } from './components/ContextMenu'
@@ -301,7 +301,7 @@ const EmitNode = (props: NodeProps<Emit>) => {
         <span style={{ fontSize: "4rem", fontWeight: "bold" }}>!</span>
       </Center>
       <label>
-        emit
+        event
         <select
           value={data.function}
           onChange={e => set(() => ({ function: e.currentTarget.value }))}
@@ -458,6 +458,7 @@ const defaultPlayerRepliesProps: PlayerReplies = {
   replies: [
     {
       text: "",
+      // FIXME: note, people may want compound boolean checks...
       lockVariable: undefined,
       lockAction: "none",
     },
@@ -494,7 +495,7 @@ const ReplyLock = (props: {
         className="hoverable"
         {...props.reply.lockAction === "none"
           ? {
-            title: "Add a lock event to this option",
+            title: "Click to lock this reply on a locked variable",
             onClick: () => {
               // FIXME: error toast on no available bool variables? Or just hide this entirely?
               // or even offer to create a new variable then and there...
@@ -505,19 +506,15 @@ const ReplyLock = (props: {
                 lockAction: "lock",
               });
             },
-          }
-          : props.reply.lockAction === "lock"
-          ? {
-            title: "Lock this reply on a locked variable",
+          } : props.reply.lockAction === "lock" ? {
+            title: "Click to lock this reply on an unlocked variable",
             onClick: () => {
               props.set({
                 lockAction: "unlock",
               });
             },
-          }
-          // props.reply.lockAction === "unlock"
-          : {
-            title: "Lock this reply on a unlocked variable",
+          } : /* props.reply.lockAction === "unlock" */ {
+            title: "Click to remove locks from this reply",
             onClick: () => {
               props.set({
                 lockVariable: undefined,

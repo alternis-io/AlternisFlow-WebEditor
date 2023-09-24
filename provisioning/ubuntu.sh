@@ -37,6 +37,7 @@ pnpm install --frozen-lockfile
 pnpm -r run build
 (cd app/backend && pnpm run prisma:migrate)
 # run on unprivileged user
+DO_NOT_TRACK=1
 (cd app/backend && PORT=3000 node lib/api.ts) &
 #FIXME: copy over nginx config to this part of repo
 

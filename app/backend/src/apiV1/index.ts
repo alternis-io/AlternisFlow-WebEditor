@@ -1,6 +1,6 @@
-import * as express from 'express';
-import * as assert from "node:assert";
-import * as crypto from "node:crypto";
+import express from 'express';
+import assert from "node:assert";
+import crypto from "node:crypto";
 import { expressFixAsyncify } from "../util";
 import { PrismaClient, Document, User, WithId, WithToken, DocumentList } from '../prisma';
 

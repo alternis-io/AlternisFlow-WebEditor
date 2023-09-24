@@ -20,8 +20,7 @@ const router = createHashRouter([
     path: "/documents",
     element: (
       <ProjectSelector
-        onSelectProject={(projectId) => useAppState.setState({ projectId })
-      }
+        onSelectProject={(projectId) => useAppState.setState({ projectId })}
       />
     ),
   }

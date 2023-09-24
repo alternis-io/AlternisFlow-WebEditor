@@ -8,6 +8,7 @@
     "lib": ["ScriptHost", "ES2020"],
     "strict": true,
     "skipLibCheck": true,
+    "esModuleInterop": true,
     "types": ["node"]
   },
   "include": ["src/**/*.ts"]

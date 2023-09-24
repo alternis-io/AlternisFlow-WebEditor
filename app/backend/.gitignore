@@ -5,3 +5,5 @@ lib/
 dev.db*
 tests/e2e/test.db
 
+# logs, running the app can generate them
+*.log

@@ -7,8 +7,8 @@
   "scripts": {
     "postinstall": "prisma generate",
     "build": "tsc -p .",
-    "preview": "vite preview",
-    "dev": "cross-env PORT=4222 bun src/run.ts",
+    "start": "cross-env PORT=3000 bun lib/run.js",
+    "dev": "cross-env PORT=4222 bun --hot src/run.ts",
     "test": "mocha --config ./.mocharc.js tests/unit/**/*.test.ts",
     "test:e2e": "mocha --config tests/e2e/.mocharc.js tests/e2e/**/*.test.ts",
     "prisma:migrate": "prisma migrate dev --name init",

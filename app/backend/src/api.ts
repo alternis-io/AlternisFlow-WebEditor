@@ -19,6 +19,10 @@ const app = express()
   .use("/api/v1", apiV1)
   .use(logErrors);
 
+app.get('/app/*', (_req, res) => {
+  res.sendFile(path.join(__dirname, "../../../app/frontend/dist/index.html"))
+});
+
 if (process.env.NODE_ENV === "development") {
   app.use(cors({
     origin: "http://localhost:3001",

@@ -11,12 +11,11 @@ export function expressFixAsyncify<Req, Res>(
   cb: (
     req: Req,
     res: Res,
-    next: express.NextFunction,
   ) => Promise<void>
 ) {
   return (
     req: Req,
     res: Res,
     next: express.NextFunction
-  ) => cb(req, res, next).catch(next);
+  ) => cb(req, res).then(next).catch(next);
 }

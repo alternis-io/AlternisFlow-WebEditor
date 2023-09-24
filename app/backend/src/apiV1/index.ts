@@ -1,47 +1,50 @@
 import express from 'express';
 import assert from "node:assert";
-import crypto from "node:crypto";
 import { expressFixAsyncify } from "../util";
-import { PrismaClient, Document, User, WithId, WithToken, DocumentList } from '../prisma';
+import { PrismaClient, Document, User, WithId, DocumentList } from '../prisma';
+import { generateAccessToken, requireAuthToken } from "./auth";
+import createHttpError from 'http-errors';
 
 const prisma = new PrismaClient();
 
 const apiV1: express.Router = express.Router();
 
-apiV1.get<{}, User | null, WithToken>(
+apiV1.get<{}, User | null>(
   '/users/me',
+  requireAuthToken,
   expressFixAsyncify(async function getMyUser(req, res) {
     assert(req.headers.authorization, "can't create a document if not logged in");
     const me = await prisma.user.findUniqueOrThrow({
       where: {
-        token: req.headers.authorization.slice("Mike ".length),
-      },
-    });
+        token: req.headers.authorization.slice("Mike ".length), }, });
     res.json(me);
     res.end();
   })
 );
 
-apiV1.post<{}, WithId & WithToken, User>(
+apiV1.post<{}, WithId, User>(
   '/users/me',
   async function register(req, res) {
-    // FIXME: horrible temp token gen
-    // FIXME: use a blob
-    const base64Token = crypto.randomBytes(32).toString("base64");
+    // FIXME: add type checking step
+    if (!req.body.email) throw createHttpError(400);
+    const token = generateAccessToken({ email: req.body.email });
     const me = await prisma.user.create({
       data: {
-        ...req.body,
-        token: base64Token,
+        // FIXME: do not pass unsanitized reqs
+        id: req.body.id,
+        email: req.body.email,
+        token,
       },
     });
     assert(me.token !== null);
-    res.json(me as User & WithToken);
+    res.json(me as User);
     res.end();
   }
 );
 
-apiV1.post<{}, Partial<Document>, Partial<Document> & WithToken>(
+apiV1.post<{}, Partial<Document>, Partial<Document>>(
   '/users/me/documents',
+  requireAuthToken,
   expressFixAsyncify(async function createDocument(req, res) {
     // FIXME: 400
     assert(req.body.name, "must have a name");
@@ -69,8 +72,9 @@ apiV1.post<{}, Partial<Document>, Partial<Document> & WithToken>(
   })
 );
 
-apiV1.get<{}, DocumentList, WithToken>(
+apiV1.get<{}, DocumentList>(
   '/users/me/documents',
+  requireAuthToken,
   async function getMyDocumentList(req, res) {
     // FIXME: 401
     assert(req.headers.authorization, "missing authorization");
@@ -96,8 +100,9 @@ apiV1.get<{}, DocumentList, WithToken>(
   }
 );
 
-apiV1.get<{}, DocumentList, WithToken>(
+apiV1.get<{}, DocumentList>(
   '/users/me/documents/recent',
+  requireAuthToken,
   async function getMyRecentDocumentList(req, res) {
     // FIXME: 401
     assert(req.headers.authorization, "missing authorization");
@@ -127,7 +132,8 @@ apiV1.get<{}, DocumentList, WithToken>(
 
 apiV1.get<WithId, Document>(
   '/users/me/documents/:id',
-  async function getMyDocument(req, res){
+  requireAuthToken,
+  expressFixAsyncify(async function getMyDocument(req, res) {
     // FIXME: 401
     assert(req.headers.authorization, "missing authorization");
 
@@ -146,7 +152,7 @@ apiV1.get<WithId, Document>(
 
     res.json(doc);
     res.end();
-  }
+  })
 );
 
 export { apiV1 };

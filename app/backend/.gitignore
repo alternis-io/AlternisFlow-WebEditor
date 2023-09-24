@@ -2,8 +2,10 @@
 lib/
 
 # prisma local dev
-dev.db*
-tests/e2e/test.db
+*.db*
 
 # logs, running the app can generate them
 *.log
+
+# local dev token
+secret.token

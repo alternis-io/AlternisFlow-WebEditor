@@ -1,5 +1,5 @@
 import express from 'express';
-import createError from 'http-errors'
+import createHttpError from 'http-errors'
 import cors from 'cors';
 import assert from "node:assert";
 import path from "node:path";
@@ -23,7 +23,7 @@ const app = express()
   })
   .use("/api/v1", apiV1)
   .use((_req, _res, next) => {
-    next(createError(404));
+    next(createHttpError(404));
   })
   .use(logErrors)
   .use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

@@ -26,18 +26,31 @@ export const log = winston.createLogger({
   ]
 });
 
+const reset = "\x1b[0m";
+const red = "\x1b[31m";
+const green = "\x1b[32m";
+const yellow = "\x1b[33m";
+const magenta = "\x1b[34m";
+const cyan = "\x1b[35m";
+
 export function logRequests<
   Req extends express.Request<any, any, any, qs.ParsedQs, { log: winston.Logger }>,
   Res extends express.Response<any, { log: winston.Logger }>
 >(req: Req, res: Res, next: express.NextFunction) {
   res.locals.log = log;
   // FIXME: note that nginx already logs this all
+  // FIXME: see if winston provides this better
+  const timestamp = new Date().toISOString();
   log.info({
     level: 'info',
-    message: `${req.method.toUpperCase()} '${req.url}' `,
+    message:
+      `${cyan}${timestamp} | `
+      + `${yellow}${req.method.toUpperCase()} '${req.url}'\n`
+      + reset,
     ip: req.ip,
     url: req.url,
     method: req.method,
+    time: timestamp,
   });
   next();
 }
@@ -47,14 +60,19 @@ export function logErrors<
   Res extends express.Response<any, { log: winston.Logger }>
 >(err: Error, req: Req, res: Res, next: express.NextFunction) {
   // NOTE: nginx really does this all 
+  // FIXME: see if winston provides this better
+  const timestamp = new Date().toISOString();
   log.error({
     level: 'error',
-    message: err.message,
-    stack: err.stack,
+    message:
+      `${cyan}${timestamp} | `
+      + `${yellow}${req.method.toUpperCase()} '${req.url}'\n`
+      + `${red}${err.stack}\n`
+      + reset,
     ip: req.ip,
     url: req.url,
     method: req.method,
-    time: new Date().toISOString(),
+    time: timestamp,
   });
   next(err);
 }

@@ -31,6 +31,7 @@ export function logRequests<
   Res extends express.Response<any, { log: winston.Logger }>
 >(req: Req, res: Res, next: express.NextFunction) {
   res.locals.log = log;
+  // FIXME: note that nginx already logs this all
   log.info({
     level: 'info',
     message: `${req.method.toUpperCase()} '${req.url}' `,
@@ -45,7 +46,7 @@ export function logErrors<
   Req extends express.Request<any, any, any, qs.ParsedQs, { log: winston.Logger }>,
   Res extends express.Response<any, { log: winston.Logger }>
 >(err: Error, req: Req, res: Res, next: express.NextFunction) {
-  res.locals.log = log;
+  // NOTE: nginx really does this all 
   log.error({
     level: 'error',
     message: err.message,
@@ -55,7 +56,7 @@ export function logErrors<
     method: req.method,
     time: new Date().toISOString(),
   });
-  next();
+  next(err);
 }
 
 

@@ -33,7 +33,7 @@ const Homepage = () => {
         {...mouseInteractProps}
       >
         <iframe
-          src={process.env.NODE_ENV === "development" ? "http://localhost:3001" : "/app"}
+          src={process.env.NODE_ENV === "development" ? "http://localhost:3001" : "/app/index.html"}
           style={{
             width: "100%",
             height: "100%",

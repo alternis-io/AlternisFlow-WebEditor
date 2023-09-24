@@ -11,16 +11,19 @@ class AuthorizationError extends Error {}
 class ApiMisuseError extends Error {}
 
 const app = express()
-  // FIXME: resolve resource url better, maybe an env var?
   .use(logRequests)
+  // these are for development only, the real thing uses nginx aliases
   .use("/", express.static(path.join(__dirname, "../../../site/public")))
   .use("/app", express.static(path.join(__dirname, "../../../app/frontend/dist")))
   .use(express.json())
-  .use(cors({
-    origin: "http://localhost:3001",
-  }))
   .use("/api/v1", apiV1)
   .use(logErrors);
+
+if (process.env.NODE_ENV === "development") {
+  app.use(cors({
+    origin: "http://localhost:3001",
+  }));
+}
 
 export interface RunOpts {
   port?: number;

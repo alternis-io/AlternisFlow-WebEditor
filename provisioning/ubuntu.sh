@@ -19,6 +19,7 @@ sudo certbot certonly --nginx
 # symlink versioned nginx.conf to provisioned box
 
 sudo adduser mike
+sudo usermod -aG www-data mike
 ufw allow 22/tcp
 ufw allow 80/tcp
 ufw allow 443/tcp

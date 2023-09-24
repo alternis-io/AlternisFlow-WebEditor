@@ -10,6 +10,7 @@
   "devDependencies": {
     "@bentley/react-hooks": "^1.2.0",
     "@playwright/test": "^1.30.0",
+    "@stardazed/streams-compression": "^1.0.0",
     "@types/chai": "^4.3.4",
     "@types/jsdom-global": "^3.0.4",
     "@types/mocha": "^10.0.1",
@@ -26,18 +27,20 @@
     "playwright-core": "^1.30.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-router-dom": "^6.16.0",
     "reactflow": "^11.7.4",
     "rollup-plugin-visualizer": "^5.9.0",
     "sinon": "^15.0.1",
     "ts-node": "^10.9.1",
-    "typescript": "5.0.0-beta",
+    "typescript": "^5.0.0",
     "vite": "^4.0.4",
     "vite-plugin-inspect": "^0.7.15",
-    "vite-plugin-svgr": "^3.2.0"
-  },
-  "dependencies": {
-    "@stardazed/streams-compression": "^1.0.0",
-    "react-router-dom": "^6.16.0",
+    "vite-plugin-svgr": "^3.2.0",
     "zustand": "^4.4.1"
+  },
+  "//": [
+    "everything is bundled, no prod deps"
+  ],
+  "dependencies": {
   }
 }

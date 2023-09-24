@@ -11,6 +11,8 @@ rsync -aP --exclude=.git --exclude=node_modules --exclude=.cache $REPO_DIR $STAG
 pushd $STAGING_DIR
 # install prod dependencies only, we don't need the dev dependencies on the server
 pnpm --production install
+# NOTE: the postinstall step that runs `prisma generate` needs to be rerun on the host, it
+# generates host-specific bindings
 popd
 
 # copy to the server

@@ -97,9 +97,10 @@ const Homepage = () => {
         </strong>
       </p>
 
-      <p>
+      <p style={{ textAlign: "center" }}>
       Want custom pricing, or support for a specific engine or environment?
-      Reach out to us at <MailLink email="support@alternis.com" />
+      <br />
+      Reach out to us at <MailLink email="support@alternis.io" />
       </p>
 
     </Layout>

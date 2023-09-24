@@ -14,7 +14,8 @@ const Homepage = () => {
 
       <p>
         Think your feature or platform request should be here?
-        Reach out to us at <MailLink email="support@alternis.com" />
+        <br/>
+        Reach out to us at <MailLink email="support@alternis.io" />
       </p>
 
       <div className="center">

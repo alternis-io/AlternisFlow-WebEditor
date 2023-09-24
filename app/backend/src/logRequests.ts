@@ -12,14 +12,15 @@ export const log = winston.createLogger({
       extension: '.log',
       dirname: process.env.LOG_DIR ?? process.cwd(),
       // zippedArchive: true,
-      maxSize: '20m'
+      maxSize: '20m',
+      level: 'error',
     }),
     new DailyRotateFileTransport({
       filename: 'server',
       extension: '.log',
       dirname: process.env.LOG_DIR ?? process.cwd(),
-      // zippedArchive: true,
-      maxSize: '20m'
+      zippedArchive: true,
+      maxSize: '20m',
     }),
     new winston.transports.Console({ format: winston.format.simple() }),
   ]

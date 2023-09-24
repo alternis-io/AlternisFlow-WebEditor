@@ -5,6 +5,7 @@
   "main": "lib/api.js",
   "types": "lib/api.d.ts",
   "scripts": {
+    "postinstall": "prisma generate",
     "build": "tsc -p .",
     "preview": "vite preview",
     "dev": "cross-env PORT=4222 ts-node src/api.ts",

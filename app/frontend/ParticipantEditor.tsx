@@ -187,9 +187,10 @@ export function ParticipantEditor() {
         {participants.map((p, i) =>
           <div
             key={p.name}
-            {...classNames(styles.portraitImage, "hoverable", "draggable")}
+            // FIXME: note that center's display:flex breaks text-overflow
+            {...classNames(styles.portraitImage, "hoverable", "draggable", "center")}
             onClick={() => setSelectedName(p.name)}
-            title={"Click to edit, drag to drop"}
+            title={p.name + `\nClick to edit. Drag and drop into the graph to add a line node`}
             onContextMenu={(e) => {
               // FIXME: add a delete here
             }}

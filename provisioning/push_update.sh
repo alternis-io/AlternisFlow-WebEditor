@@ -1,14 +1,17 @@
-# production build
-git clone .. temp
-pushd temp
-pnpm --production i
-# copy over static site?
+#!/usr/bin/env bash
 
-pnpm -w build
+REPO_DIR="$(dirname "$(dirname "$0")")"
+REPO_NAME="$(basename "$(readlink --canonicalize "$REPO_DIR")")"
+STAGING_DIR="/tmp/$REPO_NAME-staging"
 
-# FIXME: tar.gz it locally and extract on the other side?
-# copy to staging directory
-scp ../prod-build mike@alternis.io:alternis
-# env vars?
-ssh mike@alternis.io -c 'cd alternis && pnpm exec prisma migrate'
-# test in staging directory?
+## production build
+rm -rf $STAGING_DIR
+# copy over built goods but not caches or dependencies
+rsync -aP --exclude=.git --exclude=node_modules --exclude=.cache $REPO_DIR $STAGING_DIR
+pushd $STAGING_DIR
+# install prod dependencies only, we don't need the dev dependencies on the server
+pnpm --production install
+popd
+
+# copy to the server
+rsync -aPzv $STAGING_DIR mike@alternis.io:alternis-v1-deploy-stage

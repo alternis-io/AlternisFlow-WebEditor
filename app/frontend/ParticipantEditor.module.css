@@ -3,8 +3,8 @@
   display: grid;
   grid-auto-rows: min-content;
   max-height: 31vh;
+  gap: 2px;
 
-  flex-wrap: wrap;
   overflow: scroll;
 }
 

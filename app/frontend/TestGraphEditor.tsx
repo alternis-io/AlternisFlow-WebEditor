@@ -476,6 +476,7 @@ const AddLockIcon = (props: { width?: number, height?: number }) => <div
 />;
 
 const ReplyLock = (props: {
+  keyPrefix?: React.Key;
   reply: PlayerReply;
   set: (s: Partial<PlayerReply> | ((s: PlayerReply) => Partial<PlayerReply>)) => void;
   index: number;
@@ -492,6 +493,7 @@ const ReplyLock = (props: {
   return (
     <>
       <Center
+        key={`${props.keyPrefix ?? ""}-lockicon`}
         className="hoverable"
         {...props.reply.lockAction === "none"
           ? {
@@ -527,6 +529,7 @@ const ReplyLock = (props: {
         <Icon width="1em" height="1em" />
       </Center>
       <select
+        key={`${props.keyPrefix ?? ""}-lockselect`}
         value={props.reply.lockVariable}
         onChange={(e) => props.set({ lockVariable: e.currentTarget.value })}
         style={{
@@ -599,6 +602,7 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
             />
             <ReplyLock
               key={`replylock-${index}`}
+              keyPrefix={`replylock-${index}`}
               reply={reply}
               set={(s) => set((prevReplies) => {
                 const nextReplies = prevReplies.replies.slice();

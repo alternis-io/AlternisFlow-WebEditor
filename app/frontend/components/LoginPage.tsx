@@ -20,7 +20,8 @@ function isValidPassword(value: string) {
 }
 
 export function LoginState(_props: LoginPage.Props) {
-  const { api, isLoggedIn } = useApi();
+  const isLoggedIn = useApi(s => s.computed.isLoggedIn);
+  const api = useApi(s => s.api);
 
   const [email, emailInput, setEmailInput, _emailStatus, emailError] = useValidatedInput<string>("", {
     parse: (x) => ({ value: x }),

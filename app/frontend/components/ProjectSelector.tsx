@@ -1,22 +1,21 @@
 import React from "react";
 import { useApi } from "../hooks/useApi";
 import { defaultAppState, useAppState } from "../AppState";
-import { useAsyncEffect } from "@bentley/react-hooks";
+import { useAsyncEffect, useAsyncInterval } from "@bentley/react-hooks";
 import type { Document } from "dialogue-middleware-app-backend/lib/prisma";
 import { Center } from "../Center";
 import { classNames } from "js-utils/lib/react-utils";
 
 export function ProjectSelector(props: ProjectSelector.Props) {
-  const { api } = useApi();
+  const documents = useApi(s => s.documents);
+  const syncMyRecentsDocuments = useApi(s => s.api.syncMyRecentsDocuments);
+  const createDocument = useApi(s => s.api.createDocument);
 
-  // FIXME: use a separate store for this stuff in useApi
-  const [projectsList, setProjectsList] = React.useState<Document[]>();
+  const _10min = 10 * 60 * 1000;
 
-  useAsyncEffect(async ({ isStale }) => {
-    const result = await api.getMyDocumentList().then(r => r.json());
-    if (!isStale())
-      setProjectsList(result);
-  }, []);
+  useAsyncInterval(async () => {
+    await syncMyRecentsDocuments();
+  }, _10min);
 
   return (
     <div style={{
@@ -25,11 +24,11 @@ export function ProjectSelector(props: ProjectSelector.Props) {
       gridAutoRows: `fit-content`,
       gap: 22,
     }}>
-      {projectsList?.map((project) => (
+      {documents?.map((d) => (
         <div
-          key={project.name}
+          key={d.name}
           onClick={() => {
-            props.onSelectProject(project.name);
+            props.onSelectProject(d.name);
           }}
           style={{
             padding: 22,
@@ -37,19 +36,24 @@ export function ProjectSelector(props: ProjectSelector.Props) {
           }}
         >
           <Center>
-            <input value={project.name} />
+            <span
+              contentEditable
+              onBlur={(e) => useApi.setState((s) => ({
+                documents: s.documents?.map((dd) =>
+                  d.id !== dd.id
+                  ? dd
+                  : { ...dd, name: e.currentTarget.innerText }
+                ),
+              }))}
+            >
+              {d.name}
+            </span>
           </Center>
         </div>
       ))}
       <div
         {...classNames("newButton", "hoverable")}
-        onClick={() => {
-          api.createDocument({
-            // FIXME: make this optional
-            name: `New Project ${Math.floor(Math.random())}`,
-            jsonContents: JSON.stringify(defaultAppState),
-          });
-        }}
+        onClick={() => createDocument()}
         style={{
           padding: 22,
           minHeight: "25vh",

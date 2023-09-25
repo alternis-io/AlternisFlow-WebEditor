@@ -1,12 +1,9 @@
 import * as express from 'express';
 
-// 401
-export class AuthorizationError extends Error {}
-// 400
-export class ApiMisuseError extends Error {}
-
-// handle promises in express@<5
-// FIXME: use bun
+/**
+ * A successful promise is considered as ending the middleware chain, and therefore
+ * `next` is not called
+ */
 export function expressFixAsyncify<Req, Res>(
   cb: (
     req: Req,
@@ -17,5 +14,5 @@ export function expressFixAsyncify<Req, Res>(
     req: Req,
     res: Res,
     next: express.NextFunction
-  ) => cb(req, res).then(next).catch(next);
+  ) => cb(req, res).catch(next);
 }

@@ -76,11 +76,13 @@ export async function requireAuthToken<
       verifyResult.payload.aud && typeof verifyResult.payload.aud === "string",
       "no audience in token"
     );
+    console.log(req.locals);
+    if (req.locals === undefined) req.locals = {};
     req.locals!.user = { email: verifyResult.payload.aud };
     req.locals!.token = token;
+    next();
   } catch (err: any) {
     res.sendStatus(403);
+    next(createHttpError(403));
   }
-
-  next();
 }

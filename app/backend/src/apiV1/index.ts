@@ -81,17 +81,15 @@ apiV1.post<{}, Partial<Document>, Partial<Document>>(
   '/users/me/documents',
   requireAuthToken,
   expressFixAsyncify(async function createDocument(req, res) {
-    if (!req.body.name) throw createHttpError(400, "name field is missing");
-
     // FIXME: this can throw
     const doc = await prisma.document.create({
       data: {
-        name: req.body.name,
+        name: "New Project",
         jsonContents: req.body.jsonContents ?? "{}",
         owner: {
           connect: {
             // FIXME: think again if we need to store the token...
-            token: req.locals.token,
+            email: req.locals.user!.email,
           },
         },
       },

@@ -4,6 +4,7 @@
     "declaration": false,
     "target": "es2015",
     "module": "CommonJS",
+    "jsx": "react",
     "moduleResolution": "node",
     "lib": ["DOM", "ScriptHost", "ES2020"],
     "strict": true,

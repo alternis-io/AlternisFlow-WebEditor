@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
 import assert from "node:assert";
+import createHttpError from "http-errors";
 
 // FIXME: use some kind of config dir
 const tokenSecretPath = path.join(__dirname, "secret.token");
@@ -28,6 +29,17 @@ export function generateAccessToken(userInfo: AuthUserInfo) {
   return jwt.sign(userInfo, tokenSecret, { expiresIn: '1800s' });
 }
 
+declare global {
+  namespace Express {
+    export interface Request {
+      locals: {
+        user?: AuthUserInfo;
+        token?: string;
+      }
+    }
+  }
+}
+
 // FIXME: add typing
 export function requireAuthToken<
   P = any, // express.ParamsDictionary,
@@ -36,30 +48,24 @@ export function requireAuthToken<
   ReqQuery = any, // express.Query,
   ReqLocals extends Record<string, any> = Record<string, any>,
   ResLocals extends Record<string, any> = Record<string, any>,
-  //Req extends express.Request<> & { locals?: { user?: AuthUserInfo } },
-  //Res extends express.Response,
 >(
-  req: express.Request<P, ResBody, ReqBody, ReqQuery, ReqLocals>
-    & { locals?: ReqLocals }
-    & { locals?: { user?: AuthUserInfo } },
+  req: express.Request<P, ResBody, ReqBody, ReqQuery, ReqLocals>,
   res: express.Response<ResBody, ResLocals>,
   next: express.NextFunction,
 ) {
   const authHeader = req.headers.authorization;
   if (!authHeader)
-    return res.sendStatus(401);
+    return next(createHttpError(401));
+
   const [type, token] = authHeader.split(' ');
 
-  // FIXME: can I pass an error to next() here?
-  if (type !== 'Bearer')
-    return res.sendStatus(400);
-  if (!token)
-    return res.sendStatus(400);
+  if (type !== 'Bearer' || !token)
+    return next(createHttpError(400, "Invalid authorization format"));
 
   jwt.verify(token, tokenSecret, (err, user) => {
     if (err) return res.sendStatus(403);
     req.locals!.user = user as AuthUserInfo;
+    req.locals!.token = token;
     next();
   });
 }
-

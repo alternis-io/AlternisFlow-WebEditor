@@ -6,6 +6,7 @@ import { ProjectDataEditor } from "./ProjectDataEditor";
 import { Split } from "./Split";
 import { resetAllAppState, useAppState } from "./AppState";
 import downloadFile, { uploadFile } from "./localFileManip";
+import { LoginState } from "./components/LoginPage";
 
 // FIXME: use vite feature to get port from env
 const apiBaseUrl = "http://localhost:3001"
@@ -54,6 +55,7 @@ function Header() {
         >
           Reset
         </button>
+        <LoginState />
       </div>
     }
   />;

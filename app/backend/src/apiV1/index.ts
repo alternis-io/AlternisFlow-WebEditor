@@ -1,7 +1,7 @@
 import express from 'express';
 import assert from "node:assert";
 import { expressFixAsyncify } from "../util";
-import { PrismaClient, Document, User, WithId, DocumentList } from '../prisma';
+import { PrismaClient, Document, User, WithId, DocumentList, WithToken } from '../prisma';
 import { generateAccessToken, requireAuthToken } from "./auth";
 import createHttpError from 'http-errors';
 
@@ -13,51 +13,87 @@ apiV1.get<{}, User | null>(
   '/users/me',
   requireAuthToken,
   expressFixAsyncify(async function getMyUser(req, res) {
-    assert(req.headers.authorization, "can't create a document if not logged in");
     const me = await prisma.user.findUniqueOrThrow({
-      where: {
-        token: req.headers.authorization.slice("Mike ".length), }, });
+      where: { token: req.locals.token },
+    });
+
+    delete (me as any).passwordHash;
     res.json(me);
     res.end();
   })
 );
 
-apiV1.post<{}, WithId, User>(
-  '/users/me',
+apiV1.post<{}, WithId, { email: string; password: string }>(
+  '/users/me/register',
   async function register(req, res) {
     // FIXME: add type checking step
-    if (!req.body.email) throw createHttpError(400);
+    if (!req.body.email) throw createHttpError(400, "email field is missing");
+    if (!req.body.password) throw createHttpError(400, "password field is missing");
+
+    const passwordHash = await Bun.password.hash(req.body.password)
     const token = generateAccessToken({ email: req.body.email });
+
     const me = await prisma.user.create({
       data: {
-        // FIXME: do not pass unsanitized reqs
-        id: req.body.id,
+        // FIXME: do not pass unsanitized req.body directly everywhere
         email: req.body.email,
         token,
+        passwordHash, // FIXME: is there a way to annotate this as sensitive?
       },
     });
-    assert(me.token !== null);
-    res.json(me as User);
+
+    delete (me as any).passwordHash;
+    res.json(me);
     res.end();
   }
 );
+
+apiV1.post<{}, WithToken, { email: string, password: string }>(
+  '/users/me/login',
+  async function login(req, res) {
+    // FIXME: add type checking step
+    if (!req.body.email) throw createHttpError(400, "email field is missing");
+    if (!req.body.password) throw createHttpError(400, "password field is missing");
+
+    const me = await prisma.user.findUnique({
+      select: { passwordHash: true },
+      where: { email: req.body.email },
+    });
+
+    // FIXME: confirm this status
+    const noSuchUserError = createHttpError(400, "The username or password is not correct");
+
+    if (me === null)
+      throw noSuchUserError;
+
+    const passwordHash = await Bun.password.hash(req.body.password);
+
+    if (me.passwordHash !== passwordHash)
+      throw createHttpError("The user doesn't exist")
+
+    const token = generateAccessToken({ email: req.body.email });
+
+    res.json({ token });
+    res.end();
+  }
+);
+
 
 apiV1.post<{}, Partial<Document>, Partial<Document>>(
   '/users/me/documents',
   requireAuthToken,
   expressFixAsyncify(async function createDocument(req, res) {
-    // FIXME: 400
-    assert(req.body.name, "must have a name");
-    // FIXME: 401
-    assert(req.headers.authorization, "missing authorization");
+    if (!req.body.name) throw createHttpError(400, "name field is missing");
 
+    // FIXME: this can throw
     const doc = await prisma.document.create({
       data: {
         name: req.body.name,
         jsonContents: req.body.jsonContents ?? "{}",
         owner: {
           connect: {
-            token: req.headers.authorization.slice("Mike ".length),
+            // FIXME: think again if we need to store the token...
+            token: req.locals.token,
           },
         },
       },
@@ -75,10 +111,7 @@ apiV1.post<{}, Partial<Document>, Partial<Document>>(
 apiV1.get<{}, DocumentList>(
   '/users/me/documents',
   requireAuthToken,
-  async function getMyDocumentList(req, res) {
-    // FIXME: 401
-    assert(req.headers.authorization, "missing authorization");
-
+  expressFixAsyncify(async function getMyDocumentList(req, res) {
     const docs = await prisma.document.findMany({
       select: {
         id: true,
@@ -88,7 +121,7 @@ apiV1.get<{}, DocumentList>(
       },
       where: {
         owner: {
-          token: req.headers.authorization.slice("Mike ".length),
+          token: req.locals.token,
         },
       },
       // FIXME: do proper paging, this is just for safety
@@ -97,16 +130,13 @@ apiV1.get<{}, DocumentList>(
 
     res.json(docs);
     res.end();
-  }
+  })
 );
 
 apiV1.get<{}, DocumentList>(
   '/users/me/documents/recent',
   requireAuthToken,
-  async function getMyRecentDocumentList(req, res) {
-    // FIXME: 401
-    assert(req.headers.authorization, "missing authorization");
-
+  expressFixAsyncify(async function getMyRecentDocumentList(req, res) {
     const docs = await prisma.document.findMany({
       select: {
         id: true,
@@ -115,9 +145,7 @@ apiV1.get<{}, DocumentList>(
         updatedAt: true,
       },
       where: {
-        owner: {
-          token: req.headers.authorization.slice("Mike ".length),
-        },
+        owner: { token: req.locals.token },
       },
       take: 50,
       orderBy: {
@@ -127,30 +155,31 @@ apiV1.get<{}, DocumentList>(
 
     res.json(docs);
     res.end();
-  }
+  })
 );
 
 apiV1.get<WithId, Document>(
   '/users/me/documents/:id',
   requireAuthToken,
   expressFixAsyncify(async function getMyDocument(req, res) {
-    // FIXME: 401
-    assert(req.headers.authorization, "missing authorization");
-
     // FIXME: bad route if failed
     const id = Number(req.params.id);
 
+    if (Number.isNaN(id))
+      throw createHttpError(400, "invalid id");
+
+    // FIXME: does info leak by throwing?
     const doc = await prisma.document.findUniqueOrThrow({
       where: {
         id,
-        // FIXME: no idea if this works
-        owner: {
-          token: req.headers.authorization.slice("Mike ".length),
-        },
+        owner: { token: req.locals.token },
       },
     });
 
-    res.json(doc);
+    res.json({
+      ...doc,
+      jsonContents: JSON.parse(doc.jsonContents),
+    });
     res.end();
   })
 );

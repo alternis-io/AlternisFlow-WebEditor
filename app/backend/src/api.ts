@@ -1,3 +1,5 @@
+// FIXME: rename file to app.ts or something
+
 import express from 'express';
 import createHttpError from 'http-errors'
 import cors from 'cors';
@@ -6,12 +8,16 @@ import path from "node:path";
 import { apiV1 } from './apiV1';
 import { logRequests, logErrors } from "./logRequests";
 
-// 401
-class AuthorizationError extends Error {}
-// 400
-class ApiMisuseError extends Error {}
-
 const app = express()
+
+if (process.env.NODE_ENV === "development") {
+  console.log("adding cors origin localhost:3001");
+  app.use(cors({
+    origin: "http://localhost:3001",
+  }));
+}
+
+app
   .use(logRequests)
   .use(express.json())
   .use(express.urlencoded({ extended: false }))
@@ -36,12 +42,6 @@ const app = express()
 ;
 
 // the app is an SPA, redirect all requests to index.html
-
-if (process.env.NODE_ENV === "development") {
-  app.use(cors({
-    origin: "http://localhost:3001",
-  }));
-}
 
 export interface RunOpts {
   port?: number;

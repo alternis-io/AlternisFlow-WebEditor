@@ -580,9 +580,9 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
       <p>Player</p>
       <div className={styles.playerRepliesBody} ref={nodeBodyRef}>
         {data.replies.map((reply, index) => (
-          //<div key={index} className={styles.randomSwitchInput}>
           <>
             <input
+              key={`input-${index}`}
               value={reply.text}
               onChange={(e) => {
                 set(({ replies }) => {
@@ -598,6 +598,7 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
               }}
             />
             <ReplyLock
+              key={`replylock-${index}`}
               reply={reply}
               set={(s) => set((prevReplies) => {
                 const nextReplies = prevReplies.replies.slice();
@@ -610,6 +611,7 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
               index={index}
             />
             <Center
+              key={`delete-${index}`}
               className="hoverable"
               title="Delete this option"
               onClick={() => set(s => {
@@ -628,6 +630,7 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
               <em>&times;</em>
             </Center>
             <NodeHandle
+              key={`handle-${index}`}
               id={`${props.id}_${index}`}
               type="source"
               position="right"

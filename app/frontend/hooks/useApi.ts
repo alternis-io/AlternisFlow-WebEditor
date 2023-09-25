@@ -1,12 +1,12 @@
 import { AppState } from "../AppState";
 import { assert } from "js-utils/lib/browser-utils";
 //import * as polyfills from "../polyfills";
-import type { CreateDocument, Document, RegisterUserData, User } from "dialogue-middleware-app-backend/lib/prisma";
+import type { CreateDocument, RegisterUserData, User } from "dialogue-middleware-app-backend/lib/prisma";
 import { useMemo, useState } from "react";
 
 const authv1Cookie = "authv1_tok";
 
-function parseCookieFields(cookie = document.cookie): Record<string, string> {
+function parseCookieAttrs(cookie = document.cookie): Record<string, string> {
   return Object.fromEntries(
     cookie
       .split(/;\s*/g)
@@ -14,16 +14,16 @@ function parseCookieFields(cookie = document.cookie): Record<string, string> {
   );
 }
 
-function stringifyCookieFields(obj: Record<string, string>): string {
+function stringifyCookieAttrs(obj: Record<string, string>): string {
   return Object.entries(obj)
     .map(([k, v]) => `${k}=${v}`)
     .join('; ');
 }
 
-function setCookieField(cookie: string, key: string, value: string): string {
-  const fields = parseCookieFields(cookie);
+function setCookieAttr(cookie: string, key: string, value: string): string {
+  const fields = parseCookieAttrs(cookie);
   fields[key] = value;
-  return stringifyCookieFields(fields);
+  return stringifyCookieAttrs(fields);
 }
 
 export interface ApiClient {
@@ -49,7 +49,7 @@ const apiPerConfigCache = new Map<string, { api: ApiClient; token: string | unde
 export function useApi({
   // FIXME: change this dynamically between prod and development?
   // (use vite's import.meta.env)
-  baseUrl = "http://localhost:4222",
+  baseUrl = "http://localhost:4222/api/v1",
 } = {}): Omit<UseApiResult, "token"> {
   let cached = apiPerConfigCache.get(baseUrl);
 
@@ -58,18 +58,23 @@ export function useApi({
   const setToken = (newVal: string | undefined) => {
     assert(cached);
     cached.token = newVal;
+    // FIXME: use an http only cookie instead to store the jwt client side
+    if (newVal) localStorage.setItem(authv1Cookie, newVal);
+    else localStorage.removeItem(authv1Cookie);
     setIsLoggedIn(newVal !== undefined);
   };
 
   if (cached === undefined) {
-    const apiFetch = (subpath: string, reqOpts: RequestInit = {}) =>
-      fetch(`${baseUrl}${subpath}`, {
+    const apiFetch = (subpath: string, reqOpts: RequestInit = {}) => {
+      assert(subpath.startsWith("/"));
+      return fetch(`${baseUrl}${subpath}`, {
         ...reqOpts,
         headers: {
           ...cached!.token && {'Authorization': `Bearer ${cached!.token}`},
           ...reqOpts.headers,
         },
       });
+    }
 
     async function likeLogin(subpath: "register" | "login", user: RegisterUserData) {
       const resp = await apiFetch(`/users/me/${subpath}`, {
@@ -82,14 +87,11 @@ export function useApi({
       const respJson = await resp.json();
       assert(respJson?.token, "no token in login response");
       setToken(respJson.token as string);
-      // FIXME: this is not more secure than local storage, need to
-      // make it an http only cookie on the server side
-      document.cookie = setCookieField(document.cookie, authv1Cookie, respJson.token);
     }
 
     // FIXME: use a local zustand store optimistically?
     cached = {
-      token: parseCookieFields()[authv1Cookie],
+      token: localStorage.getItem(authv1Cookie) ?? undefined,
       api: {
         register: (user: RegisterUserData) => likeLogin("register", user),
         login: (user: RegisterUserData) => likeLogin("login", user),

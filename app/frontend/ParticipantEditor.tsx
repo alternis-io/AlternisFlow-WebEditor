@@ -153,7 +153,9 @@ export function ParticipantEditor() {
         </label>
         <div style={{color: "#f00"}}> { nameStatus !== "success" && nameStatusMessage } </div>
         </> : <>
-          Select a participant to see and edit them
+          {participants.length > 0
+            ? "Select a participant to see and edit them"
+            : "Add a participant above to see and edit them"}
         </>
       }
     </div>

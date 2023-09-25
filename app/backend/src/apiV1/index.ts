@@ -31,7 +31,7 @@ apiV1.post<{}, WithId, { email: string; password: string }>(
     if (!req.body.password) throw createHttpError(400, "password field is missing");
 
     const passwordHash = await Bun.password.hash(req.body.password)
-    const token = generateAccessToken({ email: req.body.email });
+    const token = await generateAccessToken({ email: req.body.email });
 
     const me = await prisma.user.create({
       data: {
@@ -66,12 +66,10 @@ apiV1.post<{}, WithToken, { email: string, password: string }>(
     if (me === null)
       throw noSuchUserError;
 
-    const passwordHash = await Bun.password.hash(req.body.password);
+    if (!await Bun.password.verify(req.body.password, me.passwordHash))
+      throw noSuchUserError;
 
-    if (me.passwordHash !== passwordHash)
-      throw createHttpError("The user doesn't exist")
-
-    const token = generateAccessToken({ email: req.body.email });
+    const token = await generateAccessToken({ email: req.body.email });
 
     res.json({ token });
     res.end();

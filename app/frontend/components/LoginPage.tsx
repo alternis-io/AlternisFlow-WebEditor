@@ -65,27 +65,27 @@ export function LoginState(_props: LoginPage.Props) {
         }}
         ref={popupRef}
       >
-        <p>Login</p>
-        <label className="split" style={{ maxWidth: 300, }}>
-          Email:
-          <input value={emailInput} type="email" onChange={(e) => setEmailInput(e.currentTarget.value)}/>
-        </label>
-        <div style={{color: "red"}}>{emailError}</div>
-        <label className="split" style={{ maxWidth: 300, }}>
-          Password:
-          <input value={passwordInput} type="password" onChange={(e) => setPasswordInput(e.currentTarget.value)} />
-        </label>
-        <div style={{color: "red"}}>{passwordError}</div>
         {isLoggedIn ? <button
           onClick={async () => {
-            throw Error("implement"); // FIXME
+            document.cookie = "";
+            throw Error("unimplemented!");
           }}
-          disabled={true}
           title={"unimplemented"}
         >
           Logout
         </button>
           : <>
+            <p>Login</p>
+            <label className="split" style={{ maxWidth: 300, }}>
+              Email:
+              <input value={emailInput} type="email" onChange={(e) => setEmailInput(e.currentTarget.value)}/>
+            </label>
+            <div style={{color: "red"}}>{emailError}</div>
+            <label className="split" style={{ maxWidth: 300, }}>
+              Password:
+              <input value={passwordInput} type="password" onChange={(e) => setPasswordInput(e.currentTarget.value)} />
+            </label>
+            <div style={{color: "red"}}>{passwordError}</div>
             <button
               onClick={async () => {
                 if (!inputValid) return;

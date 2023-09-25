@@ -1,5 +1,5 @@
 import type express from "express";
-import jwt from "jsonwebtoken";
+import * as jose from "jose";
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
@@ -25,8 +25,14 @@ export interface AuthUserInfo {
   email: string;
 }
 
-export function generateAccessToken(userInfo: AuthUserInfo) {
-  return jwt.sign(userInfo, tokenSecret, { expiresIn: '1800s' });
+export async function generateAccessToken(userInfo: AuthUserInfo) {
+  return await new jose.SignJWT({})
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setIssuer('alternis.io')
+    .setAudience(userInfo.email)
+    .setExpirationTime('2h')
+    .sign(tokenSecret);
 }
 
 declare global {
@@ -41,7 +47,7 @@ declare global {
 }
 
 // FIXME: add typing
-export function requireAuthToken<
+export async function requireAuthToken<
   P = any, // express.ParamsDictionary,
   ResBody = any,
   ReqBody = any,
@@ -62,10 +68,19 @@ export function requireAuthToken<
   if (type !== 'Bearer' || !token)
     return next(createHttpError(400, "Invalid authorization format"));
 
-  jwt.verify(token, tokenSecret, (err, user) => {
-    if (err) return res.sendStatus(403);
-    req.locals!.user = user as AuthUserInfo;
+  try {
+    const verifyResult = await jose.jwtVerify(token, tokenSecret, {
+      issuer: 'alternis.io',
+    });
+    assert(
+      verifyResult.payload.aud && typeof verifyResult.payload.aud === "string",
+      "no audience in token"
+    );
+    req.locals!.user = { email: verifyResult.payload.aud };
     req.locals!.token = token;
-    next();
-  });
+  } catch (err: any) {
+    res.sendStatus(403);
+  }
+
+  next();
 }

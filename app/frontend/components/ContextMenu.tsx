@@ -46,8 +46,8 @@ export const ContextMenu = ({
         setTimeout(() => doBlockLeftClick.current = false, 1);
       }
       // FIXME: null or delete?
-      rootElem.style.top = `${e.pageY}`;
-      rootElem.style.left = `${e.pageX}`;
+      rootElem.style.top = `${e.pageY}px`;
+      rootElem.style.left = `${e.pageX}px`;
       show();
     };
 
@@ -88,8 +88,9 @@ export namespace ContextMenu {
 
 
 export function ContextMenuOptions(props: ContextMenuOptions.Props) {
+  const { options, ...divProps } = props;
   return (
-    <div {...props} {...classNames(styles.contextMenuOptions, props.className)}>
+    <div {...divProps} {...classNames(styles.contextMenuOptions, props.className)}>
       {props.options.map(option => (
         <li
           key={option.id}

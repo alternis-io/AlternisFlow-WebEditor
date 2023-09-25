@@ -36,11 +36,10 @@
     "vite": "^4.0.4",
     "vite-plugin-inspect": "^0.7.15",
     "vite-plugin-svgr": "^3.2.0",
+    "zundo": "^2.0.0",
     "zustand": "^4.4.1"
   },
   "//": [
     "everything is bundled, no prod deps"
-  ],
-  "dependencies": {
-  }
+  ]
 }

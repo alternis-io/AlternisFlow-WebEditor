@@ -7,11 +7,10 @@ import { Center } from "../Center";
 import { classNames } from "js-utils/lib/react-utils";
 
 export function ProjectSelector(props: ProjectSelector.Props) {
-  const api = useApi();
+  const { api } = useApi();
 
-  // FIXME: use a separate store for this stuff locally?
+  // FIXME: use a separate store for this stuff in useApi
   const [projectsList, setProjectsList] = React.useState<Document[]>();
-  console.log(projectsList);
 
   useAsyncEffect(async ({ isStale }) => {
     const result = await api.getMyDocumentList().then(r => r.json());
@@ -30,7 +29,7 @@ export function ProjectSelector(props: ProjectSelector.Props) {
         <div
           key={project.name}
           onClick={() => {
-            props.onSelectProject(project);
+            props.onSelectProject(project.name);
           }}
           style={{
             padding: 22,
@@ -38,7 +37,7 @@ export function ProjectSelector(props: ProjectSelector.Props) {
           }}
         >
           <Center>
-            {project.name}
+            <input value={project.name} />
           </Center>
         </div>
       ))}
@@ -46,8 +45,8 @@ export function ProjectSelector(props: ProjectSelector.Props) {
         {...classNames("newButton", "hoverable")}
         onClick={() => {
           api.createDocument({
-            id: `id_${Math.random()}`,
-            name: `name_${Math.random()}`,
+            // FIXME: make this optional
+            name: `New Project ${Math.floor(Math.random())}`,
             jsonContents: JSON.stringify(defaultAppState),
           });
         }}

@@ -11,10 +11,9 @@ import { logRequests, logErrors } from "./logRequests";
 const app = express()
 
 if (process.env.NODE_ENV === "development") {
-  console.log("adding cors origin localhost:3001");
-  app.use(cors({
-    origin: "http://localhost:3001",
-  }));
+  console.log("adding cors for development");
+  //app.use(cors({ origin: "http://localhost:3001", }));
+  app.use(cors());
 }
 
 app

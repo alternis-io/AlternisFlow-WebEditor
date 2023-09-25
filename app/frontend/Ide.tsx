@@ -1,10 +1,11 @@
-import React, { useLayoutEffect, useState } from "react";
+import React, { useLayoutEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import TestGraphEditor from "./TestGraphEditor";
 import styles from "./Ide.module.css";
 import { DialogueViewer } from "./DialogueViewer";
 import { ProjectDataEditor } from "./ProjectDataEditor";
 import { Split } from "./Split";
-import { resetAllAppState, useAppState } from "./AppState";
+import { resetAllAppState, useAppState, useTemporalAppState } from "./AppState";
 import downloadFile, { uploadFile } from "./localFileManip";
 import { LoginState } from "./components/LoginPage";
 
@@ -27,7 +28,9 @@ function Header() {
         <button>Newsletter</button>
         <button>Feedback</button>
         <button>Search</button>
-        <button onClick={() => history.go("/documents")}>Projects</button>
+        <Link to="/documents">
+          <button>Projects</button>
+        </Link>
         <button
           onClick={() => {
             downloadFile({
@@ -62,8 +65,8 @@ function Header() {
 }
 
 export function Ide(_props: Ide.Props) {
-  const redo = useAppState(s => s.redo);
-  const undo = useAppState(s => s.undo);
+  const redo = useTemporalAppState(s => s.redo);
+  const undo = useTemporalAppState(s => s.undo);
 
   useLayoutEffect(() => {
     const ctrlZUndo = (e: KeyboardEvent) => {
@@ -71,7 +74,7 @@ export function Ide(_props: Ide.Props) {
       if (e.key.toLowerCase() === "z" && e.ctrlKey) undo();
     };
     const ctrlShiftZRedo = (e: KeyboardEvent) => {
-      if (e.key.toLowerCase() === "z" && e.ctrlKey && e.shiftKey) redo();
+      if (e.key === "Z" && e.ctrlKey && e.shiftKey) redo();
     };
     const ctrlYRedo = (e: KeyboardEvent) => {
       if (e.key.toLowerCase() === "y" && e.ctrlKey) redo();

@@ -48,6 +48,15 @@ export function LoginState(_props: LoginPage.Props) {
 
   useOnExternalClick(popupRef, () => setShowLogin(false));
 
+  const login = async () => {
+    if (!inputValid) return;
+    await api.login({ email, password });
+  };
+
+  const logout = async () => {
+    await api.logout();
+  };
+
   return (
     <div>
       <button onClick={() => setShowLogin(prev => !prev)}>Login</button>
@@ -66,31 +75,31 @@ export function LoginState(_props: LoginPage.Props) {
         ref={popupRef}
       >
         {isLoggedIn ? <button
-          onClick={async () => {
-            document.cookie = "";
-            throw Error("unimplemented!");
-          }}
+          onClick={logout}
           title={"unimplemented"}
         >
           Logout
         </button>
           : <>
             <p>Login</p>
-            <label className="split" style={{ maxWidth: 300, }}>
+            <label className="split" style={{ maxWidth: 300 }}>
               Email:
               <input value={emailInput} type="email" onChange={(e) => setEmailInput(e.currentTarget.value)}/>
             </label>
             <div style={{color: "red"}}>{emailError}</div>
-            <label className="split" style={{ maxWidth: 300, }}>
+            <label className="split" style={{ maxWidth: 300 }}>
               Password:
-              <input value={passwordInput} type="password" onChange={(e) => setPasswordInput(e.currentTarget.value)} />
+              <input
+                value={passwordInput}
+                type="password"
+                onChange={(e) => setPasswordInput(e.currentTarget.value)}
+                onSubmit={login}
+                onKeyDown={(e) => e.key === 'Enter' && login()}
+              />
             </label>
             <div style={{color: "red"}}>{passwordError}</div>
             <button
-              onClick={async () => {
-                if (!inputValid) return;
-                await api.login({ email, password });
-              }}
+              onClick={login}
               disabled={!inputValid}
               title={inputValid ? "Click to login" : "Invalid inputs"}
             >

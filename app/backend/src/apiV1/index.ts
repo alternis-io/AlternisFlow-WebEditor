@@ -25,7 +25,7 @@ apiV1.get<{}, User | null>(
 
 apiV1.post<{}, WithId, { email: string; password: string }>(
   '/users/me/register',
-  async function register(req, res) {
+  expressFixAsyncify(async function register(req, res) {
     // FIXME: add type checking step
     if (!req.body.email) throw createHttpError(400, "email field is missing");
     if (!req.body.password) throw createHttpError(400, "password field is missing");
@@ -45,12 +45,12 @@ apiV1.post<{}, WithId, { email: string; password: string }>(
     delete (me as any).passwordHash;
     res.json(me);
     res.end();
-  }
+  })
 );
 
 apiV1.post<{}, WithToken, { email: string, password: string }>(
   '/users/me/login',
-  async function login(req, res) {
+  expressFixAsyncify(async function login(req, res) {
     // FIXME: add type checking step
     if (!req.body.email) throw createHttpError(400, "email field is missing");
     if (!req.body.password) throw createHttpError(400, "password field is missing");
@@ -73,7 +73,7 @@ apiV1.post<{}, WithToken, { email: string, password: string }>(
 
     res.json({ token });
     res.end();
-  }
+  })
 );
 
 
@@ -119,6 +119,7 @@ apiV1.get<{}, DocumentList>(
       },
       where: {
         owner: {
+          // FIXME: use the email parsed out of the token
           token: req.locals.token,
         },
       },

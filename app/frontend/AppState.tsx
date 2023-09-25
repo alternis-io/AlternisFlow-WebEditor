@@ -1,7 +1,8 @@
 import type { Node, Edge } from 'reactflow'
 import { Participant } from "../common/data-types/participant";
 import { deepCloneJson } from "js-utils/lib/react-utils";
-import { create } from "zustand";
+import { create, useStore } from "zustand";
+import { TemporalState, temporal } from "zundo";
 import { DeepPartial } from "ts-essentials/dist/deep-partial";
 
 // FIXME: move out icon data and get type from that list
@@ -60,64 +61,27 @@ const initialState: AppState = (() => {
   return maybeLocallyStoredState ?? deepCloneJson(defaultAppState);
 })();
 
-type SettableState<T extends object> = T & {
+type SettableState<T extends any> = T & {
   /** @deprecated, just use useAppState.setState */
   set(
     cb: (s: T) => DeepPartial<T> | Promise<DeepPartial<T>>,
   ): void;
-  undo(): void;
-  redo(): void;
 };
 
-const UNDO_LIMIT = 1024;
-/** distance from last index, reset upon new history
- * really a 0-index starting from the last elem, backwards
- */
-let undoDepth = 0;
-// HACK: there's probably a better way... is this even guaranteed anyway?
-let historyManipKind: undefined | "undo" | "redo";
-const undoStack: AppState[] = [];
+export const useAppState = create<SettableState<AppState>>()(
+  temporal((set) => ({
+    ...initialState,
+    set: set as SettableState<AppState>["set"],
+  }),
+));
 
-export const useAppState = create<SettableState<AppState>>((set) => ({
-  ...initialState,
-  set: set as SettableState<AppState>["set"],
-  undo: () => {
-    undoDepth--;
-    if (-undoDepth > undoStack.length) {
-      undoDepth = -(undoStack.length - 1);
-      return;
-    } else {
-      historyManipKind = "undo";
-      set(undoStack[undoStack.length + undoDepth]);
-      historyManipKind = undefined;
-    }
-  },
-  redo: () => {
-    undoDepth++;
-    if (undoDepth > 0) undoDepth = 0;
-    historyManipKind = "redo";
-    set(undoStack[undoStack.length + undoDepth]);
-    historyManipKind = undefined;
-  }
-}));
+export const useTemporalAppState = <T extends any>(
+  selector: (state: TemporalState<SettableState<AppState>>) => T,
+  equality?: (a: T, b: T) => boolean,
+) => useStore(useAppState.temporal, selector, equality);
 
-// NOTE: consider making the undo stack implicitly updated by the store's exposed setter,
-// rather than as a side effect...
 
-// NOTE: should skip some kinds of updates, and focus the required UI for other kinds
-useAppState.subscribe((state) => {
-  if (historyManipKind)
-    return;
-
-  // new changes destroy the "undone" segment of the stack, no redos
-  undoStack.length = undoStack.length + undoDepth;
-
-  undoStack.push(state);
-
-  if (undoStack.length > UNDO_LIMIT)
-    undoStack.shift();
-});
-
+// FIXME: replace with "persist" middleware
 useAppState.subscribe((state) =>
   localStorage.setItem(appStateKey, JSON.stringify(state))
 );

@@ -11,6 +11,7 @@ model User {
   id Int @id @default(autoincrement())
   email String @unique
   passwordHash String
+  // we can remove this
   token String? @unique
   documents Document[]
 }

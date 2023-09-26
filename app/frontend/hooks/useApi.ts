@@ -1,8 +1,9 @@
 import { AppState } from "../AppState";
 import { assert } from "js-utils/lib/browser-utils";
 //import * as polyfills from "../polyfills";
-import type { DocumentList, RegisterUserData, User } from "dialogue-middleware-app-backend/lib/prisma";
+import type { Document, DocumentList, RegisterUserData, User } from "dialogue-middleware-app-backend/lib/prisma";
 import { StoreApi, UseBoundStore, create } from "zustand";
+import * as jose from "jose";
 import { persist } from "zustand/middleware";
 
 const authv1key = "authv1_tok";
@@ -13,7 +14,7 @@ export interface UseApiResult {
   baseUrl: string;
 
   // state
-  me: User | undefined;
+  me: Pick<User, "id" | "email"> | undefined;
   documents: DocumentList | undefined;
 
   /** computed values must be in a subobject, also they can't be persisted */
@@ -27,8 +28,9 @@ export interface UseApiResult {
     login: (user: RegisterUserData) => Promise<void>;
     logout: () => Promise<void>;
     syncMe(): Promise<void>;
-    syncMyRecentsDocuments(): Promise<void>;
+    syncMyRecentDocuments(): Promise<void>;
     getDocument(id: string): Promise<AppState["document"]>;
+    updateDocument(id: number, patch: Partial<Document>): Promise<void>;
     createDocument(doc?: { name?: string }): Promise<void>;
   };
 }
@@ -49,16 +51,25 @@ const defaultLocalApiState = Object.freeze({
   me: undefined,
 } as ApiState);
 
-// FIXME: use a persist middleware instead
+const initialToken = localStorage.getItem(authv1key) ?? undefined;
+
+let initialMe: Pick<User, "id" | "email"> | undefined;
+try {
+  initialMe = initialToken
+    && jose.decodeJwt(initialToken)?.user as Pick<User, "id" | "email">
+    || undefined;
+} catch {}
+
 const initialLocalApiState = Object.freeze({
   ...defaultLocalApiState,
-  _token: localStorage.getItem(authv1key) ?? undefined,
+  _token: initialToken,
+  me: initialMe,
 });
 
 // FIXME: use sequence
 const getNextInvalidId = () => -Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
 
-const useLocalApiState = create<ApiState>()(persist((set, get) => ({
+const useLocalApiState = create<ApiState>()((set, get) => ({
   ...initialLocalApiState,
 
   computed: {
@@ -109,13 +120,43 @@ const useLocalApiState = create<ApiState>()(persist((set, get) => ({
       return get()._apiFetch("/users/me").then((r) => r.json());
     },
 
-    async syncMyRecentsDocuments() {
+    async syncMyRecentDocuments() {
       const documents = await get()._apiFetch("/users/me/documents/recents").then((r) => r.json() as Promise<DocumentList>);
       set({ documents });
     },
 
     async getDocument(id: string): Promise<AppState["document"]> {
       return get()._apiFetch(`/users/me/documents/${id}`).then((r) => r.json());
+    },
+
+    async updateDocument(id: number, patch: Partial<Document>): Promise<void> {
+      let prev: DocumentList[number] | undefined;
+
+      set((s) => ({
+        documents: (s.documents ?? []).map(d =>
+          d.id === id
+          ? (prev = d, { ...d, ...patch, id: d.id })
+          : d
+        ),
+      }));
+
+      try {
+        await get()._apiFetch(`/users/me/documents/${id}`, {
+          method: "PATCH",
+          body: JSON.stringify(patch),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+      } catch (err) {
+        // rollback on error
+        if (prev) {
+          set((s) => ({
+            documents: (s.documents ?? []).map(d => d.id === id ? prev! : d),
+          }));
+        }
+        throw err;
+      }
     },
 
     async createDocument(doc: { name?: string } = {}) {
@@ -128,7 +169,7 @@ const useLocalApiState = create<ApiState>()(persist((set, get) => ({
       //
 
       // FIXME: use real id from parsed token
-      const ownerId = get().me?.id ?? -1;
+      const ownerId = get().me?.id;
       if (!ownerId)
         return;
 
@@ -144,12 +185,11 @@ const useLocalApiState = create<ApiState>()(persist((set, get) => ({
         }),
       }));
 
+      // FIXME: rollback on error
       const newDoc = await get()._apiFetch(`/users/me/documents`, {
         method: "POST",
         body: JSON.stringify(doc),
-        //headers: {
-          //'Content-Type': 'application/octet-stream',
-        //},
+        //headers: { 'Content-Type': 'application/octet-stream' },
       }).then((r) => r.json());
 
       set((s) => ({
@@ -158,11 +198,8 @@ const useLocalApiState = create<ApiState>()(persist((set, get) => ({
           ...newDoc,
         })
       }));
-
     },
   },
-}), {
-  name: authv1key,
 }));
 
 useLocalApiState.subscribe((state, prevState) => {

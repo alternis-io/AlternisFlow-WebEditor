@@ -25,6 +25,7 @@ ssh root@alternis.io <<EOF
   # the postinstall step that runs `prisma generate` needs to be rerun on the host, it
   # generates host-specific bindings
   pnpm exec prisma generate
+  # FIXME: pnpm exec prisma migrate
   trash /etc/nginx/nginx.conf
   cp /var/www/alternis-v1-deploy-stage/provisioning/nginx.conf /etc/nginx/nginx.conf
   trash /etc/systemd/system/alternis-v1.service

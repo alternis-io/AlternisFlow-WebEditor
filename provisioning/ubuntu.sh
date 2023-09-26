@@ -5,7 +5,7 @@ sudo apt install git vim tmux
 # these aren't
 sudo apt install net-tools zip unzip nginx
 # script utilities
-sudo apt install trash-cli
+sudo apt install trash-cli sqlite3
 
 # conveniences
 sudo apt install xclip psmisc

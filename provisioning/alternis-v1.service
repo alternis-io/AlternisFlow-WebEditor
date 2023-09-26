@@ -7,7 +7,7 @@ Restart=always
 User=mike
 
 [Service]
-ExecStart=/usr/bin/env PORT=3000 /home/mike/.bun/bin/bun /var/www/alternis-v1-deploy-stage/app/backend/lib/run.js
+ExecStart=/usr/bin/env NODE_ENV=production PORT=3000 /home/mike/.bun/bin/bun /var/www/alternis-v1-deploy-stage/app/backend/lib/run.js
 Restart=always
 
 [Install]

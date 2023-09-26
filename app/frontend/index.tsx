@@ -7,6 +7,7 @@ import { createHashRouter, RouterProvider } from "react-router-dom";
 import { ProjectSelector } from "./components/ProjectSelector";
 import { useAppState } from "./AppState";
 
+// FIXME: try hash router
 const router = createHashRouter([
   {
     path: "/",

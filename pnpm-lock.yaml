@@ -122,6 +122,10 @@ importers:
         version: 5.2.2
 
   app/frontend:
+    dependencies:
+      jose:
+        specifier: ^4.14.6
+        version: 4.14.6
     devDependencies:
       '@bentley/react-hooks':
         specifier: ^1.2.0

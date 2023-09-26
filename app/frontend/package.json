@@ -41,5 +41,8 @@
   },
   "//": [
     "everything is bundled, no prod deps"
-  ]
+  ],
+  "dependencies": {
+    "jose": "^4.14.6"
+  }
 }

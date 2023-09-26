@@ -22,11 +22,12 @@ try {
 }
 
 export interface AuthUserInfo {
+  id: number;
   email: string;
 }
 
 export async function generateAccessToken(userInfo: AuthUserInfo) {
-  return await new jose.SignJWT({})
+  return await new jose.SignJWT({ user: userInfo })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setIssuer('alternis.io')
@@ -38,10 +39,8 @@ export async function generateAccessToken(userInfo: AuthUserInfo) {
 declare global {
   namespace Express {
     export interface Request {
-      locals: {
-        user?: AuthUserInfo;
-        token?: string;
-      }
+      user?: AuthUserInfo;
+      token?: string;
     }
   }
 }
@@ -72,17 +71,20 @@ export async function requireAuthToken<
     const verifyResult = await jose.jwtVerify(token, tokenSecret, {
       issuer: 'alternis.io',
     });
-    assert(
-      verifyResult.payload.aud && typeof verifyResult.payload.aud === "string",
-      "no audience in token"
-    );
-    console.log(req.locals);
-    if (req.locals === undefined) req.locals = {};
-    req.locals!.user = { email: verifyResult.payload.aud };
-    req.locals!.token = token;
+    assert(validPayload(verifyResult.payload), "no audience in token");
+    req.user = verifyResult.payload.user;
+    req.token = token;
     next();
   } catch (err: any) {
     res.sendStatus(403);
     next(createHttpError(403));
   }
 }
+
+const validPayload = (u: any): u is { user: AuthUserInfo } =>
+  u !== null
+  && typeof u === "object"
+  && u.user !== null
+  && typeof u.user === "object"
+  && typeof u.user.id === "number"
+  && typeof u.user.email === "string";

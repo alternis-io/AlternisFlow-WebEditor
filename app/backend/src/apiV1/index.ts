@@ -1,5 +1,4 @@
 import express from 'express';
-import assert from "node:assert";
 import { expressFixAsyncify } from "../util";
 import { PrismaClient, Document, User, WithId, DocumentList, WithToken } from '../prisma';
 import { generateAccessToken, requireAuthToken } from "./auth";
@@ -14,7 +13,7 @@ apiV1.get<{}, User | null>(
   requireAuthToken,
   expressFixAsyncify(async function getMyUser(req, res) {
     const me = await prisma.user.findUniqueOrThrow({
-      where: { token: req.locals.token },
+      where: { id: req.user!.id },
     });
 
     delete (me as any).passwordHash;
@@ -23,7 +22,7 @@ apiV1.get<{}, User | null>(
   })
 );
 
-apiV1.post<{}, WithId, { email: string; password: string }>(
+apiV1.post<{}, Omit<User, "passwordHash">, { email: string; password: string }>(
   '/users/me/register',
   expressFixAsyncify(async function register(req, res) {
     // FIXME: add type checking step
@@ -31,19 +30,18 @@ apiV1.post<{}, WithId, { email: string; password: string }>(
     if (!req.body.password) throw createHttpError(400, "password field is missing");
 
     const passwordHash = await Bun.password.hash(req.body.password)
-    const token = await generateAccessToken({ email: req.body.email });
 
     const me = await prisma.user.create({
       data: {
-        // FIXME: do not pass unsanitized req.body directly everywhere
         email: req.body.email,
-        token,
-        passwordHash, // FIXME: is there a way to annotate this as sensitive?
+        passwordHash,
       },
     });
 
+    const token = await generateAccessToken({ email: req.body.email, id: me.id });
+
     delete (me as any).passwordHash;
-    res.json(me);
+    res.json({ ...me, token });
     res.end();
   })
 );
@@ -56,7 +54,7 @@ apiV1.post<{}, WithToken, { email: string, password: string }>(
     if (!req.body.password) throw createHttpError(400, "password field is missing");
 
     const me = await prisma.user.findUnique({
-      select: { passwordHash: true },
+      select: { id: true, passwordHash: true },
       where: { email: req.body.email },
     });
 
@@ -69,7 +67,7 @@ apiV1.post<{}, WithToken, { email: string, password: string }>(
     if (!await Bun.password.verify(req.body.password, me.passwordHash))
       throw noSuchUserError;
 
-    const token = await generateAccessToken({ email: req.body.email });
+    const token = await generateAccessToken({ email: req.body.email, id: me.id });
 
     res.json({ token });
     res.end();
@@ -88,8 +86,7 @@ apiV1.post<{}, Partial<Document>, Partial<Document>>(
         jsonContents: req.body.jsonContents ?? "{}",
         owner: {
           connect: {
-            // FIXME: think again if we need to store the token...
-            email: req.locals.user!.email,
+            id: req.user!.id,
           },
         },
       },
@@ -100,6 +97,44 @@ apiV1.post<{}, Partial<Document>, Partial<Document>>(
     });
 
     res.json(doc);
+    res.end();
+  })
+);
+
+apiV1.delete<{ id: number }, unknown, {}>(
+  '/users/me/documents/:id',
+  requireAuthToken,
+  expressFixAsyncify(async function createDocument(req, res) {
+    const id = Number(req.params.id);
+    if (Number.isNaN(id))
+      throw createHttpError(400, "invalid id");
+
+    await prisma.document.delete({ where: { id } });
+
+    res.end();
+  })
+);
+
+// FIXME: use ts-essentials#MarkRequired
+apiV1.patch<{ id: number }, unknown, Partial<Document>>(
+  '/users/me/documents/:id',
+  requireAuthToken,
+  expressFixAsyncify(async function createDocument(req, res) {
+    const id = Number(req.params.id);
+    if (Number.isNaN(id))
+      throw createHttpError(400, "invalid id");
+
+    await prisma.document.update({
+      where: { id },
+      data: {
+        // FIXME: note request shape is not verified! that should be done in some
+        // middleware... although perhaps the orm already does a good enough job...
+        ...req.body,
+        id: undefined,
+        ownerId: undefined, // FIXME: note that owner change is not allowed
+      },
+    });
+
     res.end();
   })
 );
@@ -115,12 +150,7 @@ apiV1.get<{}, DocumentList>(
         ownerId: true,
         updatedAt: true,
       },
-      where: {
-        owner: {
-          // FIXME: use the email parsed out of the token
-          token: req.locals.token,
-        },
-      },
+      where: { owner: { id: req.user!.id } },
       // FIXME: do proper paging, this is just for safety
       take: 1000,
     });
@@ -131,7 +161,7 @@ apiV1.get<{}, DocumentList>(
 );
 
 apiV1.get<{}, DocumentList>(
-  '/users/me/documents/recent',
+  '/users/me/documents/recents',
   requireAuthToken,
   expressFixAsyncify(async function getMyRecentDocumentList(req, res) {
     const docs = await prisma.document.findMany({
@@ -142,7 +172,8 @@ apiV1.get<{}, DocumentList>(
         updatedAt: true,
       },
       where: {
-        owner: { token: req.locals.token },
+        // FIXME: why doesn't token work?
+        owner: { id: req.user!.id },
       },
       take: 50,
       orderBy: {
@@ -159,7 +190,6 @@ apiV1.get<WithId, Document>(
   '/users/me/documents/:id',
   requireAuthToken,
   expressFixAsyncify(async function getMyDocument(req, res) {
-    // FIXME: bad route if failed
     const id = Number(req.params.id);
 
     if (Number.isNaN(id))
@@ -169,7 +199,7 @@ apiV1.get<WithId, Document>(
     const doc = await prisma.document.findUniqueOrThrow({
       where: {
         id,
-        owner: { token: req.locals.token },
+        owner: { token: req.token },
       },
     });
 

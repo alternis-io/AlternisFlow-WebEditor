@@ -99,6 +99,9 @@ export function ProjectSelector(props: ProjectSelector.Props) {
                 {d.name}
               </span>
             </Center>
+            <span
+              className="hoverable"
+            >...</span>
           </div>
         ))}
       </div>

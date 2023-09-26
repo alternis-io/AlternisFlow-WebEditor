@@ -31,6 +31,7 @@ export interface UseApiResult {
     syncMyRecentDocuments(): Promise<void>;
     getDocument(id: string): Promise<AppState["document"]>;
     updateDocument(id: number, patch: Partial<Document>): Promise<void>;
+    deleteDocument(id: number): Promise<void>;
     createDocument(doc?: { name?: string }): Promise<void>;
   };
 }
@@ -153,6 +154,39 @@ const useLocalApiState = create<ApiState>()((set, get) => ({
         if (prev) {
           set((s) => ({
             documents: (s.documents ?? []).map(d => d.id === id ? prev! : d),
+          }));
+        }
+        throw err;
+      }
+    },
+
+    async deleteDocument(id: number): Promise<void> {
+      let prevIndex: number | undefined;
+      let prev: DocumentList[number] | undefined;
+
+      // FIXME: when s.documents is undefined, optimistic state changes probably shouldn't do
+      // anything? think that out
+      set((s) => {
+        prevIndex = s.documents?.findIndex(d => d.id === id);
+        prev = prevIndex !== undefined && prevIndex !== -1 ? s.documents![prevIndex] : undefined;
+        return {
+          documents: (s.documents ?? []).filter(d => d.id !== id),
+        };
+      });
+
+      try {
+        await get()._apiFetch(`/users/me/documents/${id}`, {
+          method: "DELETE",
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+      } catch (err) {
+        // rollback on error
+        if (prev) {
+          set((s) => ({
+            // FIXME: reinsert at previous index
+            documents: (s.documents ?? []).concat(prev!),
           }));
         }
         throw err;

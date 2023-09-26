@@ -152,7 +152,7 @@ apiV1.get<{}, DocumentList>(
       },
       where: { owner: { id: req.user!.id } },
       // FIXME: do proper paging, this is just for safety
-      take: 1000,
+      take: 500,
     });
 
     res.json(docs);

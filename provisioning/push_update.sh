@@ -4,10 +4,11 @@ REPO_DIR="$(dirname "$(dirname "$0")")"
 REPO_NAME="$(basename "$(readlink --canonicalize "$REPO_DIR")")"
 STAGING_DIR="/tmp/alternis-v1-deploy-stage"
 
-echo STAGING_DIR=$STAGING_DIR
+echo "using staging directory '$STAGING_DIR'"
 
 ## production build
 rm -rf $STAGING_DIR
+pnpm -r build
 # copy over built goods but not caches or dependencies
 rsync -aP --exclude=.git --exclude=node_modules --exclude=.cache "$REPO_DIR" "$STAGING_DIR"
 pushd $STAGING_DIR

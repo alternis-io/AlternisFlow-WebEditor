@@ -1,15 +1,13 @@
 [Unit]
 Description=alternis v1 backend
-# does it have to be after nginx?
 After=network.target
 Type=simple
 Restart=always
-RestartSec=1
 # FIXME: use a different user
 User=mike
 
 [Service]
-ExecStart=/home/mike/.bun/bin/bun /var/www/alternis-v1-deploy-stage/app/backend/src.ts
+ExecStart=/usr/bin/env PORT=3000 /home/mike/.bun/bin/bun /var/www/alternis-v1-deploy-stage/app/backend/lib/run.js
 Restart=always
 
 [Install]

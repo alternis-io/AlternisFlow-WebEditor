@@ -2,7 +2,7 @@
 
 REPO_DIR="$(dirname "$(dirname "$0")")"
 REPO_NAME="$(basename "$(readlink --canonicalize "$REPO_DIR")")"
-STAGING_DIR="/tmp/$REPO_NAME-staging"
+STAGING_DIR="/tmp/alternis-v1-deploy-stage"
 
 echo STAGING_DIR=$STAGING_DIR
 
@@ -16,21 +16,23 @@ pnpm --production install
 popd
 
 # copy to the server
-rsync -aPzv $STAGING_DIR root@alternis.io:/var/www/alternis-v1-deploy-stage
+rsync -aPzv $STAGING_DIR root@alternis.io:/var/www
 
 ssh root@alternis.io <<EOF
+  # FIXME: fix install locations to not be local to mike
+  export PATH="$PATH:/home/mike/.local/share/pnpm:/home/mike/.bun/bin"
   cd /var/www/alternis-v1-deploy-stage/app/backend
   # the postinstall step that runs `prisma generate` needs to be rerun on the host, it
   # generates host-specific bindings
-  # FIXME: fix install locations to not be local to mike
-  /home/mike/.local/share/pnpm/pnpm exec prisma generate
-  cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.bak
+  pnpm exec prisma generate
+  trash /etc/nginx/nginx.conf
   cp /var/www/alternis-v1-deploy-stage/provisioning/nginx.conf /etc/nginx/nginx.conf
-  cp /etc/systemd/system/alternis-v1.service /etc/systemd/system/alternis-v1.service.bak
+  trash /etc/systemd/system/alternis-v1.service
   cp /var/www/alternis-v1-deploy-stage/provisioning/alternis-v1.service /etc/systemd/system/alternis-v1.service
   # run the new code
   systemctl daemon-reload
   systemctl enable alternis-v1.service
-  systemctl restart alternis-v1
-  systemctl status alternis-v1
+  systemctl restart alternis-v1.service
+  sleep 1s
+  systemctl status alternis-v1.service
 EOF

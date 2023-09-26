@@ -4,9 +4,11 @@
 sudo apt install git vim tmux
 # these aren't
 sudo apt install net-tools zip unzip nginx
+# script utilities
+sudo apt install trash-cli
 
 # conveniences
-sudo apt install trash-cli xclip psmisc
+sudo apt install xclip psmisc
 
 # let's encrypt
 # https://certbot.eff.org/instructions?ws=nginx&os=ubuntufocal&tab=standard

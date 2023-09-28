@@ -4,6 +4,7 @@ import { deepCloneJson } from "js-utils/lib/react-utils";
 import { create, useStore } from "zustand";
 import { TemporalState, temporal } from "zundo";
 import { DeepPartial } from "ts-essentials/dist/deep-partial";
+import { MouseBinding, KeyBinding } from "./components/KeyBindingInput" ;
 
 // FIXME: move out icon data and get type from that list
 export type IconSizes = "small" | "medium" | "large";
@@ -70,12 +71,13 @@ export const defaultAppState = {
     },
 
     graph: {
-      dragBoxSelectMouseBinding: MouseButtons.Left as MouseButtons | null,
-      dragPanMouseBinding: MouseButtons.Right as MouseButtons | null,
-      addNodeMouseBinding: "double-click" as MouseInteractions | null,
+      dragBoxSelectMouseBinding: { button: 0 } as MouseBinding,
+      dragPanMouseBinding: { button: 2 } as MouseBinding,
       ...clientIsMac ? {
+        addNodeMouseBinding: { button: 2, metaKey: true } as MouseBinding,
         appendToSelectModifier: KeyModifiers.Meta as KeyModifiers | null,
       } : {
+        addNodeMouseBinding: { button: 2, shiftKey: true } as MouseBinding,
         appendToSelectModifier: KeyModifiers.Control as KeyModifiers | null,
       }
     }

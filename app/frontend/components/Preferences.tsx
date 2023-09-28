@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import styles from "./Ide.module.css";
 import { AppState, KeyModifiers, MouseButtons, MouseInteractions, clientIsLinux, clientIsMac, useAppState }  from "../AppState";
+import { KeyBindingInput, MouseBinding, MouseBindingInput } from "./KeyBindingInput";
 
 type GraphPrefs = AppState["preferences"]["graph"]
 
@@ -32,7 +33,7 @@ const makeEnumSelectComponent = <E extends object>(
   labels: Record<keyof E, string>
 ) => {
   const options = Object.entries(enum_).map(([k, v]) => (
-    <option key={k} value={(console.log(k, v), JSON.stringify(v))}>{labels[k]}</option>
+    <option key={k} value={JSON.stringify(v)}>{labels[k]}</option>
   )).concat(
     <option key="null" value={JSON.stringify(null)}>none</option>
   );
@@ -63,7 +64,24 @@ const DragBoxSelectMouseBindingSetting = makeEnumSelectComponent("dragBoxSelectM
 const AppendToSelectModifierSetting = makeEnumSelectComponent("appendToSelectModifier", KeyModifiers, modifierKeyLabels);
 const AddNodeMouseBindingSetting = makeEnumSelectComponent("addNodeMouseBinding", MouseInteractions, mouseInteractionLabels);
 
+function useBindingSetting<K extends keyof GraphPrefs>(key: K) {
+  const binding = useAppState(s => s.preferences.graph[key]);
+  const setBinding = (val: MouseBinding) => useAppState.setState(s => ({
+    preferences: {
+      ...s.preferences,
+      graph: {
+        ...s.preferences.graph,
+        [key]: val,
+      },
+    },
+  }));
+
+  return { binding, setBinding };
+}
+
 export function Preferences() {
+  const addNodeBinding = useBindingSetting("addNodeMouseBinding");
+
   return (
     <div>
       <label title="Which mouse button you can click and drag to move around the graph" className="split">
@@ -87,11 +105,11 @@ export function Preferences() {
         <AppendToSelectModifierSetting />
       </label>
 
-      <label title="Which mouse button" className="split">
+      <label title="Which mouse button (with modifiers e.g. shift) allow to add a node after" className="split">
         <span>
-          Add node method
+          Add node key binding
         </span>
-        <AddNodeMouseBindingSetting />
+        <MouseBindingInput value={addNodeBinding.binding} onChange={addNodeBinding.setBinding} />
       </label>
     </div>
   );

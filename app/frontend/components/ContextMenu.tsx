@@ -1,13 +1,13 @@
-import React, { useLayoutEffect, useRef, useState } from "react"
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react"
 import styles from './ContextMenu.module.css'
 import { classNames, useOnNoLongerMouseInteracted } from "js-utils/lib/react-utils";
-import { MouseInteractions, onMouseInteractionDomHandlers } from "../AppState";
 import { useOnExternalClick } from "@bentley/react-hooks";
+import { MouseBinding, eventMatchesMouseBinding, onMouseInteractionDomHandlers } from "./KeyBindingInput";
 
 export const ContextMenu = ({
   autoCloseDelay = 1_000,
   children,
-  activateInteraction = MouseInteractions.Right,
+  mouseBinding = { button: 2 },
 }: ContextMenu.Props) => {
   const rootElemRef = useRef<HTMLDivElement>(null);
 
@@ -25,20 +25,29 @@ export const ContextMenu = ({
 
     const parentElem = rootElemRef.current?.parentElement;
 
-    const [eventName, handler] = onMouseInteractionDomHandlers(activateInteraction, (e) => {
+    const handler = (e: MouseEvent) => {
+      if (!eventMatchesMouseBinding(e, mouseBinding))
+        return;
       e.preventDefault();
+      e.stopImmediatePropagation();
       if (rootElemRef.current) {
         // FIXME: use a react portal to prevent stacking contexts from causing weird offsets
         rootElemRef.current.style.top = `${e.pageY}px`;
         rootElemRef.current.style.left = `${e.pageX}px`;
       }
       show();
-    });
-    
-    // FIXME: bad types
-    parentElem?.addEventListener(eventName, handler as any);
-    return () => parentElem?.removeEventListener(eventName, handler as any);
-  }, [activateInteraction]);
+      return false;
+    };
+
+    const preventDefault = (e: MouseEvent) => e.preventDefault();
+    const eventsToPrevent = ["contextmenu", "click", "dblclick", "auxclick"] as const;
+    parentElem?.addEventListener("mousedown", handler);
+    eventsToPrevent.forEach((e) => parentElem?.addEventListener(e, preventDefault));
+    return () =>  {
+      parentElem?.removeEventListener("mousedown", handler);
+      eventsToPrevent.forEach((e) => parentElem?.removeEventListener(e, preventDefault));
+    }
+  }, [mouseBinding]);
 
   // TODO: type check that the handles here are mutually exlusive with those in mouseInteractProps
   const mouseUninterestedProps = useOnNoLongerMouseInteracted({
@@ -48,12 +57,16 @@ export const ContextMenu = ({
     },
   });
 
+  const initialDisplayNone = useRef(true);
+  useEffect(() => void (initialDisplayNone.current = false), []);
+
   return (
     <div
       ref={rootElemRef}
       className={styles.contextMenuRoot}
       //{...mouseInteractProps}
       {...mouseUninterestedProps}
+      style={{ display: initialDisplayNone ? "none" : undefined }}
     >
       {children}
     </div>
@@ -64,7 +77,7 @@ export namespace ContextMenu {
   export interface Props extends React.PropsWithChildren {
     /** delay after un-hovering the context menu before it auto closes */
     autoCloseDelay?: number;
-    activateInteraction?: MouseInteractions;
+    mouseBinding?: MouseBinding;
   }
 }
 

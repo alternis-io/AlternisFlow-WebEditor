@@ -1,0 +1,114 @@
+import React, { useEffect, useState } from "react";
+import styles from "./Ide.module.css";
+
+export interface KeyBinding {
+  ctrlKey?: boolean;
+  altKey?: boolean;
+  metaKey?: boolean;
+  shiftKey?: boolean;
+  key: string;
+}
+
+export function KeyBindingInput(props: KeyBindingInput.Props) {
+  const [listening, setListening] = useState(false);
+
+  useEffect(() => {
+    if (listening) {
+      const onKeyDown = (e: KeyboardEvent) => {
+        if (e.key === "Shift" || e.key === "Control" || e.key === "Meta" || e.key === "Alt")
+          return;
+        props.onChange?.({
+          key: e.key,
+          ctrlKey: e.ctrlKey,
+          altKey: e.altKey,
+          metaKey: e.metaKey,
+          shiftKey: e.shiftKey,
+        });
+        setListening(false);
+      };
+      document.addEventListener("keydown", onKeyDown);
+      return () => document.removeEventListener("keydown", onKeyDown);
+    }
+  }, [listening]);
+
+  return (
+    <input type="button" value={props.value.key} onClick={() => setListening(true)}>
+    </input>
+  );
+}
+
+export namespace KeyBindingInput {
+  export interface Props {
+    onChange?(k: KeyBinding): void;
+    value: KeyBinding;
+  }
+}
+
+export interface MouseBinding {
+  ctrlKey?: boolean;
+  altKey?: boolean;
+  metaKey?: boolean;
+  shiftKey?: boolean;
+  button: number;
+}
+
+const mouseBindingNames: Record<number, string | undefined> = {
+  0: "left mouse button",
+  1: "middle mouse button",
+  2: "right mouse button",
+  3: "aux mouse button 1",
+  4: "aux mouse button 2"
+};
+
+function mouseBindingToLabel(b: MouseBinding): string {
+  return (b.ctrlKey ? "ctrl+" : "")
+       + (b.shiftKey ? "shift+" : "")
+       + (b.altKey ? "alt+" : "")
+       + (b.metaKey ? "meta+" : "")
+       + mouseBindingNames[b.button] ?? "unknown mouse aux";
+}
+
+export function eventMatchesMouseBinding(e: MouseEvent | React.MouseEvent<any>, b: MouseBinding) {
+  return e.button === b.button
+    && !!b.ctrlKey === e.ctrlKey
+    && !!b.altKey === e.altKey
+    && !!b.shiftKey === e.shiftKey
+    && !!b.metaKey === e.metaKey;
+}
+
+export function MouseBindingInput(props: MouseBindingInput.Props) {
+  const [listening, setListening] = useState(false);
+
+  useEffect(() => {
+    if (listening) {
+      const onMouseDown = (e: MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        props.onChange?.({
+          button: e.button,
+          ctrlKey: e.ctrlKey,
+          altKey: e.altKey,
+          metaKey: e.metaKey,
+          shiftKey: e.shiftKey,
+        });
+        setListening(false);
+        return false;
+      };
+      document.addEventListener("mousedown", onMouseDown);
+      return () => document.removeEventListener("mousedown", onMouseDown);
+    }
+  }, [listening]);
+
+  return (
+    <button onClick={() => setListening(true)}>
+      {listening ? <>press your button...</> : mouseBindingToLabel(props.value)}
+    </button>
+  );
+}
+
+export namespace MouseBindingInput {
+  export interface Props {
+    onChange?(k: MouseBinding): void;
+    value: MouseBinding;
+  }
+}

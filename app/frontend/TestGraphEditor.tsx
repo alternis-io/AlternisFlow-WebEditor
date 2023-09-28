@@ -705,6 +705,10 @@ const RerouteNode = (_props: NodeProps<{}>) => {
       style={{ height: 5, width: 5 }}
     >
       <NodeHandle
+        style={{
+          top: 15,
+          left: 1,
+        }}
         position="right"
         className={styles.handle}
         isConnectable
@@ -729,7 +733,7 @@ const withNodeContextMenu = <P extends NodeProps<{}>,R extends React.ReactNode>(
 
     return (
       <div>
-        <ContextMenu activateInteraction={MouseInteractions.Right}>
+        <ContextMenu mouseBinding={MouseInteractions.Right}>
           <ContextMenuOptions options={nodeContextMenuOpts}/>
         </ContextMenu>
         <Node {...p} />
@@ -890,7 +894,7 @@ const TestGraphEditor = (_props: TestGraphEditor.Props) => {
       <div ref={editorRef}>
         {/* FIXME: add on context menu closed event */}
         {/* FIXME: add on auto close on option selections */}
-        <ContextMenu activateInteraction={addNodeMouseBinding ?? undefined}>
+        <ContextMenu mouseBinding={addNodeMouseBinding ?? undefined}>
           <ContextMenuOptions
             className={styles.addNodeMenu}
             options={Object.keys(nodeTypes)

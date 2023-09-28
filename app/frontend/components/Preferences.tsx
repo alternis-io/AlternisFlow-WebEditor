@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import styles from "./Ide.module.css";
 import { AppState, KeyModifiers, MouseButtons, MouseInteractions, clientIsLinux, clientIsMac, useAppState }  from "../AppState";
-import { KeyBindingInput, MouseBinding, MouseBindingInput } from "./KeyBindingInput";
+import { MouseBinding, MouseBindingInput } from "./KeyBindingInput";
 
 type GraphPrefs = AppState["preferences"]["graph"]
 
@@ -59,10 +59,7 @@ const makeEnumSelectComponent = <E extends object>(
   };
 }
 
-const DragPanMouseBindingSetting = makeEnumSelectComponent("dragPanMouseBinding", MouseButtons, mouseInteractionLabels);
-const DragBoxSelectMouseBindingSetting = makeEnumSelectComponent("dragBoxSelectMouseBinding", MouseButtons, mouseInteractionLabels);
 const AppendToSelectModifierSetting = makeEnumSelectComponent("appendToSelectModifier", KeyModifiers, modifierKeyLabels);
-const AddNodeMouseBindingSetting = makeEnumSelectComponent("addNodeMouseBinding", MouseInteractions, mouseInteractionLabels);
 
 function useBindingSetting<K extends keyof GraphPrefs>(key: K) {
   const binding = useAppState(s => s.preferences.graph[key]);
@@ -80,6 +77,8 @@ function useBindingSetting<K extends keyof GraphPrefs>(key: K) {
 }
 
 export function Preferences() {
+  const dragPanMouseBinding = useBindingSetting("dragPanMouseBinding");
+  const dragBoxSelectMouseBinding = useBindingSetting("dragBoxSelectMouseBinding");
   const addNodeBinding = useBindingSetting("addNodeMouseBinding");
 
   return (
@@ -88,14 +87,14 @@ export function Preferences() {
         <span>
           Pan graph method
         </span>
-        <DragPanMouseBindingSetting />
+        <MouseBindingInput value={dragPanMouseBinding.binding} onChange={dragPanMouseBinding.setBinding} />
       </label>
 
       <label title="Which mouse button you can click and drag to start a box selection of graph elements" className="split">
         <span>
           Box select nodes method
         </span>
-        <DragBoxSelectMouseBindingSetting />
+        <MouseBindingInput value={dragBoxSelectMouseBinding.binding} onChange={dragBoxSelectMouseBinding.setBinding} />
       </label>
 
       <label title="Which modifier key you can hold to add to selection instead of starting a new one " className="split">

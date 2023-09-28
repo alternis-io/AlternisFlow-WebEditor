@@ -28,6 +28,7 @@ export const ContextMenu = ({
     const [eventName, handler] = onMouseInteractionDomHandlers(activateInteraction, (e) => {
       e.preventDefault();
       if (rootElemRef.current) {
+        // FIXME: use a react portal to prevent stacking contexts from causing weird offsets
         rootElemRef.current.style.top = `${e.pageY}px`;
         rootElemRef.current.style.left = `${e.pageX}px`;
       }
@@ -41,6 +42,7 @@ export const ContextMenu = ({
 
   // TODO: type check that the handles here are mutually exlusive with those in mouseInteractProps
   const mouseUninterestedProps = useOnNoLongerMouseInteracted({
+    delayMs: autoCloseDelay,
     onUninterested() {
       hide();
     },

@@ -24,7 +24,7 @@ import 'reactflow/dist/base.css'
 import styles from './TestGraphEditor.module.css'
 import { classNames, deepCloneJson } from 'js-utils/lib/react-utils'
 import { Center } from "./Center";
-import { AppState, getNode, makeNodeDataSetter, useAppState } from "./AppState";
+import { AppState, MouseInteractions, getNode, makeNodeDataSetter, useAppState } from "./AppState";
 import { ReactComponent as LockIcon } from "./images/inkscape-lock.svg";
 import { ReactComponent as UnlockIcon } from "./images/inkscape-unlock.svg";
 
@@ -713,16 +713,41 @@ const RerouteNode = (_props: NodeProps<{}>) => {
   );
 };
 
+const withNodeContextMenu = <P extends NodeProps<{}>,R extends React.ReactNode>(Node: (a: P) => R) => {
+  return (p: P) => {
+    const nodeContextMenuOpts: ContextMenuOptions.Option[] = React.useMemo(() => [
+      {
+        id: "delete",
+        onSelect: () => useAppState.setState(s => ({
+          document: {
+            ...s.document,
+            nodes: s.document.nodes.filter(n => n.id !== p.id)
+          }
+        })),
+      }
+    ], []);
+
+    return (
+      <div>
+        <ContextMenu activateInteraction={MouseInteractions.Right}>
+          <ContextMenuOptions options={nodeContextMenuOpts}/>
+        </ContextMenu>
+        <Node {...p} />
+      </div>
+    );
+  };
+};
+
 const nodeTypes = {
   //FIXME: rename to dialogue line?
-  dialogueEntry: DialogueEntryNode,
-  randomSwitch: RandomSwitchNode,
-  playerReplies: PlayerRepliesNode,
-  lockNode: LockNode,
-  emitNode: EmitNode,
-  entry: EntryNode,
-  reroute: RerouteNode,
-  default: UnknownNode,
+  dialogueEntry: withNodeContextMenu(DialogueEntryNode),
+  randomSwitch: withNodeContextMenu(RandomSwitchNode),
+  playerReplies: withNodeContextMenu(PlayerRepliesNode),
+  lockNode: withNodeContextMenu(LockNode),
+  emitNode: withNodeContextMenu(EmitNode),
+  entry: withNodeContextMenu(EntryNode),
+  reroute: withNodeContextMenu(RerouteNode),
+  default: withNodeContextMenu(UnknownNode),
 };
 
 const nodeTypeNames: Record<keyof typeof nodeTypes, string> = {
@@ -863,6 +888,8 @@ const TestGraphEditor = (_props: TestGraphEditor.Props) => {
   return (
     <GraphErrorBoundary>
       <div ref={editorRef}>
+        {/* FIXME: add on context menu closed event */}
+        {/* FIXME: add on auto close on option selections */}
         <ContextMenu activateInteraction={addNodeMouseBinding ?? undefined}>
           <ContextMenuOptions
             className={styles.addNodeMenu}

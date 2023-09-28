@@ -102,7 +102,7 @@ class GraphErrorBoundary extends React.Component<React.PropsWithChildren<{}>, { 
       ? <div style={{ padding: 20 }}>
           <p> An error has occurred. Maybe you should reset your document? </p>
           <p> FIXME: add an option to undo here? (I think you can still hit ctrl-z right now)</p>
-          <p> Try contacting <a href="#FIXME">support</a> if this continues </p>
+          <p> Try contacting <a href="support@alternis.io">support</a> if this continues </p>
           <button onClick={this.onErrorReload.bind(this)}>Reload the editor</button>
           <pre>
           {this.state.error.message}
@@ -830,6 +830,7 @@ const TestGraphEditor = (_props: TestGraphEditor.Props) => {
   const appendToSelectModifier = useAppState(s => s.preferences.graph.appendToSelectModifier);
   const dragPanMouseBinding = useAppState(s => s.preferences.graph.dragPanMouseBinding);
   const addNodeMouseBinding = useAppState(s => s.preferences.graph.addNodeMouseBinding);
+  const enableBoxSelectOnDrag = useAppState(s => s.preferences.graph.enableBoxSelectOnDrag);
 
   const addNode = React.useCallback(
     (nodeType: string, position: {x: number, y:number}, initData?: any) => {
@@ -956,8 +957,8 @@ const TestGraphEditor = (_props: TestGraphEditor.Props) => {
             connectOnClick
             multiSelectionKeyCode={appendToSelectModifier}
             // FIXME: not good for laptops..., maybe we need a box select icon...
-            panOnDrag={dragPanMouseBinding ? [dragPanMouseBinding] : false} // middle mouse, not great for laptops
-            selectionOnDrag={true}
+            panOnDrag={dragPanMouseBinding ? [dragPanMouseBinding.button] : false} // middle mouse, not great for laptops
+            selectionOnDrag={enableBoxSelectOnDrag}
             selectionMode={SelectionMode.Partial}
             onDrop={(e) => {
               e.preventDefault();

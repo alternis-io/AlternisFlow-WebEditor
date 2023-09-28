@@ -63,12 +63,13 @@ const AppendToSelectModifierSetting = makeEnumSelectComponent("appendToSelectMod
 
 function useBindingSetting<K extends keyof GraphPrefs>(key: K) {
   const binding = useAppState(s => s.preferences.graph[key]);
-  const setBinding = (val: MouseBinding) => useAppState.setState(s => ({
+  // NOTE: if expanding this, it should support Partial
+  const setBinding = (val: GraphPrefs[K] | ((prev: GraphPrefs[K]) => GraphPrefs[K])) => useAppState.setState(s => ({
     preferences: {
       ...s.preferences,
       graph: {
         ...s.preferences.graph,
-        [key]: val,
+        [key]: typeof val === "function" ? val(s.preferences.graph[key]) : val,
       },
     },
   }));
@@ -78,8 +79,11 @@ function useBindingSetting<K extends keyof GraphPrefs>(key: K) {
 
 export function Preferences() {
   const dragPanMouseBinding = useBindingSetting("dragPanMouseBinding");
-  const dragBoxSelectMouseBinding = useBindingSetting("dragBoxSelectMouseBinding");
+  //const dragBoxSelectMouseBinding = useBindingSetting("dragBoxSelectMouseBinding");
   const addNodeBinding = useBindingSetting("addNodeMouseBinding");
+  const enableBoxSelectOnDrag = useBindingSetting("enableBoxSelectOnDrag");
+
+  console.log(enableBoxSelectOnDrag.binding);
 
   return (
     <div>
@@ -90,11 +94,18 @@ export function Preferences() {
         <MouseBindingInput value={dragPanMouseBinding.binding} onChange={dragPanMouseBinding.setBinding} />
       </label>
 
-      <label title="Which mouse button you can click and drag to start a box selection of graph elements" className="split">
+      <label
+        title={"If on, click and drag to start a box selection of graph elements.\n"
+             + "We are working on supporting more than just left mouse"}
+        className="split"
+      >
         <span>
-          Box select nodes method
+          Turn on box select on left mouse drag
         </span>
-        <MouseBindingInput value={dragBoxSelectMouseBinding.binding} onChange={dragBoxSelectMouseBinding.setBinding} />
+        <input type="checkbox"
+          checked={enableBoxSelectOnDrag.binding || false}
+          onChange={() => enableBoxSelectOnDrag.setBinding(p => !p)}
+        />
       </label>
 
       <label title="Which modifier key you can hold to add to selection instead of starting a new one " className="split">

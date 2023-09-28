@@ -1,0 +1,13 @@
+
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
+  /* not doing the runtime yet */
+  /* grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 2fr); */
+}
+
+.projectDataEditor {
+  padding: 10px;
+  box-shadow: black 0 5px 5px;
+  overflow-y: scroll;
+}

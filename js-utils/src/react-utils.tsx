@@ -42,12 +42,12 @@ export function useOnNoLongerMouseInteracted({
   let timeout: NodeJS.Timeout | undefined;
 
   return {
-    onMouseEnter: (e: MouseEvent) => {
+    onMouseEnter: (e: React.MouseEvent) => {
       e.preventDefault();
       if (timeout) clearTimeout(timeout);
       timeout = undefined;
     },
-    onMouseLeave: (e: MouseEvent) => {
+    onMouseLeave: (e: React.MouseEvent) => {
       e.preventDefault();
       timeout = setTimeout(onUninterested, delayMs);
     }

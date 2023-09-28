@@ -8,12 +8,77 @@ import { DeepPartial } from "ts-essentials/dist/deep-partial";
 // FIXME: move out icon data and get type from that list
 export type IconSizes = "small" | "medium" | "large";
 
+export const MouseButtons = {
+  Left: 0,
+  Middle: 1,
+  Right: 2,
+};
+export type MouseButtons = typeof MouseButtons[keyof typeof MouseButtons];
+
+export const MouseInteractions = {
+  Left: 0,
+  Middle: 1,
+  Right: 2,
+  DoubleClick: "double-click",
+} as const;
+export type MouseInteractions = typeof MouseInteractions[keyof typeof MouseInteractions];
+
+export const onMouseInteractionProps = <T,>(
+  mouseInteraction: MouseInteractions,
+  handler: React.MouseEventHandler<T>,
+): React.DOMAttributes<T> => {
+  if (mouseInteraction === MouseButtons.Left as 0)
+    return { onClick: handler }
+  else if (mouseInteraction === MouseButtons.Middle as 1)
+    return { onMouseDown: (e) => e.button === mouseInteraction && handler(e) };
+  else if (mouseInteraction === MouseButtons.Right as 2)
+    return { onContextMenu: handler };
+  else if (mouseInteraction === "double-click")
+    return { onDoubleClick: handler };
+  return {};
+};
+
+export const onMouseInteractionDomHandlers = (
+  mouseInteraction: MouseInteractions,
+  handler: (e: MouseEvent) => void,
+) => {
+  if (mouseInteraction === MouseButtons.Left as 0)
+    return ["click", handler] as const;
+  else if (mouseInteraction === MouseButtons.Middle as 1)
+    return ["mousedown", (e: MouseEvent) => { if (e.button === mouseInteraction) handler(e); }] as const;
+  else if (mouseInteraction === MouseButtons.Right as 2)
+    return ["contextmenu", handler] as const;
+  else // if (mouseInteraction === "double-click")
+    return ["dblclick", handler] as const;
+};
+
+export enum KeyModifiers {
+  Control = "Control",
+  Meta = "Meta",
+  Alt = "Alt",
+  Shift = "Shift",
+}
+
+export const clientIsMac = /Mac/.test(navigator.userAgent);
+export const clientIsLinux = /Linux/.test(navigator.userAgent);
+
 export const defaultAppState = {
   preferences: {
     participantEditor: {
       iconSize: "medium" as IconSizes,
       lastSelected: undefined as undefined | string,
     },
+
+    graph: {
+      dragBoxSelectMouseBinding: MouseButtons.Left as MouseButtons | null,
+      dragPanMouseBinding: MouseButtons.Right as MouseButtons | null,
+      addNodeMouseBinding: "double-click" as MouseInteractions | null,
+      ...clientIsMac ? {
+        appendToSelectModifier: KeyModifiers.Meta as KeyModifiers | null,
+      } : {
+        appendToSelectModifier: KeyModifiers.Control as KeyModifiers | null,
+      }
+    }
   },
 
   projectId: undefined as string | undefined,

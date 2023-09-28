@@ -6,6 +6,7 @@ lib/
 
 # logs, running the app can generate them
 *.log
+*.log.gz
 
 # local dev token
 secret.token

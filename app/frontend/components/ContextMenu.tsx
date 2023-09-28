@@ -1,88 +1,68 @@
 import React, { useLayoutEffect, useRef, useState } from "react"
 import styles from './ContextMenu.module.css'
-import { assert } from "js-utils/lib/browser-utils";
-import { classNames } from "js-utils/lib/react-utils";
+import { classNames, useOnNoLongerMouseInteracted } from "js-utils/lib/react-utils";
+import { MouseInteractions, onMouseInteractionDomHandlers } from "../AppState";
+import { useOnExternalClick } from "@bentley/react-hooks";
 
 export const ContextMenu = ({
   autoCloseDelay = 1_000,
   children,
+  activateInteraction = MouseInteractions.Right,
 }: ContextMenu.Props) => {
-  const rootElementRef = useRef<HTMLDivElement>(null);
+  const rootElemRef = useRef<HTMLDivElement>(null);
 
-  // HACK: there should be a better way... maybe custom mouseup/down handling?
-  const doBlockLeftClick = React.useRef(false);
+  const isShown = () => (rootElemRef.current && rootElemRef.current.style.display !== "none");
+  const hide = () => (rootElemRef.current && (rootElemRef.current.style.display = "none"));
+  const show = () => (rootElemRef.current && ((rootElemRef.current.style.display as any) = null));
+
+  useOnExternalClick(rootElemRef, () => {
+    if (isShown())
+      hide();
+  });
 
   useLayoutEffect(() => {
-    const rootElem = rootElementRef.current;
-    assert(rootElem);
+    hide();
 
-    const parentElem = rootElementRef.current?.parentElement;
+    const parentElem = rootElemRef.current?.parentElement;
 
-    
-    // FIXME: this does in fact not happen before mount first paint
-    rootElem.style.display = "none";
-
-    const hide = () => (rootElem.style.display = "none");
-    const show = () => ((rootElem.style as any).display = null);
-
-    // FIXME: use js-utils/useOnNoLongerMouseInteracted
-    let timeout: NodeJS.Timeout | undefined;
-
-    const onMouseEnter = (e: MouseEvent) => {
+    const [eventName, handler] = onMouseInteractionDomHandlers(activateInteraction, (e) => {
       e.preventDefault();
-      if (timeout) clearTimeout(timeout);
-      timeout = undefined;
-    };
-
-    const onMouseLeave = (e: MouseEvent) => {
-      e.preventDefault();
-      timeout = setTimeout(hide, autoCloseDelay);
-    };
-
-    const onRightClick = (e: MouseEvent) => {
-      e.preventDefault();
-      if (e[Symbol.for("__isConnectEnd")]) {
-        doBlockLeftClick.current = true;
-        setTimeout(() => doBlockLeftClick.current = false, 1);
+      if (rootElemRef.current) {
+        rootElemRef.current.style.top = `${e.pageY}px`;
+        rootElemRef.current.style.left = `${e.pageX}px`;
       }
-      // FIXME: null or delete?
-      rootElem.style.top = `${e.pageY}px`;
-      rootElem.style.left = `${e.pageX}px`;
       show();
-    };
+    });
+    
+    // FIXME: bad types
+    parentElem?.addEventListener(eventName, handler as any);
+    return () => parentElem?.removeEventListener(eventName, handler as any);
+  }, [activateInteraction]);
 
-    const onLeftClick = (e: MouseEvent) => {
-      if (rootElem.style.display === "none")
-        return;
-      e.preventDefault();
-      if (doBlockLeftClick.current) return;
-      const clickInContextMenu = e.currentTarget === rootElem
-        || rootElem.contains(e.currentTarget as HTMLElement);
-      if (clickInContextMenu)
-        return;
+  // TODO: type check that the handles here are mutually exlusive with those in mouseInteractProps
+  const mouseUninterestedProps = useOnNoLongerMouseInteracted({
+    onUninterested() {
       hide();
-    };
+    },
+  });
 
-    parentElem?.addEventListener("contextmenu", onRightClick);
-    parentElem?.addEventListener("click", onLeftClick);
-    rootElem.addEventListener("mouseenter", onMouseEnter);
-    rootElem.addEventListener("mouseleave", onMouseLeave);
-
-    return () => {
-      parentElem?.removeEventListener("contextmenu", onRightClick);
-      parentElem?.removeEventListener("click", onLeftClick);
-      rootElem.removeEventListener("mouseenter", onMouseEnter);
-      rootElem.removeEventListener("mouseleave", onMouseLeave);
-    };
-  }, []);
-
-  return <div ref={rootElementRef} className={styles.contextMenuRoot}>{children}</div>;
+  return (
+    <div
+      ref={rootElemRef}
+      className={styles.contextMenuRoot}
+      //{...mouseInteractProps}
+      {...mouseUninterestedProps}
+    >
+      {children}
+    </div>
+  );
 }
 
 export namespace ContextMenu {
   export interface Props extends React.PropsWithChildren {
     /** delay after un-hovering the context menu before it auto closes */
     autoCloseDelay?: number;
+    activateInteraction?: MouseInteractions;
   }
 }
 

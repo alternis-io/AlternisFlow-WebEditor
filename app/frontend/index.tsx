@@ -6,24 +6,36 @@ import { ReactFlowProvider } from "reactflow";
 import { createHashRouter, RouterProvider } from "react-router-dom";
 import { ProjectSelector } from "./components/ProjectSelector";
 import { useAppState } from "./AppState";
+import Header from "./components/Header";
+import { LoginState } from "./components/LoginPage";
+import { RedirectIfNotLoggedIn } from "./hooks/useRedirectIfNotLoggedIn";
 
 // FIXME: try hash router
 const router = createHashRouter([
   {
     path: "/",
-    element: (
-      <ReactFlowProvider>
-        <Ide />
-      </ReactFlowProvider>
-    ),
+    element: <>
+      <RedirectIfNotLoggedIn />
+      <Header />
+      <ReactFlowProvider><Ide /></ReactFlowProvider>
+    </>,
   },
   {
     path: "/documents",
-    element: (
+    element: <>
+      <RedirectIfNotLoggedIn />
+      <Header />
       <ProjectSelector
         onSelectProject={(projectId) => useAppState.setState({ projectId })}
       />
-    ),
+    </>,
+  },
+  {
+    path: "/login",
+    element: <>
+      <Header />
+      <LoginState />
+    </>,
   }
 ]);
 

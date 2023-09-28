@@ -32,7 +32,10 @@ export async function generateAccessToken(userInfo: AuthUserInfo) {
     .setIssuedAt()
     .setIssuer('alternis.io')
     .setAudience(userInfo.email)
-    .setExpirationTime('2h')
+    // FIXME: have a separate refresh token
+    // (or just refresh the main token every 15 minutes on the client, so long as it's not
+    // past 7 days without logging in for the user)
+    .setExpirationTime('7d')
     .sign(tokenSecret);
 }
 

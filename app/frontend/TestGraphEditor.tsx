@@ -16,6 +16,9 @@ import ReactFlow, {
   HandleProps,
   ConnectionMode,
   SelectionMode,
+  Background,
+  BezierEdge,
+  useNodes,
 } from 'reactflow'
 import 'reactflow/dist/base.css'
 import styles from './TestGraphEditor.module.css'
@@ -569,7 +572,7 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
       className={styles.node}
       style={{ width: "max-content" }}
       title={
-        "The 'Player Replies' node gives a player participant."
+        "The 'Replies' node gives a participant the option to choose from multiple options.\n"
         + "Each output has a number of chances compared out of the total to be reached. "
         + "You can see the exact chance in each option's calculated percentage."
       }
@@ -616,7 +619,7 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
             />
             <Center
               key={`delete-${index}`}
-              className="hoverable"
+              className="hoverable hoverable-red"
               title="Delete this option"
               onClick={() => set(s => {
                 const replies = s.replies.slice();
@@ -745,13 +748,34 @@ const CustomEdge = (props: EdgeProps) => {
     //targetY: props.targetY + 5,
   });
   const markerEnd = getMarkerEnd(MarkerType.Arrow, props.markerEnd);
+
+  const nodes = useNodes();
+  const sourceNode = nodes.find(n => n.id === props.source);
+  const targetNode = nodes.find(n => n.id === props.target);
+
+  if (sourceNode?.type === "reroute" || targetNode?.type === "reroute") {
+    return <RerouteEdge {...props} />;
+  }
+
   return <BaseEdge
     interactionWidth={20}
     path={edgePath}
-    markerEnd={markerEnd}
     {...props}
     style={{strokeWidth: 2, ...props.style}}
+    markerWidth={10}
+    markerHeight={10}
+    markerStart={MarkerType.ArrowClosed}
+    markerEnd={MarkerType.ArrowClosed}
   />;
+}
+
+// FIXME: completely broken, just need to detect if the node
+function RerouteEdge(props: EdgeProps) {
+  const { sourceX, sourceY, targetX, targetY, id, markerEnd } = props;
+  const xDir = targetX < sourceX ? -1 : 1;
+  const edgePath = `M ${sourceX - 5} ${sourceY} C ${sourceX + xDir * 100} ${sourceY} ${targetX - xDir * 100} ${targetY} ${targetX} ${targetY}`;
+
+  return <BaseEdge path={edgePath} markerEnd={markerEnd} />;
 }
 
 const edgeTypes = {
@@ -772,6 +796,11 @@ const TestGraphEditor = (_props: TestGraphEditor.Props) => {
   const graph = useReactFlow<{}, {}>();
   const nodes = useAppState(s => s.document.nodes);
   const edges = useAppState(s => s.document.edges);
+
+  const dragBoxSelectMouseBinding = useAppState(s => s.preferences.graph.dragBoxSelectMouseBinding);
+  const appendToSelectModifier = useAppState(s => s.preferences.graph.appendToSelectModifier);
+  const dragPanMouseBinding = useAppState(s => s.preferences.graph.dragPanMouseBinding);
+  const addNodeMouseBinding = useAppState(s => s.preferences.graph.addNodeMouseBinding);
 
   const addNode = React.useCallback(
     (nodeType: string, position: {x: number, y:number}, initData?: any) => {
@@ -834,7 +863,7 @@ const TestGraphEditor = (_props: TestGraphEditor.Props) => {
   return (
     <GraphErrorBoundary>
       <div ref={editorRef}>
-        <ContextMenu>
+        <ContextMenu activateInteraction={addNodeMouseBinding ?? undefined}>
           <ContextMenuOptions
             className={styles.addNodeMenu}
             options={Object.keys(nodeTypes)
@@ -858,7 +887,7 @@ const TestGraphEditor = (_props: TestGraphEditor.Props) => {
           <ReactFlow
             nodes={nodes}
             edges={edges}
-            deleteKeyCode={"Delete"} /*DELETE key*/
+            deleteKeyCode={["Backspace", "Delete", "x"]}
             onNodesChange={(changes) => useAppState.setState(s => ({
               document: {
                 ...s.document,
@@ -893,9 +922,10 @@ const TestGraphEditor = (_props: TestGraphEditor.Props) => {
               return true;
             }}
             connectionRadius={25}
-            multiSelectionKeyCode="Shift"
+            connectOnClick
+            multiSelectionKeyCode={appendToSelectModifier}
             // FIXME: not good for laptops..., maybe we need a box select icon...
-            panOnDrag={[1]} // middle mouse, not great for laptops
+            panOnDrag={dragPanMouseBinding ? [dragPanMouseBinding] : false} // middle mouse, not great for laptops
             selectionOnDrag={true}
             selectionMode={SelectionMode.Partial}
             onDrop={(e) => {
@@ -960,6 +990,7 @@ const TestGraphEditor = (_props: TestGraphEditor.Props) => {
                 backgroundColor: "var(--bg-1)",
               }}
             />
+            <Background />
           </ReactFlow>
         </div>
       </div>

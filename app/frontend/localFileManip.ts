@@ -44,11 +44,12 @@ export const uploadFile = async (opts: { type: 'text' | 'dataurl' }) => {
       const input = hiddenTree.children[0] as HTMLInputElement
       input.onchange = function() {
         try {
-          const [file] = input.files
+          if (input.files === null) throw Error("No files in input")
+          const [file] = input.files;
           const blob = file
           const reader = new FileReader()
           reader.onloadend = function(ev) {
-            if (ev.target.readyState === FileReader.DONE) {
+            if (ev.target?.readyState === FileReader.DONE) {
               resolve({ name: file.name, content: ev.target.result as string })
             }
           }

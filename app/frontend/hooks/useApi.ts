@@ -38,6 +38,7 @@ export interface UseApiResult {
 
 interface ApiState extends UseApiResult {
   _token: string | undefined;
+  _tokenPayload: jose.JWTPayload | undefined;
   _apiFetch: (subpath: string, reqOpts?: RequestInit) => Promise<Response>;
   _likeLogin: (subpath: "register" | "login", user: RegisterUserData) => Promise<void>;
 }
@@ -47,24 +48,37 @@ const DEFAULT_API_PORT = 4222;
 const defaultLocalApiState = Object.freeze({
   baseUrl: `http://${window.location.hostname}:${DEFAULT_API_PORT}/api/v1`,
   _token: undefined,
-  documents: undefined,
-  // FIXME: put user id in the token so we can retrieve it if already logged in
+  _tokenPayload: undefined,
   me: undefined,
+  documents: undefined,
 } as ApiState);
 
-const initialToken = localStorage.getItem(authv1key) ?? undefined;
+let initialToken: string | undefined;
+let initialTokenPayload: jose.JWTPayload | undefined;
 
-let initialMe: Pick<User, "id" | "email"> | undefined;
 try {
-  initialMe = initialToken
-    && jose.decodeJwt(initialToken)?.user as Pick<User, "id" | "email">
+  const prevToken = localStorage.getItem(authv1key) ?? undefined;
+  const prevTokenPayload = prevToken
+    && jose.decodeJwt(prevToken)
     || undefined;
+  // FIXME: 
+  if (prevTokenPayload && prevTokenPayload.exp) {
+    if (Date.now() / 1000 < prevTokenPayload.exp) {
+      initialToken = prevToken;
+      initialTokenPayload = prevTokenPayload;
+      // FIXME: add a refresh token into the mix
+      //const timeToExpire = prevTokenPayload.exp;
+      //const _2MinutesInSecs = 2 * 60;
+      //const _2MinutesBeforeExpiry = timeToExpire - _2MinutesInSecs;
+      //setTimeout()
+    }
+  }
 } catch {}
 
 const initialLocalApiState = Object.freeze({
   ...defaultLocalApiState,
   _token: initialToken,
-  me: initialMe,
+  me: initialTokenPayload?.user as Pick<User, "id" | "email">,
 });
 
 // FIXME: use sequence
@@ -80,15 +94,27 @@ const useLocalApiState = create<ApiState>()((set, get) => ({
   // FIXME: move out but take reference to state
   _apiFetch: async (subpath: string, reqOpts: RequestInit = {}) => {
     assert(subpath.startsWith("/"));
+    const token = get()._token;
     const result = await fetch(`${get().baseUrl}${subpath}`, {
       ...reqOpts,
       headers: {
-        ...get()._token && {'Authorization': `Bearer ${get()._token}`},
+        ...token && {'Authorization': `Bearer ${token}`},
         ...reqOpts.headers,
       },
     });
-    if (!result.ok)
-      throw result;
+
+    if (!result.ok) {
+      console.error("non-OK response", result);
+      const err = Error(
+        `Received non OK '${result.status} ${result.statusText}' response from service:\n`
+        + await (result.headers.get('Content-Type') === 'application/json'
+          ? result.json()
+          : result.text())
+      );
+      alert(err);
+      throw err;
+    }
+
     return result;
   },
 
@@ -122,6 +148,7 @@ const useLocalApiState = create<ApiState>()((set, get) => ({
     },
 
     async syncMyRecentDocuments() {
+      if (!get().computed.isLoggedIn) return;
       const documents = await get()._apiFetch("/users/me/documents/recents").then((r) => r.json() as Promise<DocumentList>);
       set({ documents });
     },
@@ -219,19 +246,25 @@ const useLocalApiState = create<ApiState>()((set, get) => ({
         }),
       }));
 
-      // FIXME: rollback on error
-      const newDoc = await get()._apiFetch(`/users/me/documents`, {
-        method: "POST",
-        body: JSON.stringify(doc),
-        //headers: { 'Content-Type': 'application/octet-stream' },
-      }).then((r) => r.json());
+      try {
+        const newDoc = await get()._apiFetch(`/users/me/documents`, {
+          method: "POST",
+          body: JSON.stringify(doc),
+          //headers: { 'Content-Type': 'application/octet-stream' },
+        }).then((r) => r.json());
 
-      set((s) => ({
-        documents: (s.documents ?? []).map(d => d.id !== tempDocId ? d : {
-          ...d,
-          ...newDoc,
-        })
-      }));
+        set((s) => ({
+          documents: (s.documents ?? []).map(d => d.id !== tempDocId ? d : {
+            ...d,
+            ...newDoc,
+          })
+        }));
+      } catch (err) {
+        // FIXME: use immer for less manual rollback logic or something
+        set((s) => ({
+          documents: (s.documents ?? []).filter(d => d.id !== tempDocId),
+        }));
+      }
     },
   },
 }));

@@ -5,7 +5,7 @@
   max-height: 31vh;
   gap: 2px;
 
-  overflow: scroll;
+  overflow-y: scroll;
 }
 
 .portraitImage {

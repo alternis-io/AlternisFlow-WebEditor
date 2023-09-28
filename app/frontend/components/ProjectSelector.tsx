@@ -1,19 +1,71 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { useApi } from "../hooks/useApi";
-import { defaultAppState, useAppState } from "../AppState";
 import { useAsyncEffect, useAsyncInterval, useOnExternalClick } from "@bentley/react-hooks";
-import type { Document } from "dialogue-middleware-app-backend/lib/prisma";
+import type { DocumentList } from "dialogue-middleware-app-backend/lib/prisma";
 import { Center } from "../Center";
 import { classNames } from "js-utils/lib/react-utils";
 import * as styles from "./ProjectSelector.module.css";
+import { ContextMenuOptions } from "./ContextMenu";
+import { useRedirectIfNotLoggedIn } from "../hooks/useRedirectIfNotLoggedIn";
+
+function ProjectTile(props: {
+  doc: DocumentList[number],
+  onSelectProject: ProjectSelector.Props["onSelectProject"],
+}) {
+  const updateDocument = useApi(s => s.api.updateDocument);
+  const deleteDocument = useApi(s => s.api.deleteDocument);
+
+  const [showMore, setShowMore] = useState(false);
+
+  return (
+    <div
+      key={props.doc.name}
+      onClick={() => {
+        props.onSelectProject(props.doc.name);
+      }}
+      {...classNames("hoverable")}
+      style={{
+        padding: 22,
+        minHeight: "25vh",
+        borderRadius: 15,
+        border: "1px solid var(--fg-1)",
+      }}
+    >
+      <Center>
+        <span
+          contentEditable
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              e.currentTarget.blur();
+              if (e.currentTarget.innerText.trim() === "")
+                e.currentTarget.innerText = "invalid name"
+            }
+          }}
+          onBlur={(e) => updateDocument(props.doc.id, { name: e.currentTarget.innerText.trim() || "invalid name"})}
+        >
+          {props.doc.name}
+        </span>
+      </Center>
+      <div>
+        <span className="hoverable" onClick={() => setShowMore(p => !p)}>
+          ...
+        </span>
+        {showMore && <ContextMenuOptions options={[{
+          id: "delete",
+          label: "Delete this project",
+          onSelect: () => deleteDocument(props.doc.id),
+        }]} />}
+      </div>
+    </div>
+  );
+}
 
 export function ProjectSelector(props: ProjectSelector.Props) {
   const documents = useApi(s => s.documents);
   const syncMyRecentDocuments = useApi(s => s.api.syncMyRecentDocuments);
   const createDocument = useApi(s => s.api.createDocument);
-  const updateDocument = useApi(s => s.api.updateDocument);
   const [createDocDialogShown, setCreateDocDialogShown] = React.useState(false);
-
 
   // FIXME: add run immediately to useAsyncInterval?
   useAsyncEffect(async () => {
@@ -72,37 +124,7 @@ export function ProjectSelector(props: ProjectSelector.Props) {
           <Center><strong><em>Create a new project</em></strong></Center>
         </div>
         {documents?.map((d) => (
-          <div
-            key={d.name}
-            onClick={() => {
-              props.onSelectProject(d.name);
-            }}
-            {...classNames("hoverable")}
-            style={{
-              padding: 22,
-              minHeight: "25vh",
-              borderRadius: 15,
-              border: "1px solid var(--fg-1)",
-            }}
-          >
-            <Center>
-              <span
-                contentEditable
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && e.currentTarget.innerText !== "") {
-                    e.preventDefault();
-                    e.currentTarget.blur();
-                  }
-                }}
-                onBlur={(e) => updateDocument(d.id, { name: e.currentTarget.innerText })}
-              >
-                {d.name}
-              </span>
-            </Center>
-            <span
-              className="hoverable"
-            >...</span>
-          </div>
+          <ProjectTile onSelectProject={props.onSelectProject} doc={d} />
         ))}
       </div>
     </div>

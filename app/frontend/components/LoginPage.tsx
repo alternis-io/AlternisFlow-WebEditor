@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { useApi } from "../hooks/useApi";
 import { useOnExternalClick, useValidatedInput } from "@bentley/react-hooks";
 import { classNames, useOnNoLongerMouseInteracted } from "js-utils/lib/react-utils";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { Center } from "../Center";
 
 
 // FIXME: move to common and use on backend
@@ -20,6 +22,9 @@ function isValidPassword(value: string) {
 }
 
 export function LoginState(_props: LoginPage.Props) {
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const encodedRedirectSource = searchParams.get("redirect");
   const isLoggedIn = useApi(s => s.computed.isLoggedIn);
   const api = useApi(s => s.api);
 
@@ -33,25 +38,15 @@ export function LoginState(_props: LoginPage.Props) {
     pattern: /(?:)/
   });
 
-  const [showLogin, setShowLogin] = useState(false)
-
-  // just in case for security, clear inputs when login UI is closed
-  useEffect(() => {
-    if (!showLogin) {
-      setPasswordInput("");
-      setEmailInput("");
-    }
-  }, [showLogin]);
-
   const inputValid = email !== null && password !== null;
 
   const popupRef = useRef<HTMLDivElement>(null);
 
-  useOnExternalClick(popupRef, () => setShowLogin(false));
-
   const login = async () => {
     if (!inputValid) return;
     await api.login({ email, password });
+    if (encodedRedirectSource)
+      navigate(decodeURIComponent(encodedRedirectSource), { replace: true });
   };
 
   const logout = async () => {
@@ -60,21 +55,17 @@ export function LoginState(_props: LoginPage.Props) {
 
   return (
     <div>
-      <button onClick={() => setShowLogin(prev => !prev)}>Login</button>
       {/* FIXME: use the form properly */}
       {/* FIXME: refactor styling */}
-      <div style={{
+      <Center style={{
+          height: "100%",
+          width: "100%",
           position: "fixed",
-          right: 0,
-          display: showLogin ? undefined : "none",
-          zIndex: 1,
-          backgroundColor: "var(--bg-1)",
-          border: "1px solid var(--fg-1)",
-          borderRadius: 5,
           padding: 6,
         }}
         ref={popupRef}
       >
+        <div style={{ display: "flex", flexDirection: "column" }}>
         {isLoggedIn ? <button
           onClick={logout}
           title={"unimplemented"}
@@ -85,7 +76,12 @@ export function LoginState(_props: LoginPage.Props) {
             <p>Login</p>
             <label className="split" style={{ maxWidth: 300 }}>
               Email:
-              <input value={emailInput} type="email" onChange={(e) => setEmailInput(e.currentTarget.value)}/>
+              <input
+                value={emailInput}
+                type="email"
+                onChange={(e) => setEmailInput(e.currentTarget.value)}
+                onKeyDown={(e) => inputValid && e.key === 'Enter' && login()}
+              />
             </label>
             <div style={{color: "red"}}>{emailError}</div>
             <label className="split" style={{ maxWidth: 300 }}>
@@ -95,7 +91,7 @@ export function LoginState(_props: LoginPage.Props) {
                 type="password"
                 onChange={(e) => setPasswordInput(e.currentTarget.value)}
                 onSubmit={login}
-                onKeyDown={(e) => e.key === 'Enter' && login()}
+                onKeyDown={(e) => inputValid && e.key === 'Enter' && login()}
               />
             </label>
             <div style={{color: "red"}}>{passwordError}</div>
@@ -119,7 +115,8 @@ export function LoginState(_props: LoginPage.Props) {
               Register
             </button>
             </>}
-      </div>
+        </div>
+      </Center>
     </div>
   );
 }

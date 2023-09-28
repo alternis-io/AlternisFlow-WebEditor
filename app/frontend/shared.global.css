@@ -28,6 +28,15 @@
   background-color: var(--bg-1-hover);
 }
 
+.hoverable-red:hover {
+  color: rgba(156, 0, 0, 0.6);
+  fill: var(--fg-hover);
+  stroke: var(--fg-hover);
+  border-color: var(--fg-hover);
+  background-color: var(--bg-1-hover);
+}
+
+
 .newButton {
   padding: 0.7em;
   height: 1em;
@@ -35,3 +44,23 @@
   border-radius: 5px;
 }
 
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(128, 128, 128, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(128, 128, 128, 0.8);
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar:hover {
+  width: 8px; /* doesn't work on chromium */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(256, 100, 10, 0.8);
+}

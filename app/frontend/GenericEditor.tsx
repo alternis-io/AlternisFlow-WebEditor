@@ -43,7 +43,7 @@ export function GenericEditor<T extends SupportedKeys>(
     };
   });
 
-  const proposedNameInputRef = useRef<HTMLInputElement>(null);
+  const proposedNameInputRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (proposedName === "")
@@ -74,8 +74,10 @@ export function GenericEditor<T extends SupportedKeys>(
                 + "can invoke custom functionality during a dialogue."
               }
               className="hoverable"
-              onDoubleClick={(e) => {
-                //make it editable somehow?
+              onDoubleClick={() => {
+                deleteGeneric(name);
+                setProposedName(name);
+                proposedNameInputRef.current?.focus();
               }}
               onDragStart={(e) => {
                 e.dataTransfer.setData("application/alternis-project-data-item", JSON.stringify({
@@ -97,7 +99,7 @@ export function GenericEditor<T extends SupportedKeys>(
                 set={(d: Partial<AppState["document"][T][string]>) => setGeneric(name, d)}
               />
               <Center
-                className="hoverable"
+                className="hoverable hoverable-red"
                 title={`Delete this ${props.singularEntityName}`}
                 onClick={() => {
                   deleteGeneric(name);
@@ -111,22 +113,25 @@ export function GenericEditor<T extends SupportedKeys>(
       ))}
       {proposedName !== undefined
       ? <div>
-          <input
-            ref={proposedNameInputRef}
-            value={proposedName}
-            onChange={(e) => setProposedName(e.currentTarget.value)}
+          <div
+            contentEditable
             onKeyDown={(e) => {
-              if (e.key === "Enter" && e.currentTarget.value !== "") {
+              if (e.key === "Enter") {
                 e.preventDefault();
-                finishProposedGeneric(e.currentTarget.value);
+                e.currentTarget.blur();
+                if (e.currentTarget.innerText.trim() === "")
+                  e.currentTarget.innerText = "invalid name"
               }
             }}
-            onBlur={(e) => finishProposedGeneric(e.currentTarget.value)}
-          />
+            ref={proposedNameInputRef}
+            onBlur={(e) => finishProposedGeneric(e.currentTarget.innerText.trim() || "invalid name")}
+          >
+            {proposedName}
+          </div>
         </div>
       : <div
           title={`Add a new ${props.singularEntityName}`}
-          {...classNames(styles.newButton, "hoverable")}
+          {...classNames(styles.newButton, "hoverable", "")}
           onClick={() => setProposedName("")}
         >
           <Center>+</Center>

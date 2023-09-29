@@ -79,7 +79,7 @@ export const defaultAppState = {
         addNodeMouseBinding: { button: 2, metaKey: true } as MouseBinding,
         appendToSelectModifier: KeyModifiers.Meta as KeyModifiers | null,
       } : {
-        addNodeMouseBinding: { button: 2, shiftKey: true } as MouseBinding,
+        addNodeMouseBinding: { button: 2, ctrlKey: true } as MouseBinding,
         appendToSelectModifier: KeyModifiers.Control as KeyModifiers | null,
       }
     }
@@ -100,12 +100,6 @@ export const defaultAppState = {
       [name: string]: {
         type: "number" | "string" | "boolean",
         default: string,
-      },
-    },
-    // FIXME: remove, no longer used
-    gates: {} as {
-      [name: string]: {
-        initial: "locked" | "unlocked"
       },
     },
     functions: {} as {

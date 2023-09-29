@@ -31,6 +31,7 @@ export function KeyBindingInput(props: KeyBindingInput.Props) {
     }
   }, [listening]);
 
+  // FIXME: not developed unlike MouseBindingInput, unused
   return (
     <input type="button" value={props.value.key} onClick={() => setListening(true)}>
     </input>
@@ -86,16 +87,16 @@ export function MouseBindingInput(props: MouseBindingInput.Props) {
         e.stopPropagation();
         props.onChange?.({
           button: e.button,
-          ctrlKey: e.ctrlKey,
-          altKey: e.altKey,
-          metaKey: e.metaKey,
-          shiftKey: e.shiftKey,
+          ctrlKey: !props.ignoreModifiers && e.ctrlKey,
+          altKey: !props.ignoreModifiers && e.altKey,
+          metaKey: !props.ignoreModifiers && e.metaKey,
+          shiftKey: !props.ignoreModifiers && e.shiftKey,
         });
         setListening(false);
         return false;
       };
-      document.addEventListener("mousedown", onMouseDown);
-      return () => document.removeEventListener("mousedown", onMouseDown);
+      document.addEventListener("mousedown", onMouseDown, true);
+      return () => document.removeEventListener("mousedown", onMouseDown, true);
     }
   }, [listening]);
 
@@ -110,5 +111,6 @@ export namespace MouseBindingInput {
   export interface Props {
     onChange?(k: MouseBinding): void;
     value: MouseBinding;
+    ignoreModifiers?: boolean;
   }
 }

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect } from "react";
 import styles from "./ParticipantEditor.module.css";
 import genericEditorStyles from "./GenericEditor.module.css";
-import { ContextMenu, ContextMenuOptions } from "./components/ContextMenu";
+import { ContextMenuOptions } from "./components/ContextMenu";
 import { IconSizes, useAppState } from "./AppState";
 import { useValidatedInput } from "./hooks/useValidatedInput";
 import { uploadFile } from "./localFileManip";
@@ -176,16 +176,14 @@ export function ParticipantEditor() {
           gridAutoRows: `fit-content`,
         }}
       >
-        <ContextMenu>
-          <ContextMenuOptions options={Object.entries(iconSizes).map(([name, iconSize]) =>
-            ({
-              id: name,
-              "label": `Make icons ${iconSize.label}`,
-              onSelect: () => setIconSize(name as IconSizes)
-            })
-          )}
-          />
-        </ContextMenu>
+        <ContextMenuOptions options={Object.entries(iconSizes).map(([name, iconSize]) =>
+          ({
+            id: name,
+            "label": `Make icons ${iconSize.label}`,
+            onSelect: () => setIconSize(name as IconSizes)
+          })
+        )}
+        />
         {participants.map((p, i) =>
           <div
             key={p.name}

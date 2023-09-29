@@ -91,7 +91,7 @@ export function Preferences() {
         <span>
           Pan graph method
         </span>
-        <MouseBindingInput value={dragPanMouseBinding.binding} onChange={dragPanMouseBinding.setBinding} />
+        <MouseBindingInput value={dragPanMouseBinding.binding} onChange={dragPanMouseBinding.setBinding} ignoreModifiers />
       </label>
 
       <label
@@ -110,7 +110,7 @@ export function Preferences() {
 
       <label title="Which modifier key you can hold to add to selection instead of starting a new one " className="split">
         <span>
-          Append to selection key
+          Append to selection modifier
         </span>
         <AppendToSelectModifierSetting />
       </label>

@@ -1,14 +1,15 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react"
+import React, { useEffect, useImperativeHandle, useLayoutEffect, useRef, useState } from "react"
 import styles from './ContextMenu.module.css'
 import { classNames, useOnNoLongerMouseInteracted } from "js-utils/lib/react-utils";
 import { useOnExternalClick } from "@bentley/react-hooks";
-import { MouseBinding, eventMatchesMouseBinding, onMouseInteractionDomHandlers } from "./KeyBindingInput";
+import { MouseBinding, eventMatchesMouseBinding } from "./KeyBindingInput";
 
-export const ContextMenu = ({
+/** raw context menu primitive, prefer @see ContextMenuOptions usually */
+export const ContextMenu = React.forwardRef<ContextMenu.Ref, ContextMenu.Props>(({
   autoCloseDelay = 1_000,
   children,
   mouseBinding = { button: 2 },
-}: ContextMenu.Props) => {
+}, ref) => {
   const rootElemRef = useRef<HTMLDivElement>(null);
 
   const isShown = () => (rootElemRef.current && rootElemRef.current.style.display !== "none");
@@ -19,6 +20,11 @@ export const ContextMenu = ({
     if (isShown())
       hide();
   });
+
+  useImperativeHandle(ref, () => ({
+    hide,
+    show,
+  }));
 
   useLayoutEffect(() => {
     hide();
@@ -71,31 +77,44 @@ export const ContextMenu = ({
       {children}
     </div>
   );
-}
+});
 
 export namespace ContextMenu {
-  export interface Props extends React.PropsWithChildren {
+  export interface BaseProps {
     /** delay after un-hovering the context menu before it auto closes */
     autoCloseDelay?: number;
     mouseBinding?: MouseBinding;
+  }
+
+  export interface Props extends React.PropsWithChildren, BaseProps {}
+
+  export interface Ref {
+    hide(): void;
+    show(): void;
   }
 }
 
 
 export function ContextMenuOptions(props: ContextMenuOptions.Props) {
-  const { options, ...divProps } = props;
+  const { options, autoCloseDelay, mouseBinding, ...divProps } = props;
+  const ctxMenuRef = useRef<ContextMenu.Ref>(null);
   return (
-    <div {...divProps} {...classNames(styles.contextMenuOptions, props.className)}>
-      {props.options.map(option => (
-        <li
-          key={option.id}
-          onClick={option.onSelect}
-          {...classNames(styles.contextMenuOption, "hoverable")}
-        >
-          <a style={{ color: "inherit" }}>{option.label ?? option.id}</a>
-        </li>
-      ))}
-    </div>
+    <ContextMenu ref={ctxMenuRef} autoCloseDelay={autoCloseDelay} mouseBinding={mouseBinding}>
+      <div {...divProps} {...classNames(styles.contextMenuOptions, props.className)}>
+        {props.options.map(option => (
+          <li
+            key={option.id}
+            onClick={async (e) => {
+              await option.onSelect(e);
+              ctxMenuRef.current?.hide();
+            }}
+            {...classNames(styles.contextMenuOption, "hoverable")}
+          >
+            <a style={{ color: "inherit" }}>{option.label ?? option.id}</a>
+          </li>
+        ))}
+      </div>
+    </ContextMenu>
   );
 }
 
@@ -106,7 +125,7 @@ export namespace ContextMenuOptions {
     onSelect: React.MouseEventHandler<HTMLLIElement>;
   }
 
-  export interface Props extends React.HTMLProps<HTMLDivElement> {
+  export interface Props extends React.HTMLProps<HTMLDivElement>, ContextMenu.BaseProps {
     options: Option[];
-  }
+  };
 }

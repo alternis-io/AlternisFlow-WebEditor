@@ -29,7 +29,7 @@ import { ReactComponent as LockIcon } from "./images/inkscape-lock.svg";
 import { ReactComponent as UnlockIcon } from "./images/inkscape-unlock.svg";
 
 
-import { ContextMenu, ContextMenuOptions } from './components/ContextMenu'
+import { ContextMenuOptions } from './components/ContextMenu'
 import { assert } from 'js-utils/lib/browser-utils'
 import { useValidatedInput } from '@bentley/react-hooks'
 import { InputStatus } from './hooks/useValidatedInput'
@@ -733,9 +733,7 @@ const withNodeContextMenu = <P extends NodeProps<{}>,R extends React.ReactNode>(
 
     return (
       <div>
-        <ContextMenu mouseBinding={MouseInteractions.Right}>
-          <ContextMenuOptions options={nodeContextMenuOpts}/>
-        </ContextMenu>
+        <ContextMenuOptions options={nodeContextMenuOpts} />
         <Node {...p} />
       </div>
     );
@@ -846,7 +844,7 @@ const TestGraphEditor = (_props: TestGraphEditor.Props) => {
               data: {
                 ...nodeType === "lockNode"
                   ? {
-                    variable: Object.keys(s.document.gates)[0],
+                    variable: Object.entries(s.document.variables).filter(([,v]) => v.type === "boolean")?.[0]?.[0],
                     action: "lock",
                   }
                   : nodeType === "randomSwitch"
@@ -893,28 +891,25 @@ const TestGraphEditor = (_props: TestGraphEditor.Props) => {
   return (
     <GraphErrorBoundary>
       <div ref={editorRef}>
-        {/* FIXME: add on context menu closed event */}
-        {/* FIXME: add on auto close on option selections */}
-        <ContextMenu mouseBinding={addNodeMouseBinding ?? undefined}>
-          <ContextMenuOptions
-            className={styles.addNodeMenu}
-            options={Object.keys(nodeTypes)
-              .filter(key => key !== "entry" && key !== "default" && key !== "dialogueEntry")
-              .map((nodeType) => ({
-                  id: nodeType,
-                  label: nodeTypeNames[nodeType],
-                  onSelect(e) {
-                    const { top, left } = graphContainerElem.current!.getBoundingClientRect();
-                    addNode(nodeType, graph.project({
-                      x: e.clientX - left - 150/2,
-                      y: e.clientY - top,
-                    }));
-                  },
-                })
-              )
-            }
-          />
-        </ContextMenu>
+        <ContextMenuOptions
+          mouseBinding={addNodeMouseBinding}
+          className={styles.addNodeMenu}
+          options={Object.keys(nodeTypes)
+            .filter(key => key !== "entry" && key !== "default" && key !== "dialogueEntry")
+            .map((nodeType) => ({
+                id: nodeType,
+                label: nodeTypeNames[nodeType],
+                onSelect(e) {
+                  const { top, left } = graphContainerElem.current!.getBoundingClientRect();
+                  addNode(nodeType, graph.project({
+                    x: e.clientX - left - 150/2,
+                    y: e.clientY - top,
+                  }));
+                },
+              })
+            )
+          }
+        />
         <div className={styles.graph} ref={graphContainerElem}>
           <ReactFlow
             nodes={nodes}

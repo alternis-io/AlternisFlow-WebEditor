@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect } from 'react'
+import React, { useEffect, useLayoutEffect, useMemo } from 'react'
 import ReactFlow, {
   Handle,
   NodeProps,
@@ -19,25 +19,34 @@ import ReactFlow, {
   Background,
   BezierEdge,
   useNodes,
+  useOnSelectionChange,
+  useUpdateNodeInternals,
 } from 'reactflow'
 import 'reactflow/dist/base.css'
 import styles from './TestGraphEditor.module.css'
 import { classNames, deepCloneJson } from 'js-utils/lib/react-utils'
 import { Center } from "./Center";
-import { AppState, MouseInteractions, getNode, makeNodeDataSetter, useAppState } from "./AppState";
+import { AppState, MouseInteractions, clientIsMac, getNode, makeNodeDataSetter, useAppState } from "./AppState";
 import { ReactComponent as LockIcon } from "./images/inkscape-lock.svg";
 import { ReactComponent as UnlockIcon } from "./images/inkscape-unlock.svg";
-
-
 import { ContextMenuOptions } from './components/ContextMenu'
 import { assert } from 'js-utils/lib/browser-utils'
-import { useValidatedInput } from '@bentley/react-hooks'
+import { useStable, useValidatedInput } from '@bentley/react-hooks'
 import { InputStatus } from './hooks/useValidatedInput'
 
-function NodeHandle(props: HandleProps & Omit<React.HTMLAttributes<HTMLDivElement>, "id">) {
+// FIXME: clean up/remove exprimental easy grab handle
+function NodeHandle(
+  props: HandleProps
+    & Omit<React.HTMLAttributes<HTMLDivElement>, "id">
+    & {
+      index: number;
+      nodeId: string;
+    }
+) {
   //const graph = useReactFlow();
-  const radius = 12;
+  //const radius = 12;
   return <Handle
+    id={`${props.nodeId}_${props.type}_${props.index}`}
     {...props}
     {...classNames(styles.handle, props.className)}
     style={{
@@ -142,6 +151,8 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
     >
       <NodeHandle
         type="target"
+        nodeId={props.id}
+        index={0}
         position="left"
         className={styles.handle}
         isConnectable
@@ -196,6 +207,8 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
       : <> unknown participant </>
       }
       <NodeHandle
+        nodeId={props.id}
+        index={0}
         type="source"
         position="right"
         className={styles.handle}
@@ -236,6 +249,8 @@ const LockNode = (props: NodeProps<Lock>) => {
       }}
     >
       <NodeHandle
+        nodeId={props.id}
+        index={0}
         type="target"
         position="left"
         className={styles.handle}
@@ -266,6 +281,8 @@ const LockNode = (props: NodeProps<Lock>) => {
         </select>
       </label>
       <NodeHandle
+        nodeId={props.id}
+        index={0}
         type="source"
         position="right"
         className={styles.handle}
@@ -295,6 +312,8 @@ const EmitNode = (props: NodeProps<Emit>) => {
       }
     >
       <NodeHandle
+        nodeId={props.id}
+        index={0}
         type="target"
         position="left"
         className={styles.handle}
@@ -317,6 +336,8 @@ const EmitNode = (props: NodeProps<Emit>) => {
         </select>
       </label>
       <NodeHandle
+        nodeId={props.id}
+        index={0}
         type="source"
         position="right"
         className={styles.handle}
@@ -387,7 +408,8 @@ const RandomSwitchInput = (props: {
           <em>&times;</em>
         </Center>
       <NodeHandle
-        id={`${nodeId}_${index}`}
+        nodeId={nodeId}
+        index={index}
         type="source"
         position="right"
         className={styles.inlineHandle}
@@ -402,6 +424,7 @@ const RandomSwitchNode = (props: NodeProps<RandomSwitch>) => {
   const data = getNode<RandomSwitch>(props.id)?.data;
   const totalProportion = data?.proportions.reduce((prev, curr) => prev + curr, 0) ?? 1;
   const set = makeNodeDataSetter<RandomSwitch>(props.id);
+  const updateNodeInternals = useUpdateNodeInternals();
 
   return !data ? null : (
     <div
@@ -414,6 +437,8 @@ const RandomSwitchNode = (props: NodeProps<RandomSwitch>) => {
       }
     >
       <NodeHandle
+        nodeId={props.id}
+        index={0}
         type="target"
         position="left"
         className={styles.handle}
@@ -434,9 +459,12 @@ const RandomSwitchNode = (props: NodeProps<RandomSwitch>) => {
         <div
           title="Add a possibility"
           {...classNames("newButton", "hoverable")}
-          onClick={() => set((s) => ({
-            proportions: s.proportions.concat(1),
-          }))}
+          onClick={() => {
+            set((s) => ({
+              proportions: s.proportions.concat(1),
+            }));
+            updateNodeInternals(props.id);
+          }}
         >
           <Center>+</Center>
         </div>
@@ -554,6 +582,7 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
   // REPORTME: react-flow seems to sometimes render non-existing nodes briefly?
   const data = getNode<PlayerReplies>(props.id)?.data;
   const set = makeNodeDataSetter<PlayerReplies>(props.id);
+  const updateNodeInternals = useUpdateNodeInternals();
 
   const nodeBodyRef = React.useRef<HTMLDivElement>(null);
 
@@ -578,6 +607,8 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
       }
     >
       <NodeHandle
+        nodeId={props.id}
+        index={0}
         type="target"
         position="left"
         className={styles.handle}
@@ -638,7 +669,8 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
             </Center>
             <NodeHandle
               key={`handle-${index}`}
-              id={`${props.id}_${index}`}
+              id={props.id}
+              index={index}
               type="source"
               position="right"
               className={styles.inlineHandle}
@@ -649,15 +681,18 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
         <div
           title="Add a reply option"
           {...classNames("newButton", "hoverable")}
-          onClick={() => set((s) => ({
-            replies: s.replies.concat({ text: "" }),
-          }))}
+          onClick={() => {
+            set((s) => ({
+              replies: s.replies.concat({ text: "", lockAction: "none", lockVariable: undefined }),
+            }));
+            updateNodeInternals(props.id);
+          }}
         >
           <Center>+</Center>
         </div>
       </div>
     </div>
-  )
+  );
 };
 
 const UnknownNode = (_props: NodeProps<{}>) => {
@@ -675,7 +710,7 @@ const UnknownNode = (_props: NodeProps<{}>) => {
   )
 };
 
-const EntryNode = (_props: NodeProps<{}>) => {
+const EntryNode = (props: NodeProps<{}>) => {
   return (
     <div
       className={styles.node}
@@ -686,6 +721,8 @@ const EntryNode = (_props: NodeProps<{}>) => {
         <strong>Start</strong>
       </Center>
       <NodeHandle
+        id={props.id}
+        index={0}
         type="source"
         position="right"
         className={styles.handle}
@@ -695,7 +732,7 @@ const EntryNode = (_props: NodeProps<{}>) => {
   )
 };
 
-const RerouteNode = (_props: NodeProps<{}>) => {
+const RerouteNode = (props: NodeProps<{}>) => {
   return (
     <div
       className={styles.node}
@@ -705,6 +742,8 @@ const RerouteNode = (_props: NodeProps<{}>) => {
       style={{ height: 5, width: 5 }}
     >
       <NodeHandle
+        id={props.id}
+        index={0}
         style={{
           top: 15,
           left: 1,
@@ -818,59 +857,147 @@ function getNewId(nodes: { id: string }[]) {
   return `${maxId + 1}`;
 }
 
-const TestGraphEditor = (_props: TestGraphEditor.Props) => {
+const addNode = (
+  nodeType: string, {
+    initData = undefined,
+    position = { x: 0, y: 0},
+    connectingNodeId,
+  }: {
+    initData?: any;
+    position?: {x: number, y:number}, 
+    connectingNodeId?: { current?: string },
+  } = {}
+) => {
+  useAppState.setState((s) => {
+    const maybeSourceNode = connectingNodeId?.current;
+    const newNodeId = getNewId(s.document.nodes);
+    return {
+      document: {
+        ...s.document,
+        nodes: s.document.nodes.concat({
+          id: newNodeId,
+          type: nodeType,
+          data: {
+            ...nodeType === "lockNode"
+              ? {
+                variable: Object.entries(s.document.variables).filter(([,v]) => v.type === "boolean")?.[0]?.[0],
+                action: "lock",
+              }
+              : nodeType === "randomSwitch"
+              ? deepCloneJson(defaultRandomSwitchProps)
+              : nodeType === "emitNode"
+              ? { function: Object.keys(s.document.functions)[0] } as Emit
+              : nodeType === "playerReplies"
+              ? deepCloneJson(defaultPlayerRepliesProps)
+              : {},
+            ...initData,
+          },
+          position,
+        }),
+        edges: maybeSourceNode !== undefined
+          ? addEdge({
+            id: getNewId(s.document.edges),
+            source: maybeSourceNode,
+            target: newNodeId,
+          }, s.document.edges)
+          : s.document.edges
+      },
+    };
+  });
+}
+
+
+function useReactFlowClipboard(): void {
+  type NodeEdgeState = Pick<AppState["document"], "edges" | "nodes">;
+  const [clipboard, setClipboard] = React.useState<NodeEdgeState | undefined>();
+  const [selection, setSelection] = React.useState<NodeEdgeState | undefined>();
+  useOnSelectionChange(useStable(() => ({ onChange: setSelection })));
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      const usesStandardModifier = (_e: typeof e) => clientIsMac ? e.metaKey : e.ctrlKey;
+      const copyPressed = e.key === "c" && usesStandardModifier(e);
+      const cutPressed = e.key === "x" && usesStandardModifier(e);
+      const pastePressed = e.key === "v" && usesStandardModifier(e);
+
+      if (!copyPressed && !cutPressed && !pastePressed) return;
+
+      const copySelection = () => setClipboard(selection);
+
+      if (copyPressed) {
+        copySelection();
+
+      } else if (cutPressed) {
+        const edgeIdSet = new Set(clipboard?.edges.map(e => e.id));
+        const nodeIdSet = new Set(clipboard?.nodes.map(n => n.id));
+        copySelection();
+        useAppState.setState(s => ({
+          document: {
+            ...s.document,
+            nodes: s.document.nodes.filter(n => !nodeIdSet.has(n.id)),
+            edges: s.document.edges.filter(e => !edgeIdSet.has(e.id)),
+          },
+        }));
+
+      } else if (pastePressed) {
+        useAppState.setState(s => {
+          const nodeRemapTable = new Map(selection?.nodes.map(({id}) => [id, getNewId(s.document.nodes)] as const));
+          const edgeRemapTable = new Map(selection?.edges.map(({id}) => [id, getNewId(s.document.edges)] as const));
+
+          // as defined in NodeHandle, all handles follow the pattern: `${props.nodeId}_${props.type}_${props.index}`
+          const remapHandle = (handle: string) => {
+            const endNodeIdIndex = handle.indexOf("_");
+            assert(endNodeIdIndex !== -1, `encountered an invalid node handle: '${handle}'`);
+            const nodeId = handle.slice(0, endNodeIdIndex);
+            const remappedNodeId = nodeRemapTable.get(nodeId);
+            if (remappedNodeId === undefined) return undefined;
+            return `${remappedNodeId}_${handle.slice(endNodeIdIndex + 1)}`;
+          };
+
+          return {
+            document: {
+              ...s.document,
+              nodes: selection
+                ? s.document.nodes.concat(selection.nodes.map(n => ({
+                  ...n,
+                  id: nodeRemapTable.get(n.id)!,
+                  position: { x: n.position.x + 200, y: n.position.y + 200 },
+                })))
+                : s.document.nodes,
+              edges: selection
+                ? s.document.edges.concat(selection.edges.map(e => ({
+                  ...e,
+                  id: edgeRemapTable.get(e.id)!,
+                  source: nodeRemapTable.get(e.source) ?? e.source,
+                  target: nodeRemapTable.get(e.target) ?? e.target,
+                  sourceHandle: e.sourceHandle && remapHandle(e.sourceHandle) || e.sourceHandle,
+                  targetHandle: e.targetHandle && remapHandle(e.targetHandle) || e.targetHandle,
+                })))
+                : s.document.edges,
+            },
+          };
+        });
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [clipboard, selection]);
+}
+
+export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
   // FIXME: use correct types
   const graph = useReactFlow<{}, {}>();
   const nodes = useAppState(s => s.document.nodes);
   const edges = useAppState(s => s.document.edges);
+
+  useReactFlowClipboard();
 
   const dragBoxSelectMouseBinding = useAppState(s => s.preferences.graph.dragBoxSelectMouseBinding);
   const appendToSelectModifier = useAppState(s => s.preferences.graph.appendToSelectModifier);
   const dragPanMouseBinding = useAppState(s => s.preferences.graph.dragPanMouseBinding);
   const addNodeMouseBinding = useAppState(s => s.preferences.graph.addNodeMouseBinding);
   const enableBoxSelectOnDrag = useAppState(s => s.preferences.graph.enableBoxSelectOnDrag);
-
-  const addNode = React.useCallback(
-    (nodeType: string, position: {x: number, y:number}, initData?: any) => {
-      useAppState.setState((s) => {
-        const maybeSourceNode = connectingNodeId.current;
-        const newNodeId = getNewId(s.document.nodes);
-        return {
-          document: {
-            ...s.document,
-            nodes: s.document.nodes.concat({
-              id: newNodeId,
-              type: nodeType,
-              data: {
-                ...nodeType === "lockNode"
-                  ? {
-                    variable: Object.entries(s.document.variables).filter(([,v]) => v.type === "boolean")?.[0]?.[0],
-                    action: "lock",
-                  }
-                  : nodeType === "randomSwitch"
-                  ? deepCloneJson(defaultRandomSwitchProps)
-                  : nodeType === "emitNode"
-                  ? { function: Object.keys(s.document.functions)[0] } as Emit
-                  : nodeType === "playerReplies"
-                  ? deepCloneJson(defaultPlayerRepliesProps)
-                  : {},
-                ...initData,
-              },
-              position,
-            }),
-            edges: maybeSourceNode !== undefined
-              ? addEdge({
-                id: getNewId(s.document.edges),
-                source: maybeSourceNode,
-                target: newNodeId,
-              }, s.document.edges)
-              : s.document.edges
-          },
-        };
-      });
-    },
-    []
-  );
 
   const connectingNodeId = React.useRef<string>();
   const graphContainerElem = React.useRef<HTMLDivElement>(null);
@@ -901,10 +1028,13 @@ const TestGraphEditor = (_props: TestGraphEditor.Props) => {
                 label: nodeTypeNames[nodeType],
                 onSelect(e) {
                   const { top, left } = graphContainerElem.current!.getBoundingClientRect();
-                  addNode(nodeType, graph.project({
-                    x: e.clientX - left - 150/2,
-                    y: e.clientY - top,
-                  }));
+                  addNode(nodeType, {
+                    position: graph.project({
+                      x: e.clientX - left - 150/2,
+                      y: e.clientY - top,
+                    }),
+                    connectingNodeId,
+                  });
                 },
               })
             )
@@ -986,10 +1116,14 @@ const TestGraphEditor = (_props: TestGraphEditor.Props) => {
                 const { top, left } = graphContainerElem.current!.getBoundingClientRect();
 
                 // FIXME: better node width
-                addNode(nodeType, graph.project({
-                  x: e.clientX - left - 150/2,
-                  y: e.clientY - top,
-                }), nodeData);
+                addNode(nodeType, {
+                  position: graph.project({
+                    x: e.clientX - left - 150/2,
+                    y: e.clientY - top,
+                  }), 
+                  initData: nodeData,
+                  connectingNodeId,
+                });
               }
             }}
             onEdgeClick={(_evt, edge) => {

@@ -23,7 +23,7 @@ ssh root@alternis.io <<EOF
   # FIXME: fix install locations to not be local to mike
   export PATH="$PATH:/home/mike/.local/share/pnpm:/home/mike/.bun/bin"
   cd /var/www/alternis-v1-deploy-stage/app/backend
-  # the postinstall step that runs `prisma generate` needs to be rerun on the host, it
+  # the postinstall step that runs "prisma generate" needs to be rerun on the host, it
   # generates host-specific bindings
   pnpm exec prisma generate
   # FIXME: pnpm exec prisma migrate

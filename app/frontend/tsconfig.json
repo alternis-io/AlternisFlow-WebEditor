@@ -4,7 +4,7 @@
     "noEmit": true,
     "declaration": false,
     "target": "es2015",
-    "module": "CommonJS",
+    "module": "NodeNext",
     "jsx": "react",
     "moduleResolution": "node",
     "lib": ["DOM", "ScriptHost", "ES2020"],

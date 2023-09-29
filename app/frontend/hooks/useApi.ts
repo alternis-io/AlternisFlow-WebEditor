@@ -43,10 +43,12 @@ interface ApiState extends UseApiResult {
   _likeLogin: (subpath: "register" | "login", user: RegisterUserData) => Promise<void>;
 }
 
-const DEFAULT_API_PORT = 4222;
+const DEFAULT_DEV_API_PORT = 4222;
 
 const defaultLocalApiState = Object.freeze({
-  baseUrl: `http://${window.location.hostname}:${DEFAULT_API_PORT}/api/v1`,
+  baseUrl: import.meta.env.PROD
+    ? `https://${window.location.hostname}/api/v1`
+    : `http://${window.location.hostname}:${DEFAULT_DEV_API_PORT}/api/v1`,
   _token: undefined,
   _tokenPayload: undefined,
   me: undefined,

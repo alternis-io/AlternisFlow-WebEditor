@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useApi } from "../hooks/useApi";
 import { useOnExternalClick, useValidatedInput } from "@bentley/react-hooks";
 import { classNames, useOnNoLongerMouseInteracted } from "js-utils/lib/react-utils";
-import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Center } from "../Center";
 
 
@@ -62,60 +62,81 @@ export function LoginState(_props: LoginPage.Props) {
           width: "100%",
           position: "fixed",
           padding: 6,
+          paddingBottom: "20vh",
         }}
         ref={popupRef}
       >
-        {encodedRedirectSource && "You must be logged in"}
-        <div style={{ display: "flex", flexDirection: "column" }}>
-        {isLoggedIn ? <button
-          onClick={logout}
-          title={"unimplemented"}
-        >
-          Logout
-        </button>
-          : <>
-            <p>Login</p>
-            <label className="split" style={{ maxWidth: 300 }}>
-              Email:
-              <input
-                value={emailInput}
-                type="email"
-                onChange={(e) => setEmailInput(e.currentTarget.value)}
-                onKeyDown={(e) => inputValid && e.key === 'Enter' && login()}
-              />
-            </label>
-            <div style={{color: "red"}}>{emailError}</div>
-            <label className="split" style={{ maxWidth: 300 }}>
-              Password:
-              <input
-                value={passwordInput}
-                type="password"
-                onChange={(e) => setPasswordInput(e.currentTarget.value)}
-                onSubmit={login}
-                onKeyDown={(e) => inputValid && e.key === 'Enter' && login()}
-              />
-            </label>
-            <div style={{color: "red"}}>{passwordError}</div>
-            <button
-              onClick={login}
-              disabled={!inputValid}
-              title={inputValid ? "Click to login" : "Invalid inputs"}
-            >
-              Login
-            </button>
-            <button
-              onClick={async () => {
-                if (!inputValid) return;
-                // FIXME: need forgot password link
-                // FIXME: test attempt to register existing email
-                await api.register({ email, password });
-              }}
-              disabled={!inputValid}
-              title={inputValid ? "Click to login" : "Invalid inputs"}
-            >
-              Register
-            </button>
-            </>}
+        <div>
+          {encodedRedirectSource && (
+            <div>
+              You must be logged in to use Alternis.
+              Want to just <Link to="/?trial">try it</Link> out now?
+            </div>
+          )}
+          <div style={{
+            marginTop: 20,
+            display: "flex",
+            flexDirection: "column",
+            gap: 5,
+            alignItems: "center"
+          }}>
+            {isLoggedIn ? <>
+              <button
+                onClick={logout}
+                title={"unimplemented"}
+              >
+                Logout
+              </button>
+            </> : <>
+              <label className="split" style={{ minWidth: 300 }}>
+                Email:
+                <input
+                  value={emailInput}
+                  type="email"
+                  onChange={(e) => setEmailInput(e.currentTarget.value)}
+                  onKeyDown={(e) => inputValid && e.key === 'Enter' && login()}
+                />
+              </label>
+              <div style={{color: "red"}}>{emailError}</div>
+              <label className="split" style={{ minWidth: 300 }}>
+                Password:
+                <input
+                  value={passwordInput}
+                  type="password"
+                  onChange={(e) => setPasswordInput(e.currentTarget.value)}
+                  onSubmit={login}
+                  onKeyDown={(e) => inputValid && e.key === 'Enter' && login()}
+                />
+              </label>
+              <div style={{color: "red"}}>{passwordError}</div>
+              <Center>
+                <button
+                  onClick={login}
+                  disabled={!inputValid}
+                  title={inputValid ? "Click to login" : "Invalid inputs"}
+                  style={{ width: "10em" }}
+                >
+                  Login
+                </button>
+              </Center>
+              <Center>
+                <button
+                  onClick={async () => {
+                    if (!inputValid) return;
+                    // FIXME: need forgot password link
+                    // FIXME: test attempt to register existing email
+                    await api.register({ email, password });
+                  }}
+                  disabled={!inputValid}
+                  title={inputValid ? "Click to login" : "Invalid inputs"}
+                  style={{ width: "10em" }}
+                >
+                  Register
+                </button>
+              </Center>
+              </>
+            }
+          </div>
         </div>
       </Center>
     </div>

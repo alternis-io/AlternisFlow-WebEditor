@@ -20,7 +20,10 @@ export function Header() {
         paddingTop: 2,
         paddingBottom: 2,
       }}>
-        <Link to={baseUrl}><img src={logoPath} height={40} className="hoverable" /></Link>
+        <Link to={baseUrl}>
+          <img src={logoPath} height={40} className="hoverable" />
+          {/*Alternis*/}
+        </Link>
       </div>
     }
     right={

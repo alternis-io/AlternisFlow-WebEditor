@@ -55,27 +55,25 @@ const router = createHashRouter([
       <ReactFlowProvider><Ide /></ReactFlowProvider>
     </>,
     ErrorBoundary: ResettingErrorBoundary,
-    children: [
-      {
-        path: "documents",
-        element: <>
-          <RedirectIfNotLoggedIn />
-          <Header />
-          <ProjectSelector
-            onSelectProject={(projectId) => useAppState.setState({ projectId })}
-          />
-        </>,
-        ErrorBoundary: ResettingErrorBoundary,
-      },
-      {
-        path: "login",
-        element: <>
-          <Header />
-          <LoginState />
-        </>,
-        ErrorBoundary: ResettingErrorBoundary,
-      },
-    ]
+  },
+  {
+    path: "documents",
+    element: <>
+      <RedirectIfNotLoggedIn />
+      <Header />
+      <ProjectSelector
+        onSelectProject={(projectId) => useAppState.setState({ projectId })}
+      />
+    </>,
+    ErrorBoundary: ResettingErrorBoundary,
+  },
+  {
+    path: "login",
+    element: <>
+      <Header />
+      <LoginState />
+    </>,
+    ErrorBoundary: ResettingErrorBoundary,
   },
 ]);
 

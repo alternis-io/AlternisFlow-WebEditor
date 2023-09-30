@@ -7,10 +7,12 @@ export function useRedirectIfNotLoggedIn() {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const inLocalTrial = location.search === "?trial";
+
   useEffect(() => {
-    if (!isLoggedIn)
+    if (!isLoggedIn && !inLocalTrial)
       navigate(`/login?redirect=${encodeURIComponent(location.pathname)}`, { replace: true })
-  }, [isLoggedIn, navigate, location]);
+  }, [isLoggedIn, navigate, location, inLocalTrial]);
 }
 
 export function RedirectIfNotLoggedIn() {

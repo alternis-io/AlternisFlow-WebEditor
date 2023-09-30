@@ -45,7 +45,6 @@ function NodeHandle(
       nodeId: string;
     }
 ) {
-  const x = blah;
   const { nodeId, index, ...divProps } = props;
   //const graph = useReactFlow();
   //const radius = 12;

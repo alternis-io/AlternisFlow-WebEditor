@@ -530,7 +530,9 @@ const ReplyLock = (props: {
         className="hoverable"
         {...props.reply.lockAction === "none"
           ? {
-            title: "Click to lock this reply on a locked variable",
+            title: bools.length > 0
+              ? "Click to lock this reply on a locked boolean variable"
+              : "Add a boolean variable to be able to lock on one",
             onClick: () => {
               // FIXME: error toast on no available bool variables? Or just hide this entirely?
               // or even offer to create a new variable then and there...
@@ -542,7 +544,7 @@ const ReplyLock = (props: {
               });
             },
           } : props.reply.lockAction === "lock" ? {
-            title: "Click to lock this reply on an unlocked variable",
+            title: "Click to lock this reply on an unlocked boolean variable",
             onClick: () => {
               props.set({
                 lockAction: "unlock",
@@ -983,12 +985,14 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
                 edges: applyEdgeChanges(changes, s.document.edges),
               },
             }))}
-            onConnect={(connection) => useAppState.setState(s => ({
-              document: {
-                ...s.document,
-                edges: addEdge(connection, s.document.edges),
-              },
-            }))}
+            onConnect={(connection) => {
+              useAppState.setState(s => ({
+                document: {
+                  ...s.document,
+                  edges: addEdge(connection, s.document.edges),
+                },
+              }));
+            }}
             snapToGrid
             snapGrid={[15, 15]}
             minZoom={0.1}
@@ -1001,8 +1005,15 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
             }}
             connectionMode={ConnectionMode.Loose}
             isValidConnection={(connection) => {
-              // TODO: check source/target but go through reroute nodes
-              return true;
+              const source = nodes.find(n => n.id === connection.source);
+              const target = nodes.find(n => n.id === connection.target);
+              if (source?.type === "reroute" || target?.type === "reroute")
+                // FIXME: go through reroute nodes
+                return true;
+              const sourceType = connection.sourceHandle?.includes("source") ? "source" : "target";
+              const targetType = connection.targetHandle?.includes("source") ? "source" : "target";
+              if (!source || !target || !sourceType || !targetType) return true;
+              return sourceType !== targetType;
             }}
             connectionRadius={25}
             connectOnClick

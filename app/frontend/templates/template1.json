@@ -1,0 +1,442 @@
+{
+  "name": "template 1",
+  "nodes": [
+    {
+      "id": "1",
+      "type": "entry",
+      "position": {
+        "x": 675,
+        "y": 150
+      },
+      "width": 68,
+      "height": 41,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 675,
+        "y": 150
+      },
+      "dragging": false
+    },
+    {
+      "id": "2",
+      "type": "randomSwitch",
+      "data": {
+        "proportions": [
+          1,
+          1
+        ]
+      },
+      "position": {
+        "x": 870,
+        "y": 195
+      },
+      "width": 174,
+      "height": 151,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 870,
+        "y": 195
+      },
+      "dragging": false
+    },
+    {
+      "id": "3",
+      "type": "lockNode",
+      "data": {
+        "action": "lock"
+      },
+      "position": {
+        "x": 1455,
+        "y": 60
+      },
+      "width": 118,
+      "height": 114,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1455,
+        "y": 60
+      },
+      "dragging": false
+    },
+    {
+      "id": "4",
+      "type": "emitNode",
+      "data": {},
+      "position": {
+        "x": 1185,
+        "y": 420
+      },
+      "width": 99,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1185,
+        "y": 420
+      },
+      "dragging": false
+    },
+    {
+      "id": "5",
+      "type": "lockNode",
+      "data": {
+        "action": "lock"
+      },
+      "position": {
+        "x": 1485,
+        "y": 525
+      },
+      "width": 118,
+      "height": 114,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1485,
+        "y": 525
+      },
+      "dragging": false
+    },
+    {
+      "id": "6",
+      "type": "emitNode",
+      "data": {},
+      "position": {
+        "x": 1455,
+        "y": 300
+      },
+      "width": 99,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1455,
+        "y": 300
+      },
+      "dragging": false
+    },
+    {
+      "id": "7",
+      "type": "lockNode",
+      "data": {
+        "action": "lock"
+      },
+      "position": {
+        "x": 720,
+        "y": -330
+      },
+      "width": 118,
+      "height": 114,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 720,
+        "y": -330
+      },
+      "dragging": false
+    },
+    {
+      "id": "8",
+      "type": "lockNode",
+      "data": {
+        "action": "lock"
+      },
+      "position": {
+        "x": 915,
+        "y": -330
+      },
+      "width": 118,
+      "height": 114,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 915,
+        "y": -330
+      },
+      "dragging": false
+    },
+    {
+      "id": "9",
+      "type": "playerReplies",
+      "data": {
+        "replies": [
+          {
+            "text": "H",
+            "lockAction": "none"
+          },
+          {
+            "text": "",
+            "lockAction": "none"
+          }
+        ]
+      },
+      "position": {
+        "x": 1185,
+        "y": -435
+      },
+      "width": 257,
+      "height": 141,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1185,
+        "y": -435
+      },
+      "dragging": false
+    },
+    {
+      "id": "10",
+      "type": "lockNode",
+      "data": {
+        "action": "lock"
+      },
+      "position": {
+        "x": 1785,
+        "y": -150
+      },
+      "width": 118,
+      "height": 114,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1785,
+        "y": -150
+      },
+      "dragging": false
+    },
+    {
+      "id": "11",
+      "type": "lockNode",
+      "data": {
+        "action": "unlock"
+      },
+      "position": {
+        "x": 1800,
+        "y": 255
+      },
+      "width": 118,
+      "height": 114,
+      "selected": false
+    },
+    {
+      "id": "12",
+      "type": "lockNode",
+      "data": {
+        "action": "unlock"
+      },
+      "position": {
+        "x": 1635,
+        "y": -660
+      },
+      "width": 118,
+      "height": 114,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1635,
+        "y": -660
+      },
+      "dragging": false
+    },
+    {
+      "id": "14",
+      "type": "emitNode",
+      "data": {},
+      "position": {
+        "x": 2010,
+        "y": -660
+      },
+      "width": 99,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2010,
+        "y": -660
+      },
+      "dragging": false
+    },
+    {
+      "id": "15",
+      "type": "lockNode",
+      "data": {
+        "action": "lock"
+      },
+      "position": {
+        "x": 4155,
+        "y": 1725
+      },
+      "width": 118,
+      "height": 114
+    },
+    {
+      "id": "17",
+      "type": "lockNode",
+      "data": {
+        "action": "lock"
+      },
+      "position": {
+        "x": 1695,
+        "y": -420
+      },
+      "width": 118,
+      "height": 114,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1695,
+        "y": -420
+      },
+      "dragging": false
+    },
+    {
+      "id": "18",
+      "type": "randomSwitch",
+      "data": {
+        "proportions": [
+          1,
+          1
+        ]
+      },
+      "position": {
+        "x": 555,
+        "y": 450
+      },
+      "width": 174,
+      "height": 151,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 555,
+        "y": 450
+      },
+      "dragging": false
+    },
+    {
+      "id": "19",
+      "type": "randomSwitch",
+      "data": {
+        "proportions": [
+          1,
+          1
+        ]
+      },
+      "position": {
+        "x": 930,
+        "y": 750
+      },
+      "width": 174,
+      "height": 151,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 930,
+        "y": 750
+      },
+      "dragging": false
+    },
+    {
+      "id": "20",
+      "type": "reroute",
+      "data": {},
+      "position": {
+        "x": 1050,
+        "y": 645
+      },
+      "width": 12,
+      "height": 12,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1050,
+        "y": 645
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "source": "1",
+      "sourceHandle": "1",
+      "target": "2",
+      "targetHandle": "2_target_0",
+      "id": "reactflow__edge-11-22_target_0",
+      "selected": false
+    },
+    {
+      "source": "2",
+      "sourceHandle": "2_source_1",
+      "target": "4",
+      "targetHandle": "4_target_0",
+      "id": "reactflow__edge-22_source_1-44_target_0",
+      "selected": false
+    },
+    {
+      "source": "4",
+      "sourceHandle": "4_source_0",
+      "target": "5",
+      "targetHandle": "5_target_0",
+      "id": "reactflow__edge-44_source_0-55_target_0",
+      "selected": false
+    },
+    {
+      "source": "2",
+      "sourceHandle": "2_source_0",
+      "target": "3",
+      "targetHandle": "3_target_0",
+      "id": "reactflow__edge-22_source_0-33_target_0",
+      "selected": false
+    },
+    {
+      "id": "1",
+      "source": "2",
+      "target": "6",
+      "selected": false
+    },
+    {
+      "source": "7",
+      "sourceHandle": "7_source_0",
+      "target": "8",
+      "targetHandle": "8_target_0",
+      "id": "reactflow__edge-77_source_0-88_target_0",
+      "selected": false
+    },
+    {
+      "id": "2",
+      "source": "8",
+      "target": "9",
+      "selected": false
+    },
+    {
+      "id": "3",
+      "source": "3",
+      "target": "10",
+      "selected": false
+    },
+    {
+      "id": "4",
+      "source": "9",
+      "target": "12",
+      "selected": false
+    },
+    {
+      "id": "5",
+      "source": "12",
+      "target": "14",
+      "selected": false
+    },
+    {
+      "id": "6",
+      "source": "9",
+      "target": "17"
+    },
+    {
+      "source": "9",
+      "sourceHandle": "9",
+      "target": "17",
+      "targetHandle": "17_target_0",
+      "id": "reactflow__edge-99-1717_target_0"
+    },
+    {
+      "id": "7",
+      "source": "18",
+      "target": "20"
+    },
+    {
+      "source": "4",
+      "sourceHandle": "4_source_0",
+      "target": "20",
+      "targetHandle": "20",
+      "id": "reactflow__edge-44_source_0-2020"
+    }
+  ],
+  "participants": [],
+  "variables": {},
+  "functions": {}
+}

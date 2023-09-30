@@ -88,7 +88,6 @@ module.exports = {
               }
             `,
             serialize: ({ query: { site, allMarkdownRemark } }) => {
-              console.log(allMarkdownRemark);
               return allMarkdownRemark.nodes.map(node => ({
                 ...node.frontmatter,
                 description: node.excerpt,

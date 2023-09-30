@@ -85,16 +85,21 @@ export const defaultAppState = {
     }
   },
 
+  permissions: {
+    version: "trial" as "trial" | "standard" | "pro",
+  },
+
   projectId: undefined as string | undefined,
 
   // TODO: document should be optional...
   document: {
+    name: "New project",
     nodes: [{
       id: '1',
       type: 'entry',
       position: { x: 540, y: 100 },
-    }] as Node<{}>[],
-    edges: [] as Edge<{}>[],
+    }] as Node<any>[],
+    edges: [] as Edge<any>[],
     participants: [] as Participant[],
     variables: {} as {
       [name: string]: {

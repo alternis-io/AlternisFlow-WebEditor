@@ -4,7 +4,8 @@ import styles from "./Header.module.css";
 import { Split } from "../Split";
 import { resetAllAppState, useAppState } from "../AppState";
 import downloadFile, { uploadFile } from "../localFileManip";
-import { useApi } from "../hooks/useApi";
+import { baseUrl, useApi } from "../hooks/useApi";
+import logoPath from "../../../resources/logo2.png";
 
 export function Header() {
   const logout = useApi(s => s.api.logout);
@@ -13,12 +14,21 @@ export function Header() {
     style={{
       boxShadow: "black 0 0 5px",
     }}
+    left={
+      <div style={{
+        paddingLeft: 10,
+        paddingTop: 2,
+        paddingBottom: 2,
+      }}>
+        <Link to={baseUrl}><img src={logoPath} height={40} className="hoverable" /></Link>
+      </div>
+    }
     right={
       <div style={{
         display: "flex",
         // 31.25px
         gap: 11,
-        padding: 5,
+        paddingRight: 5,
       }}
       >
         <button>Newsletter</button>

@@ -6,7 +6,13 @@ import { Center } from "../Center";
 import { classNames } from "js-utils/lib/react-utils";
 import * as styles from "./ProjectSelector.module.css";
 import { ContextMenuOptions } from "./ContextMenu";
-import { useRedirectIfNotLoggedIn } from "../hooks/useRedirectIfNotLoggedIn";
+import { AppState } from "../AppState";
+
+import template1 from "../templates/template1.json";
+const templates: Record<string, AppState["document"]> = {
+  template1,
+  empty: { name: "Empty", nodes: [], edges: [], participants: [], functions: {}, variables: {} },
+};
 
 function ProjectTile(props: {
   doc: DocumentList[number],
@@ -85,7 +91,21 @@ export function ProjectSelector(props: ProjectSelector.Props) {
       <h1>Projects</h1>
       <dialog open={createDocDialogShown} ref={dialogRef}>
         <h2> Create a project </h2>
-        <h5> Clone from an existing one </h5>
+        <h5> Use a template </h5>
+        <div style={{ overflow: "scroll", maxHeight: "50vh" }}>
+          {Object.values(templates)?.map(t => (
+            <div
+              onClick={() => {
+                void createDocument(t);
+                setCreateDocDialogShown(false);
+              }}
+              className="hoverable"
+            >
+              <span>{t.name}</span>
+            </div>
+          )) ?? <span><em>You have no templates to clone</em></span>}
+        </div>
+        <h5> Or clone from an existing one </h5>
         <div style={{ overflow: "scroll", maxHeight: "50vh" }}>
           {documents?.map(d => (
             // FIXME: this should use a special backend call
@@ -100,15 +120,6 @@ export function ProjectSelector(props: ProjectSelector.Props) {
             </div>
           )) ?? <span><em>You have no documents to clone</em></span>}
         </div>
-        <h5> Or create an empty one </h5>
-        <Center>
-          <button onClick={() => {
-            void createDocument();
-            setCreateDocDialogShown(false);
-          }}>
-            Create empty
-          </button>
-        </Center>
       </dialog>
       <div className={styles.projectGrid}>
         <div

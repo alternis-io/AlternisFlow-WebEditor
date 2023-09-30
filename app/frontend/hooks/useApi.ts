@@ -4,9 +4,16 @@ import { assert } from "js-utils/lib/browser-utils";
 import type { Document, DocumentList, RegisterUserData, User } from "dialogue-middleware-app-backend/lib/prisma";
 import { StoreApi, UseBoundStore, create } from "zustand";
 import * as jose from "jose";
-import { persist } from "zustand/middleware";
 
 const authv1key = "authv1_tok";
+
+const DEFAULT_DEV_API_PORT = 4222;
+
+export const baseUrl = import.meta.env.PROD
+  ? `https://${window.location.hostname}`
+  : `http://${window.location.hostname}:${DEFAULT_DEV_API_PORT}`;
+
+export const apiBaseUrl = `${baseUrl}/api/v1`;
 
 export interface UseApiResult {
   // FIXME: put these labels as subobjects
@@ -43,12 +50,8 @@ interface ApiState extends UseApiResult {
   _likeLogin: (subpath: "register" | "login", user: RegisterUserData) => Promise<void>;
 }
 
-const DEFAULT_DEV_API_PORT = 4222;
-
 const defaultLocalApiState = Object.freeze({
-  baseUrl: import.meta.env.PROD
-    ? `https://${window.location.hostname}/api/v1`
-    : `http://${window.location.hostname}:${DEFAULT_DEV_API_PORT}/api/v1`,
+  baseUrl: apiBaseUrl,
   _token: undefined,
   _tokenPayload: undefined,
   me: undefined,

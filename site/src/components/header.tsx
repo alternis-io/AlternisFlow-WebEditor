@@ -14,7 +14,7 @@ const Header = () => (
       </div>
       <nav className={styles.right}>
         <a className={styles.navLink}
-          href={process.env.NODE_ENV === "development" ? "http://localhost:3001" : "/app/"}
+          href={process.env.NODE_ENV === "development" ? "http://localhost:3001/app/#?trial" : "/app/#?trial"}
         >
           Try it
         </a>

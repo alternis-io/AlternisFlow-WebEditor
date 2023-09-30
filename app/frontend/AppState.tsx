@@ -119,14 +119,24 @@ export type AppState = typeof defaultAppState;
 
 const appStateKey = "appState";
 
+import template1 from "./templates/template1.json";
+
 const initialState: AppState = (() => {
   let maybeLocallyStoredState: AppState | undefined;
+
   try {
     const localState = localStorage.getItem(appStateKey);
     if (localState !== null)
       maybeLocallyStoredState = JSON.parse(localState);
   } catch {}
-  return maybeLocallyStoredState ?? deepCloneJson(defaultAppState);
+
+  return {
+    ...deepCloneJson(defaultAppState),
+    ...maybeLocallyStoredState,
+    ...window.location.hash.includes("?trial") && {
+      document: template1 as AppState["document"]
+    },
+  };
 })();
 
 type SettableState<T extends any> = T & {

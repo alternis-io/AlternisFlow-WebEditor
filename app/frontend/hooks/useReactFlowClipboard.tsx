@@ -68,6 +68,7 @@ export function useReactFlowClipboard(): void {
                 ? s.document.nodes.concat(selection.nodes.map(n => ({
                   ...n,
                   id: nodeRemapTable.get(n.id)!,
+                  // FIXME: get mouse last position
                   position: { x: n.position.x + 200, y: n.position.y + 200 },
                 })))
                 : s.document.nodes,

@@ -83,8 +83,6 @@ export function Preferences() {
   const addNodeBinding = useBindingSetting("addNodeMouseBinding");
   const enableBoxSelectOnDrag = useBindingSetting("enableBoxSelectOnDrag");
 
-  console.log(enableBoxSelectOnDrag.binding);
-
   return (
     <div>
       <label title="Which mouse button you can click and drag to move around the graph" className="split">

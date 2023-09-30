@@ -4,16 +4,23 @@ import { classNames, useOnNoLongerMouseInteracted } from "js-utils/lib/react-uti
 import { useOnExternalClick } from "@bentley/react-hooks";
 import { MouseBinding, eventMatchesMouseBinding } from "./KeyBindingInput";
 
+export const defaultCustomEventKey = "force-custom-contextmenu";
+
 /** raw context menu primitive, prefer @see ContextMenuOptions usually */
 export const ContextMenu = React.forwardRef<ContextMenu.Ref, ContextMenu.Props>(({
   autoCloseDelay = 1_000,
   children,
   mouseBinding = { button: 2 },
+  onHide,
+  forceEventKey = defaultCustomEventKey,
 }, ref) => {
   const rootElemRef = useRef<HTMLDivElement>(null);
 
   const isShown = () => (rootElemRef.current && rootElemRef.current.style.display !== "none");
-  const hide = () => (rootElemRef.current && (rootElemRef.current.style.display = "none"));
+  const hide = () => {
+    rootElemRef.current && (rootElemRef.current.style.display = "none");
+    onHide?.();
+  };
   const show = () => (rootElemRef.current && ((rootElemRef.current.style.display as any) = null));
 
   useOnExternalClick(rootElemRef, () => {
@@ -32,7 +39,7 @@ export const ContextMenu = React.forwardRef<ContextMenu.Ref, ContextMenu.Props>(
     const parentElem = rootElemRef.current?.parentElement;
 
     const handler = (e: MouseEvent) => {
-      if (!eventMatchesMouseBinding(e, mouseBinding))
+      if (!eventMatchesMouseBinding(e, mouseBinding) && e.type !== forceEventKey)
         return;
       e.preventDefault();
       e.stopImmediatePropagation();
@@ -48,9 +55,11 @@ export const ContextMenu = React.forwardRef<ContextMenu.Ref, ContextMenu.Props>(
     const preventDefault = (e: MouseEvent) => e.preventDefault();
     const eventsToPrevent = ["contextmenu", "click", "dblclick", "auxclick"] as const;
     parentElem?.addEventListener("mousedown", handler);
+    document.addEventListener(forceEventKey as any, handler);
     eventsToPrevent.forEach((e) => parentElem?.addEventListener(e, preventDefault));
     return () =>  {
       parentElem?.removeEventListener("mousedown", handler);
+      document.removeEventListener(forceEventKey as any, handler);
       eventsToPrevent.forEach((e) => parentElem?.removeEventListener(e, preventDefault));
     }
   }, [mouseBinding]);
@@ -84,6 +93,8 @@ export namespace ContextMenu {
     /** delay after un-hovering the context menu before it auto closes */
     autoCloseDelay?: number;
     mouseBinding?: MouseBinding;
+    onHide?(): void;
+    forceEventKey?: string;
   }
 
   export interface Props extends React.PropsWithChildren, BaseProps {}
@@ -96,10 +107,11 @@ export namespace ContextMenu {
 
 
 export function ContextMenuOptions(props: ContextMenuOptions.Props) {
-  const { options, autoCloseDelay, mouseBinding, ...divProps } = props;
+  const { options, autoCloseDelay, mouseBinding,  onHide, forceEventKey, ...divProps } = props;
+  const baseProps: ContextMenu.BaseProps = { autoCloseDelay, mouseBinding, onHide, forceEventKey };
   const ctxMenuRef = useRef<ContextMenu.Ref>(null);
   return (
-    <ContextMenu ref={ctxMenuRef} autoCloseDelay={autoCloseDelay} mouseBinding={mouseBinding}>
+    <ContextMenu ref={ctxMenuRef} {...baseProps}>
       <div {...divProps} {...classNames(styles.contextMenuOptions, props.className)}>
         {props.options.map(option => (
           <li

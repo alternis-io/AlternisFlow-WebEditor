@@ -29,7 +29,7 @@ import { Center } from "./Center";
 import { AppState, MouseInteractions, clientIsMac, getNode, makeNodeDataSetter, useAppState } from "./AppState";
 import { ReactComponent as LockIcon } from "./images/inkscape-lock.svg";
 import { ReactComponent as UnlockIcon } from "./images/inkscape-unlock.svg";
-import { ContextMenuOptions } from './components/ContextMenu'
+import { ContextMenuOptions, defaultCustomEventKey } from './components/ContextMenu'
 import { assert } from 'js-utils/lib/browser-utils'
 import { useStable, useValidatedInput } from '@bentley/react-hooks'
 import { InputStatus } from './hooks/useValidatedInput'
@@ -44,11 +44,12 @@ function NodeHandle(
       nodeId: string;
     }
 ) {
+  const { nodeId, index, ...divProps } = props;
   //const graph = useReactFlow();
   //const radius = 12;
   return <Handle
-    id={`${props.nodeId}_${props.type}_${props.index}`}
-    {...props}
+    id={`${nodeId}_${props.type}_${index}`}
+    {...divProps}
     {...classNames(styles.handle, props.className)}
     style={{
       ...props.style,
@@ -907,7 +908,6 @@ const addNode = (
   });
 }
 
-
 export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
   // FIXME: use correct types
   const graph = useReactFlow<{}, {}>();
@@ -933,17 +933,20 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
     setTimeout(() => (reactFlowRenderer.style.position = "relative"));
   }, []);
 
-  // if any nodes changed, invalidate the drag-drop source node
-  useEffect(() => connectingNodeId.current = undefined, [nodes])
-
   const editorRef = React.useRef<HTMLDivElement>(null);
+
+  const forceAddNodeEvent = "force-addnode";
 
   return (
     <GraphErrorBoundary>
       <div ref={editorRef}>
         <ContextMenuOptions
+          forceEventKey={forceAddNodeEvent}
           mouseBinding={addNodeMouseBinding}
           className={styles.addNodeMenu}
+          onHide={() => {
+            connectingNodeId.current = undefined;
+          }}
           options={Object.keys(nodeTypes)
             .filter(key => key !== "entry" && key !== "default" && key !== "dialogueEntry")
             .map((nodeType) => ({
@@ -1056,9 +1059,9 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
             onConnectEnd={(e) => {
               const targetIsPane = (e.target as Element | undefined)?.classList?.contains('react-flow__pane');
               if (targetIsPane && graphContainerElem.current && editorRef.current) {
-                // FIXME: use custom event?
-                const ctxMenuEvent = new MouseEvent("contextmenu", e);
-                ctxMenuEvent[Symbol.for("__isConnectEnd")] = true;
+                const ctxMenuEvent = new CustomEvent(forceAddNodeEvent, e);
+                (ctxMenuEvent as any).pageX = (e as MouseEvent).pageX;
+                (ctxMenuEvent as any).pageY = (e as MouseEvent).pageY;
                 editorRef.current.dispatchEvent(ctxMenuEvent);
               }
             }}

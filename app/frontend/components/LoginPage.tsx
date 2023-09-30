@@ -65,6 +65,7 @@ export function LoginState(_props: LoginPage.Props) {
         }}
         ref={popupRef}
       >
+        {encodedRedirectSource && "You must be logged in"}
         <div style={{ display: "flex", flexDirection: "column" }}>
         {isLoggedIn ? <button
           onClick={logout}

@@ -9,7 +9,7 @@ export function useRedirectIfNotLoggedIn() {
 
   useEffect(() => {
     if (!isLoggedIn)
-      navigate(`/login?redirect=${encodeURIComponent(location.pathname)}`)
+      navigate(`/login?redirect=${encodeURIComponent(location.pathname)}`, { replace: true })
   }, [isLoggedIn, navigate, location]);
 }
 

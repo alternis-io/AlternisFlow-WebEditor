@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useMemo } from 'react'
+import React, { useEffect, useLayoutEffect, useState } from 'react'
 import ReactFlow, {
   Handle,
   NodeProps,
@@ -17,21 +17,22 @@ import ReactFlow, {
   ConnectionMode,
   SelectionMode,
   Background,
-  BezierEdge,
   useNodes,
-  useOnSelectionChange,
   useUpdateNodeInternals,
+  Position,
 } from 'reactflow'
 import 'reactflow/dist/base.css'
 import styles from './TestGraphEditor.module.css'
+import { Link } from "react-router-dom";
+import { baseUrl } from "./hooks/useApi";
 import { classNames, deepCloneJson } from 'js-utils/lib/react-utils'
 import { Center } from "./Center";
-import { AppState, MouseInteractions, clientIsMac, getNode, makeNodeDataSetter, useAppState } from "./AppState";
+import { getNode, makeNodeDataSetter, useAppState } from "./AppState";
 import { ReactComponent as LockIcon } from "./images/inkscape-lock.svg";
 import { ReactComponent as UnlockIcon } from "./images/inkscape-unlock.svg";
-import { ContextMenuOptions, defaultCustomEventKey } from './components/ContextMenu'
+import { ContextMenuOptions } from './components/ContextMenu'
 import { assert } from 'js-utils/lib/browser-utils'
-import { useStable, useValidatedInput } from '@bentley/react-hooks'
+import { useValidatedInput } from '@bentley/react-hooks'
 import { InputStatus } from './hooks/useValidatedInput'
 import { useReactFlowClipboard } from './hooks/useReactFlowClipboard'
 
@@ -44,6 +45,7 @@ function NodeHandle(
       nodeId: string;
     }
 ) {
+  const x = blah;
   const { nodeId, index, ...divProps } = props;
   //const graph = useReactFlow();
   //const radius = 12;
@@ -90,48 +92,16 @@ export interface DialogueEntry {
   customData?: any;
 }
 
-class GraphErrorBoundary extends React.Component<React.PropsWithChildren<{}>, { error?: Error | undefined }> {
-  constructor(props: React.PropsWithChildren<{}>) {
-    super(props);
-    this.state = { error: undefined };
-  }
-
-  static getDerivedStateFromError(error: Error) {
-    return { error }
-  }
-
-  componentDidCatch(_error: Error, _errorInfo: React.ErrorInfo): void {
-    // FIXME: log error
-  }
-
-  onErrorReload() {
-    this.setState({ error: undefined })
-  }
-
-  render() {
-    return (this.state.error)
-      ? <div style={{ padding: 20 }}>
-          <p> An error has occurred. Maybe you should reset your document? </p>
-          <p> FIXME: add an option to undo here? (I think you can still hit ctrl-z right now)</p>
-          <p> Try contacting <a href="support@alternis.io">support</a> if this continues </p>
-          <button onClick={this.onErrorReload.bind(this)}>Reload the editor</button>
-          <pre>
-          {this.state.error.message}
-          <br/>
-          {this.state.error.stack}
-          </pre>
-        </div>
-      : this.props.children
-    ;
-  }
-}
-
 // FIXME: rename
 const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
   const node = getNode<DialogueEntry>(props.id);
 
   const data = node?.data;
-  const participant = useAppState((s) => data?.speakerIndex && s.document.participants[data.speakerIndex]);
+  const participant = useAppState((s) =>
+    data?.speakerIndex !== undefined
+    ? s.document.participants[data.speakerIndex]
+    : undefined
+  );
   const set = makeNodeDataSetter<DialogueEntry>(props.id);
 
   // focus on first mount (FIXME: how does this react to document opening?)
@@ -155,7 +125,7 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
         type="target"
         nodeId={props.id}
         index={0}
-        position="left"
+        position={Position.Left}
         className={styles.handle}
         isConnectable
       />
@@ -212,7 +182,7 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
         nodeId={props.id}
         index={0}
         type="source"
-        position="right"
+        position={Position.Right}
         className={styles.handle}
         isConnectable
       />
@@ -254,7 +224,7 @@ const LockNode = (props: NodeProps<Lock>) => {
         nodeId={props.id}
         index={0}
         type="target"
-        position="left"
+        position={Position.Left}
         className={styles.handle}
         isConnectable
       />
@@ -286,7 +256,7 @@ const LockNode = (props: NodeProps<Lock>) => {
         nodeId={props.id}
         index={0}
         type="source"
-        position="right"
+        position={Position.Right}
         className={styles.handle}
         isConnectable
       />
@@ -317,7 +287,7 @@ const EmitNode = (props: NodeProps<Emit>) => {
         nodeId={props.id}
         index={0}
         type="target"
-        position="left"
+        position={Position.Left}
         className={styles.handle}
         isConnectable
       />
@@ -341,7 +311,7 @@ const EmitNode = (props: NodeProps<Emit>) => {
         nodeId={props.id}
         index={0}
         type="source"
-        position="right"
+        position={Position.Right}
         className={styles.handle}
         isConnectable
       />
@@ -413,7 +383,7 @@ const RandomSwitchInput = (props: {
         nodeId={nodeId}
         index={index}
         type="source"
-        position="right"
+        position={Position.Right}
         className={styles.inlineHandle}
         isConnectable
       />
@@ -442,7 +412,7 @@ const RandomSwitchNode = (props: NodeProps<RandomSwitch>) => {
         nodeId={props.id}
         index={0}
         type="target"
-        position="left"
+        position={Position.Left}
         className={styles.handle}
         isConnectable
       />
@@ -614,7 +584,7 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
         nodeId={props.id}
         index={0}
         type="target"
-        position="left"
+        position={Position.Left}
         className={styles.handle}
         isConnectable
       />
@@ -673,10 +643,10 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
             </Center>
             <NodeHandle
               key={`handle-${index}`}
-              id={props.id}
+              nodeId={props.id}
               index={index}
               type="source"
-              position="right"
+              position={Position.Right}
               className={styles.inlineHandle}
               isConnectable
             />
@@ -725,10 +695,10 @@ const EntryNode = (props: NodeProps<{}>) => {
         <strong>Start</strong>
       </Center>
       <NodeHandle
-        id={props.id}
+        nodeId={props.id}
         index={0}
         type="source"
-        position="right"
+        position={Position.Right}
         className={styles.handle}
         isConnectable
       />
@@ -752,7 +722,7 @@ const RerouteNode = (props: NodeProps<{}>) => {
           top: 15,
           left: 1,
         }}
-        position="right"
+        position={Position.Right}
         className={styles.handle}
         isConnectable
       />
@@ -845,7 +815,7 @@ function RerouteEdge(props: EdgeProps) {
   const xDir = targetX < sourceX ? -1 : 1;
   const edgePath = `M ${sourceX - 5} ${sourceY} C ${sourceX + xDir * 100} ${sourceY} ${targetX - xDir * 100} ${targetY} ${targetX} ${targetY}`;
 
-  return <BaseEdge path={edgePath} markerEnd={markerEnd} />;
+  return <BaseEdge {...props} path={edgePath} markerEnd={markerEnd} />;
 }
 
 const edgeTypes = {
@@ -915,6 +885,13 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
   const graph = useReactFlow<{}, {}>();
   const nodes = useAppState(s => s.document.nodes);
   const edges = useAppState(s => s.document.edges);
+  const permsVersion = useAppState(s => s.permissions.version);
+
+  const [trialMessageShown, setTrialMessageShown] = useState(false);
+  useEffect(() => {
+    if (permsVersion === "trial" && nodes.length > 50)
+      setTrialMessageShown(true);
+  }, [nodes, permsVersion]);
 
   useReactFlowClipboard();
 
@@ -940,159 +917,165 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
   const forceAddNodeEvent = "force-addnode";
 
   return (
-    <GraphErrorBoundary>
-      <div ref={editorRef}>
-        <ContextMenuOptions
-          forceEventKey={forceAddNodeEvent}
-          mouseBinding={addNodeMouseBinding}
-          className={styles.addNodeMenu}
-          onHide={() => {
-            connectingNodeId.current = undefined;
-          }}
-          options={Object.keys(nodeTypes)
-            .filter(key => key !== "entry" && key !== "default" && key !== "dialogueEntry")
-            .map((nodeType) => ({
-                id: nodeType,
-                label: nodeTypeNames[nodeType],
-                onSelect(e) {
-                  const { top, left } = graphContainerElem.current!.getBoundingClientRect();
-                  addNode(nodeType, {
-                    position: graph.project({
-                      x: e.clientX - left - 150/2,
-                      y: e.clientY - top,
-                    }),
-                    connectingNodeId,
-                  });
-                },
-              })
-            )
-          }
-        />
-        <div className={styles.graph} ref={graphContainerElem}>
-          <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            deleteKeyCode={["Backspace", "Delete", "x"]}
-            onNodesChange={(changes) => useAppState.setState(s => ({
-              document: {
-                ...s.document,
-                nodes: applyNodeChanges(changes, s.document.nodes),
-              },
-            }))}
-            onEdgesChange={(changes) => useAppState.setState(s => ({
-              document: {
-                ...s.document,
-                edges: applyEdgeChanges(changes, s.document.edges),
-              },
-            }))}
-            onConnect={(connection) => {
-              useAppState.setState(s => ({
-                document: {
-                  ...s.document,
-                  edges: addEdge(connection, s.document.edges),
-                },
-              }));
-            }}
-            snapToGrid
-            snapGrid={[15, 15]}
-            minZoom={0.1}
-            maxZoom={1}
-            nodeTypes={nodeTypes}
-            edgeTypes={edgeTypes}
-            onDragOver={(e) => {
-              e.preventDefault();
-              e.dataTransfer.dropEffect = "move";
-            }}
-            connectionMode={ConnectionMode.Loose}
-            isValidConnection={(connection) => {
-              const source = nodes.find(n => n.id === connection.source);
-              const target = nodes.find(n => n.id === connection.target);
-              if (source?.type === "reroute" || target?.type === "reroute")
-                // FIXME: go through reroute nodes
-                return true;
-              const sourceType = connection.sourceHandle?.includes("source") ? "source" : "target";
-              const targetType = connection.targetHandle?.includes("source") ? "source" : "target";
-              if (!source || !target || !sourceType || !targetType) return true;
-              return sourceType !== targetType;
-            }}
-            connectionRadius={25}
-            connectOnClick
-            multiSelectionKeyCode={appendToSelectModifier}
-            // FIXME: not good for laptops..., maybe we need a box select icon...
-            panOnDrag={dragPanMouseBinding ? [dragPanMouseBinding.button] : false} // middle mouse, not great for laptops
-            selectionOnDrag={enableBoxSelectOnDrag}
-            selectionMode={SelectionMode.Partial}
-            onDrop={(e) => {
-              e.preventDefault();
-              const participantDataText = e.dataTransfer.getData("application/alternis-project-data-item");
-              if (participantDataText) {
-                const { id, type } = JSON.parse(participantDataText);
-
-                const [nodeType, nodeData]
-                  = type === "participants"
-                  ? ["dialogueEntry", {
-                      speakerIndex: +id,
-                      text: "",
-                    } as DialogueEntry]
-                  // : type === "variables"
-                  // ? ["dialogueEntry", {
-                  //     speakerIndex: +id,
-                  //     text: "",
-                  //   } as DialogueEntry]
-                  : type === "gates"
-                  ? ["lockNode", {
-                      variable: id,
-                      action: "unlock",
-                    } as Lock]
-                  : type === "functions"
-                  ? ["emitNode", {
-                      function: id,
-                    } as Emit]
-                  : assert(false) as never;
-
+    <div ref={editorRef}>
+      <ContextMenuOptions
+        forceEventKey={forceAddNodeEvent}
+        mouseBinding={addNodeMouseBinding}
+        className={styles.addNodeMenu}
+        onHide={() => {
+          connectingNodeId.current = undefined;
+        }}
+        options={Object.keys(nodeTypes)
+          .filter(key => key !== "entry" && key !== "default" && key !== "dialogueEntry")
+          .map((nodeType) => ({
+              id: nodeType,
+              label: nodeTypeNames[nodeType],
+              onSelect(e) {
                 const { top, left } = graphContainerElem.current!.getBoundingClientRect();
-
-                // FIXME: better node width
                 addNode(nodeType, {
                   position: graph.project({
                     x: e.clientX - left - 150/2,
                     y: e.clientY - top,
-                  }), 
-                  initData: nodeData,
+                  }),
                   connectingNodeId,
                 });
-              }
+              },
+            })
+          )
+        }
+      />
+      <div className={styles.graph} ref={graphContainerElem}>
+        <dialog open={trialMessageShown}>
+          <p>Thank you for trying <Link to={baseUrl}>Alternis</Link>!</p>
+          <p>
+            Please <Link to={"FIXME"}>sign up</Link> (only $10 a month) to
+            use the full version!
+          </p>
+          <p> TODO a pretty advertisement with live cost data </p>
+        </dialog>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          deleteKeyCode={["Backspace", "Delete", "x"]}
+          onNodesChange={(changes) => useAppState.setState(s => ({
+            document: {
+              ...s.document,
+              nodes: applyNodeChanges(changes, s.document.nodes),
+            },
+          }))}
+          onEdgesChange={(changes) => useAppState.setState(s => ({
+            document: {
+              ...s.document,
+              edges: applyEdgeChanges(changes, s.document.edges),
+            },
+          }))}
+          onConnect={(connection) => {
+            useAppState.setState(s => ({
+              document: {
+                ...s.document,
+                edges: addEdge(connection, s.document.edges),
+              },
+            }));
+          }}
+          snapToGrid
+          snapGrid={[15, 15]}
+          minZoom={0.1}
+          maxZoom={1}
+          nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
+          onDragOver={(e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = "move";
+          }}
+          connectionMode={ConnectionMode.Loose}
+          isValidConnection={(connection) => {
+            const source = nodes.find(n => n.id === connection.source);
+            const target = nodes.find(n => n.id === connection.target);
+            if (source?.type === "reroute" || target?.type === "reroute")
+              // FIXME: go through reroute nodes
+              return true;
+            const sourceType = connection.sourceHandle?.includes("source") ? "source" : "target";
+            const targetType = connection.targetHandle?.includes("source") ? "source" : "target";
+            if (!source || !target || !sourceType || !targetType) return true;
+            return sourceType !== targetType;
+          }}
+          connectionRadius={25}
+          connectOnClick
+          multiSelectionKeyCode={appendToSelectModifier}
+          // FIXME: not good for laptops..., maybe we need a box select icon...
+          panOnDrag={dragPanMouseBinding ? [dragPanMouseBinding.button] : false} // middle mouse, not great for laptops
+          selectionOnDrag={enableBoxSelectOnDrag}
+          selectionMode={SelectionMode.Partial}
+          onDrop={(e) => {
+            e.preventDefault();
+            const participantDataText = e.dataTransfer.getData("application/alternis-project-data-item");
+            if (participantDataText) {
+              const { id, type } = JSON.parse(participantDataText);
+
+              const [nodeType, nodeData]
+                = type === "participants"
+                ? ["dialogueEntry", {
+                    speakerIndex: +id,
+                    text: "",
+                  } as DialogueEntry]
+                // : type === "variables"
+                // ? ["dialogueEntry", {
+                //     speakerIndex: +id,
+                //     text: "",
+                //   } as DialogueEntry]
+                : type === "gates"
+                ? ["lockNode", {
+                    variable: id,
+                    action: "unlock",
+                  } as Lock]
+                : type === "functions"
+                ? ["emitNode", {
+                    function: id,
+                  } as Emit]
+                : assert(false) as never;
+
+              const { top, left } = graphContainerElem.current!.getBoundingClientRect();
+
+              // FIXME: better node width
+              addNode(nodeType, {
+                position: graph.project({
+                  x: e.clientX - left - 150/2,
+                  y: e.clientY - top,
+                }), 
+                initData: nodeData,
+                connectingNodeId,
+              });
+            }
+          }}
+          onEdgeClick={(_evt, edge) => {
+            graph.deleteElements({edges: [edge]})
+          }}
+          onConnectStart={(_, { nodeId }) => { connectingNodeId.current = nodeId ?? undefined; }}
+          onConnectEnd={(e) => {
+            const targetIsPane = (e.target as Element | undefined)?.classList?.contains('react-flow__pane');
+            if (targetIsPane && graphContainerElem.current && editorRef.current) {
+              const ctxMenuEvent = new CustomEvent(forceAddNodeEvent, e);
+              (ctxMenuEvent as any).pageX = (e as MouseEvent).pageX;
+              (ctxMenuEvent as any).pageY = (e as MouseEvent).pageY;
+              editorRef.current.dispatchEvent(ctxMenuEvent);
+            }
+          }}
+        >
+          <Controls />
+          {/* FIXME: can use custom icons to show e.g. lock nodes */}
+          {/* FIXME: get color from global style variables */}
+          <MiniMap
+            zoomable pannable
+            color="var(--fg-1)"
+            maskColor="#363636aa" // FIXME: reference var(--bg-1-hover)
+            style={{
+              backgroundColor: "var(--bg-1)",
             }}
-            onEdgeClick={(_evt, edge) => {
-              graph.deleteElements({edges: [edge]})
-            }}
-            onConnectStart={(_, { nodeId }) => { connectingNodeId.current = nodeId ?? undefined; }}
-            onConnectEnd={(e) => {
-              const targetIsPane = (e.target as Element | undefined)?.classList?.contains('react-flow__pane');
-              if (targetIsPane && graphContainerElem.current && editorRef.current) {
-                const ctxMenuEvent = new CustomEvent(forceAddNodeEvent, e);
-                (ctxMenuEvent as any).pageX = (e as MouseEvent).pageX;
-                (ctxMenuEvent as any).pageY = (e as MouseEvent).pageY;
-                editorRef.current.dispatchEvent(ctxMenuEvent);
-              }
-            }}
-          >
-            <Controls />
-            {/* FIXME: can use custom icons to show e.g. lock nodes */}
-            {/* FIXME: get color from global style variables */}
-            <MiniMap
-              zoomable pannable
-              color="var(--fg-1)"
-              maskColor="#363636aa" // FIXME: reference var(--bg-1-hover)
-              style={{
-                backgroundColor: "var(--bg-1)",
-              }}
-            />
-            <Background />
-          </ReactFlow>
-        </div>
+          />
+          <Background />
+        </ReactFlow>
       </div>
-    </GraphErrorBoundary>
+    </div>
   );
 }
 

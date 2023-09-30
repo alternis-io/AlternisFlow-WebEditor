@@ -26,7 +26,6 @@ export function Header() {
     right={
       <div style={{
         display: "flex",
-        // 31.25px
         gap: 11,
         paddingRight: 5,
       }}

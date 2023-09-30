@@ -35,7 +35,7 @@ export function Ide(_props: Ide.Props) {
   });
 
   return (
-    <div className={styles.split} style={{ height: "calc(100vh - 31.25px)"}}>
+    <div className={styles.split} style={{ height: "calc(100vh - var(--header-height))"}}>
       <ProjectDataEditor />
       {/*<DialogueViewer />*/}
       <span className={styles.graphEditor}>

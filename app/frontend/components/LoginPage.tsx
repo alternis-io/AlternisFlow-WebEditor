@@ -1,8 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useApi } from "../hooks/useApi";
-import { useOnExternalClick, useValidatedInput } from "@bentley/react-hooks";
-import { classNames, useOnNoLongerMouseInteracted } from "js-utils/lib/react-utils";
-import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { useValidatedInput } from "@bentley/react-hooks";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Center } from "../Center";
 
 

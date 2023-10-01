@@ -1,8 +1,13 @@
 import React, { useEffect, useImperativeHandle, useLayoutEffect, useRef, useState } from "react"
+import ReactDOM from 'react-dom';
 import styles from './ContextMenu.module.css'
 import { classNames, useOnNoLongerMouseInteracted } from "js-utils/lib/react-utils";
 import { useOnExternalClick } from "@bentley/react-hooks";
 import { MouseBinding, eventMatchesMouseBinding } from "./KeyBindingInput";
+import { assert } from "js-utils/lib/browser-utils";
+
+const contextMenuRoot = document.getElementById("context-menu-root");
+assert(contextMenuRoot, "context menu root didn't exist");
 
 export const defaultCustomEventKey = "force-custom-contextmenu";
 
@@ -15,14 +20,29 @@ export const ContextMenu = React.forwardRef<ContextMenu.Ref, ContextMenu.Props>(
   forceEventKey = defaultCustomEventKey,
 }, ref) => {
   const rootElemRef = useRef<HTMLDivElement>(null);
+  const nonPortalledElemRef = useRef<HTMLDivElement>(null);
+
+  // TODO: type check that the handles here are mutually exlusive with those in mouseInteractProps
+  const mouseUninterested = useOnNoLongerMouseInteracted({
+    delayMs: autoCloseDelay,
+    onUninterested() {
+      hide();
+    },
+  });
 
   const isShown = () => (rootElemRef.current && rootElemRef.current.style.display !== "none");
   const hide = () => {
-    rootElemRef.current && (rootElemRef.current.style.display = "none");
+    if (rootElemRef.current)
+      rootElemRef.current.style.display = "none";
     onHide?.();
   };
-  const show = () => (rootElemRef.current && ((rootElemRef.current.style.display as any) = null));
+  const show = () => {
+    if (rootElemRef.current)
+      (rootElemRef.current.style.display as any) = null;
+    //mouseUninterested.forceInterest();
+  };
 
+  // FIXME: doesn't work
   useOnExternalClick(rootElemRef, () => {
     if (isShown())
       hide();
@@ -36,7 +56,7 @@ export const ContextMenu = React.forwardRef<ContextMenu.Ref, ContextMenu.Props>(
   useLayoutEffect(() => {
     hide();
 
-    const parentElem = rootElemRef.current?.parentElement;
+    const parentElem = nonPortalledElemRef.current?.parentElement;
 
     const handler = (e: MouseEvent) => {
       if (!eventMatchesMouseBinding(e, mouseBinding) && e.type !== forceEventKey)
@@ -57,35 +77,34 @@ export const ContextMenu = React.forwardRef<ContextMenu.Ref, ContextMenu.Props>(
     parentElem?.addEventListener("mousedown", handler);
     document.addEventListener(forceEventKey as any, handler);
     eventsToPrevent.forEach((e) => parentElem?.addEventListener(e, preventDefault));
+    eventsToPrevent.forEach((e) => rootElemRef.current?.addEventListener(e, preventDefault));
     return () =>  {
       parentElem?.removeEventListener("mousedown", handler);
       document.removeEventListener(forceEventKey as any, handler);
       eventsToPrevent.forEach((e) => parentElem?.removeEventListener(e, preventDefault));
+      eventsToPrevent.forEach((e) => rootElemRef.current?.removeEventListener(e, preventDefault));
     }
   }, [mouseBinding]);
-
-  // TODO: type check that the handles here are mutually exlusive with those in mouseInteractProps
-  const mouseUninterestedProps = useOnNoLongerMouseInteracted({
-    delayMs: autoCloseDelay,
-    onUninterested() {
-      hide();
-    },
-  });
 
   const initialDisplayNone = useRef(true);
   useEffect(() => void (initialDisplayNone.current = false), []);
 
-  return (
-    <div
-      ref={rootElemRef}
-      className={styles.contextMenuRoot}
-      //{...mouseInteractProps}
-      {...mouseUninterestedProps}
-      style={{ display: initialDisplayNone ? "none" : undefined }}
-    >
-      {children}
-    </div>
-  );
+  // note that we need the root elem to be outside of the portal if we want to use the
+  // DOM parentElement API
+  return <div ref={nonPortalledElemRef} style={{ display: "none" }}>
+    {/* @ts-ignore */}
+    {ReactDOM.createPortal(
+      <div
+        ref={rootElemRef}
+        className={styles.contextMenuRoot}
+        {...mouseUninterested.props}
+        style={{ display: initialDisplayNone ? "none" : "initial" }}
+      >
+        {children}
+      </div>,
+      contextMenuRoot,
+    )}
+  </div>;
 });
 
 export namespace ContextMenu {
@@ -114,7 +133,7 @@ export function ContextMenuOptions(props: ContextMenuOptions.Props) {
     <ContextMenu ref={ctxMenuRef} {...baseProps}>
       <div {...divProps} {...classNames(styles.contextMenuOptions, props.className)}>
         {props.options.map(option => (
-          <li
+          <div
             key={option.id}
             onClick={async (e) => {
               await option.onSelect(e);
@@ -123,7 +142,7 @@ export function ContextMenuOptions(props: ContextMenuOptions.Props) {
             {...classNames(styles.contextMenuOption, "hoverable")}
           >
             <a style={{ color: "inherit" }}>{option.label ?? option.id}</a>
-          </li>
+          </div>
         ))}
       </div>
     </ContextMenu>
@@ -134,7 +153,7 @@ export namespace ContextMenuOptions {
   export interface Option {
     id: string;
     label?: string;
-    onSelect: React.MouseEventHandler<HTMLLIElement>;
+    onSelect: React.MouseEventHandler<HTMLDivElement>;
   }
 
   export interface Props extends React.HTMLProps<HTMLDivElement>, ContextMenu.BaseProps {

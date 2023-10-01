@@ -11,7 +11,7 @@ import { useOnNoLongerMouseInteracted } from "js-utils/lib/react-utils";
 
 const Homepage = () => {
   const [iframeInteractable, setIframeInteractable] = React.useState(false);
-  const mouseInteractProps = useOnNoLongerMouseInteracted({
+  const mouseInteract = useOnNoLongerMouseInteracted({
     onUninterested: () => setIframeInteractable(false),
   });
 
@@ -30,7 +30,7 @@ const Homepage = () => {
         onClick={() => {
           setIframeInteractable(true);
         }}
-        {...mouseInteractProps}
+        {...mouseInteract.props}
       >
         <iframe
           src={process.env.NODE_ENV === "development" ? "http://localhost:3001" : "/app/index.html#/?trial"}

@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import styles from "./Header.module.css";
 import { Split } from "../Split";
 import { resetAllAppState, useAppState } from "../AppState";
@@ -9,8 +9,13 @@ import logoPath from "../../../resources/logo2.png";
 
 export function Header() {
   const logout = useApi(s => s.api.logout);
+  const location = useLocation();
 
-  return <Split
+  // FIXME: do real query param parsing!
+  const noHeaderRequested = location.search.includes("noHeaderLogo");
+
+
+  return !noHeaderRequested && <Split
     style={{
       boxShadow: "black 0 0 5px",
     }}

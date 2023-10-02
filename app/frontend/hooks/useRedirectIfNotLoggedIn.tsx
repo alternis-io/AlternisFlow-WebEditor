@@ -7,7 +7,8 @@ export function useRedirectIfNotLoggedIn() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const inLocalTrial = location.search === "?trial";
+  // FIXME: do query param parsing!
+  const inLocalTrial = location.search.includes("trial");
 
   useEffect(() => {
     if (!isLoggedIn && !inLocalTrial)

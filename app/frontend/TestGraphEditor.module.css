@@ -5,6 +5,7 @@
 .graph {
   height: calc(100vh - var(--header-height));
   position: relative;
+  background-color: var(--bg-2);
 }
 
 :root {

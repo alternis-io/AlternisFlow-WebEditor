@@ -70,7 +70,7 @@ export function ProjectDataEditor(_props: ProjectDataEditor.Props) {
   const PaneComponent = dataPanes[openDataPane].component;
 
   return (
-    <div className={styles.projectDataEditor}>
+    <div className={styles.projectDataEditor} data-tut-id="project-data-editor">
       <div style={{
         display: "flex",
         flexWrap: "wrap",

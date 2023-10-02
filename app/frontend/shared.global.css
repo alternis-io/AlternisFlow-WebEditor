@@ -45,6 +45,10 @@
   color: #ee2222;
 }
 
+.tutorial-highlighted {
+  box-shadow: 0px 0px 8px 8px #ffff00;
+}
+
 .newButton {
   padding: 0.7em;
   height: 1em;

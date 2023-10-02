@@ -96,7 +96,7 @@ export function LoginState(_props: LoginPage.Props) {
                   onKeyDown={(e) => inputValid && e.key === 'Enter' && login()}
                 />
               </label>
-              <div className="invalidInputMessage">{emailError}</div>
+              {emailError && emailInput.length > 0 && <div className="invalidInputMessage">{emailError}</div>}
               <label className="split" style={{ minWidth: 300 }}>
                 Password:
                 <input
@@ -107,7 +107,7 @@ export function LoginState(_props: LoginPage.Props) {
                   onKeyDown={(e) => inputValid && e.key === 'Enter' && login()}
                 />
               </label>
-              <div className="invalidInputMessage">{passwordError}</div>
+              {passwordError && passwordInput.length > 0 && <div className="invalidInputMessage">{passwordError}</div>}
               <Center>
                 <button
                   onClick={login}

@@ -23,7 +23,7 @@ import ReactFlow, {
 } from 'reactflow'
 import 'reactflow/dist/base.css'
 import styles from './TestGraphEditor.module.css'
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { baseUrl } from "./hooks/useApi";
 import { classNames, deepCloneJson } from 'js-utils/lib/react-utils'
 import { Center } from "./Center";
@@ -482,15 +482,18 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
         className={styles.handle}
         isConnectable
       />
-      <select
-        title={participants.length === 0 ? "You must add at least one participant to use them as in a reply" : undefined}
-        value={speaker?.name}
-        onChange={e => set(() => ({ speaker: +e.currentTarget.value }))}
-      >
-        {participants.map((p, i) => (
-            <option key={i} value={i}>{p.name}</option>
-        ))}
-      </select>
+      <label style={{ marginBottom: "var(--gap)" }}>
+        Replier
+        <select
+          title={participants.length === 0 ? "You must add at least one participant to use them as in a reply" : undefined}
+          value={speaker?.name}
+          onChange={e => set(() => ({ speaker: +e.currentTarget.value }))}
+        >
+          {participants.map((p, i) => (
+              <option key={i} value={i}>{p.name}</option>
+          ))}
+        </select>
+      </label>
       <div className={styles.playerRepliesBody} ref={nodeBodyRef}>
         {data.replies.map((reply, index) => (
           <>
@@ -800,6 +803,21 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
 
   const forceAddNodeEvent = "force-addnode";
 
+  const trialMessage = (
+    <dialog open={trialMessageShown}>
+      <p>Thank you for trying <Link to={baseUrl}>Alternis</Link>!</p>
+      <p>
+        Please <Link to={"FIXME"}>sign up</Link> (only $10 a month) to
+        use the full version!
+      </p>
+      <p> TODO a pretty advertisement with live cost data </p>
+    </dialog>
+  );
+
+  // FIXME: do real query param parsing!
+  const location = useLocation();
+  const noHeaderRequested = location.search.includes("noHeader");
+
   return (
     <div ref={editorRef}>
       <ContextMenuOptions
@@ -828,15 +846,12 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
           )
         }
       />
-      <div className={styles.graph} ref={graphContainerElem}>
-        <dialog open={trialMessageShown}>
-          <p>Thank you for trying <Link to={baseUrl}>Alternis</Link>!</p>
-          <p>
-            Please <Link to={"FIXME"}>sign up</Link> (only $10 a month) to
-            use the full version!
-          </p>
-          <p> TODO a pretty advertisement with live cost data </p>
-        </dialog>
+      <div
+        className={styles.graph}
+        ref={graphContainerElem}
+        style={{ height: noHeaderRequested ? "100vh" : undefined }}
+      >
+        {trialMessage}
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -951,9 +966,9 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
           <MiniMap
             zoomable pannable
             color="var(--fg-1)"
-            maskColor="#363636aa" // FIXME: reference var(--bg-1-hover)
+            maskColor="#2d2d2dcc" // FIXME: reference var(--bg-1)
             style={{
-              backgroundColor: "var(--bg-1)",
+              backgroundColor: "var(--bg-2)",
             }}
           />
           <Background />

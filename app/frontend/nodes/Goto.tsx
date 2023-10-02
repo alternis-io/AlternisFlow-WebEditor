@@ -18,44 +18,36 @@ export function GotoNode(props: GotoNode.Props) {
 
   return (
     <BaseNode id={props.id}>
-      <div
-        className={styles.node}
-        style={{ width: "max-content" }}
-        title={
-          "The 'Goto' node, moves the conversation to any labeled node"
-        }
-      >
-        <NodeHandle
-          nodeId={props.id}
-          index={0}
-          type="target"
-          position={Position.Left}
-          className={styles.handle}
-          isConnectable
-        />
-        <Center>
-          <span style={{ fontSize: "4rem", fontWeight: "bold" }}>→</span>
-        </Center>
-        <label>
-          event
-          {/* FIXME: use react-(multi)select */}
-          <select
-            value={data.target}
-            onChange={e => set(() => ({ target: e.currentTarget.value }))}
-          >
-            {targets
-              .map(([jumpTarget]) => (
-                <option key={jumpTarget} value={jumpTarget}>
-                  {/* replace find in map with a search button */}
-                  <span>{jumpTarget}</span> <span title="Find in graph">
-                    find in map
-                  </span>
-                </option>
-              )
-            )}
-          </select>
-        </label>
-      </div>
+      <NodeHandle
+        nodeId={props.id}
+        index={0}
+        type="target"
+        position={Position.Left}
+        className={styles.handle}
+        isConnectable
+      />
+      <Center>
+        <span style={{ fontSize: "4rem", fontWeight: "bold" }}>→</span>
+      </Center>
+      <label>
+        event
+        {/* FIXME: use react-(multi)select */}
+        <select
+          value={data.target}
+          onChange={e => set(() => ({ target: e.currentTarget.value }))}
+        >
+          {targets
+            .map(([jumpTarget]) => (
+              <option key={jumpTarget} value={jumpTarget}>
+                {/* replace find in map with a search button */}
+                <span>{jumpTarget}</span> <span title="Find in graph">
+                  find in map
+                </span>
+              </option>
+            )
+          )}
+        </select>
+      </label>
     </BaseNode>
   );
 }

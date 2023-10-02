@@ -1,16 +1,17 @@
 import React from "react";
 import { ContextMenuOptions } from "../components/ContextMenu";
 import { getNode, makeNodeDataSetter, useAppState } from "../AppState";
-
-export interface BaseNodeData {
-  label: string | undefined;
-}
+import styles from "../TestGraphEditor.module.css"
+import { Center } from "../Center";
+import { classNames } from "js-utils/lib/react-utils";
+import { BaseNodeData } from "./data";
 
 export const BaseNode = (props: BaseNode.Props) => {
   const data = getNode<BaseNodeData>(props.id)?.data;
   const set = makeNodeDataSetter<BaseNodeData>(props.id);
 
   const [isEditing, setIsEditing] = React.useState(false);
+  const [showMore, setShowMore] = React.useState(false);
 
   const editableElemRef = React.useRef<HTMLSpanElement>(null);
 
@@ -36,23 +37,47 @@ export const BaseNode = (props: BaseNode.Props) => {
   return data ? (
     <div>
       <ContextMenuOptions options={nodeContextMenuOpts} />
-      {props.children}
-      {/*
       <div
-        title={data.label === undefined ? "add node label" : "edit node label"}
-        style={{
-          position: "absolute",
-          top: 0,
-          right: 0,
-          borderRadius: "50%",
-          width: "10px",
-          height: "10px",
-        }}
-        onClick={() => setIsEditing(prev => !prev)}
+        className={styles.node}
+        style={{ width: "max-content" }}
+        title={
+          "The 'Dialogue Entry' node, has a participant say a particular line.\n"
+          + "The line may be locked by a true/false variable."
+        }
       >
-        edit
+        {props.children}
+        {showMore && props.showMoreContent}
+        {showMore &&
+          <label title="the label for jump nodes">
+            label
+            <input
+              className="nodrag"
+              onChange={(e) => set({ label: e.currentTarget.value || undefined })}
+              value={data.label}
+            />
+          </label>
+        }
+        <Center
+          {...classNames(styles.entryNodeShowMoreIndicator, "hoverable")}
+          onClick={() => setShowMore(prev => !prev)}
+        >
+          <strong style={{ transform: "scale(2, 0.8)", display: "block", width: "100%", textAlign: "center" }}>
+            <svg
+              viewBox="-5 -5 15 15"
+              height="15px" width="30px"
+              strokeWidth={"2px"}
+              strokeLinecap="round"
+              style={{
+                transform: showMore ? "scale(1, -1)" : undefined, stroke: "white", fill: "none"
+              }}
+              className={"hoverable"}
+            >
+              <path d="M0 0 l5 5 l5 -5" />
+            </svg>
+          </strong>
+        </Center>
       </div>
-      */}
+
       <span
         style={{
           position: "absolute",
@@ -98,5 +123,6 @@ export const BaseNode = (props: BaseNode.Props) => {
 export namespace BaseNode {
   export interface Props extends React.PropsWithChildren<{}> {
     id: string;
+    showMoreContent?: React.ReactNode;
   }
 }

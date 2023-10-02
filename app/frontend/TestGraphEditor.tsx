@@ -35,18 +35,11 @@ import { assert } from 'js-utils/lib/browser-utils'
 import { useValidatedInput } from '@bentley/react-hooks'
 import { InputStatus } from './hooks/useValidatedInput'
 import { useReactFlowClipboard } from './hooks/useReactFlowClipboard'
-import { GotoNode, LabelNode } from './nodes';
+
+import { GotoNode } from './nodes';
 import { NodeHandle } from './nodes/handle';
 import { BaseNode } from './nodes/BaseNode';
-
-// FIXME: move to common/
-export interface DialogueEntry {
-  speakerIndex: number;
-  specificPortraitUrl?: string;
-  title?: string;
-  text: string;
-  customData?: any;
-}
+import { DialogueEntry, Emit, Lock, RandomSwitch, PlayerReplies, PlayerReply } from './nodes/data';
 
 // FIXME: rename
 const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
@@ -69,89 +62,57 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
   const [showMore, setShowMore] = React.useState(false);
 
   return !data ? null : (
-    <BaseNode id={props.id}>
-      <div
-        className={styles.node}
-        style={{ width: "max-content" }}
-        title={
-          "The 'Dialogue Entry' node, has a participant say a particular line.\n"
-          + "The line may be locked by a true/false variable."
-        }
-      >
-        <NodeHandle
-          type="target"
-          nodeId={props.id}
-          index={0}
-          position={Position.Left}
-          className={styles.handle}
-          isConnectable
-        />
-        {participant
-          ? <>
-            <div className={styles.nodeHeader}>
-              <div>{participant.name}</div>
-              <img height="80px" style={{ width: "auto" }} src={participant.portraitUrl} />
-            </div>
-            <label>
-              text
-              <textarea
-                ref={textInput}
-                className="nodrag"
-                onChange={(e) => set({ text: e.currentTarget.value })}
-                // FIXME: why not use a controlled component?
-                value={data.text}
-              />
-            </label>
-            {showMore && <>
-              <label>
-                title
-                <input
-                  className="nodrag"
-                  onChange={(e) => set({ title: e.currentTarget.value })}
-                  value={data.title}
-                />
-              </label>
-            </>}
-            {/* FIXME: use an icon, this is ugly af */}
-            <Center
-              {...classNames(styles.entryNodeShowMoreIndicator, "hoverable")}
-              onClick={() => setShowMore(prev => !prev)}
-            >
-              <strong style={{ transform: "scale(2, 0.8)", display: "block", width: "100%", textAlign: "center" }}>
-                <svg
-                  viewBox="-5 -5 15 15"
-                  height="15px" width="30px"
-                  strokeWidth={"2px"}
-                  strokeLinecap="round"
-                  style={{
-                    transform: showMore ? "scale(1, -1)" : undefined, stroke: "white", fill: "none"
-                  }}
-                  className={"hoverable"}
-                >
-                  <path d="M0 0 l5 5 l5 -5" />
-                </svg>
-              </strong>
-            </Center>
-          </>
-        : <> unknown participant </>
-        }
-        <NodeHandle
-          nodeId={props.id}
-          index={0}
-          type="source"
-          position={Position.Right}
-          className={styles.handle}
-          isConnectable
-        />
-      </div>
+    <BaseNode
+      id={props.id}
+      showMoreContent={<>
+        <label>
+          title
+          <input
+            className="nodrag"
+            onChange={(e) => set({ title: e.currentTarget.value })}
+            value={data.title}
+          />
+        </label>
+      </>}
+    >
+      <NodeHandle
+        type="target"
+        nodeId={props.id}
+        index={0}
+        position={Position.Left}
+        className={styles.handle}
+        isConnectable
+      />
+      {participant
+        ? <>
+          <div className={styles.nodeHeader}>
+            <div>{participant.name}</div>
+            <img height="80px" style={{ width: "auto" }} src={participant.portraitUrl} />
+          </div>
+          <label>
+            text
+            <textarea
+              ref={textInput}
+              className="nodrag"
+              onChange={(e) => set({ text: e.currentTarget.value })}
+              // FIXME: why not use a controlled component?
+              value={data.text}
+            />
+          </label>
+        </>
+      : <> unknown participant </>
+      }
+      <NodeHandle
+        nodeId={props.id}
+        index={0}
+        type="source"
+        position={Position.Right}
+        className={styles.handle}
+        isConnectable
+      />
     </BaseNode>
   );
 };
-
-export interface Lock {
-  variable: string;
-  action: "lock" | "unlock";
-}
 
 const LockNode = (props: NodeProps<Lock>) => {
   const variables = useAppState(s => s.document.variables);
@@ -222,11 +183,6 @@ const LockNode = (props: NodeProps<Lock>) => {
   )
 };
 
-// FIXME: rename to function call?
-export interface Emit {
-  function: string;
-}
-
 const EmitNode = (props: NodeProps<Emit>) => {
   const functions = useAppState(s => s.document.functions);
   // REPORTME: react-flow seems to sometimes render non-existing nodes briefly?
@@ -275,14 +231,6 @@ const EmitNode = (props: NodeProps<Emit>) => {
       />
     </div>
   )
-};
-
-interface RandomSwitch {
-  proportions: number[];
-}
-
-const defaultRandomSwitchProps = {
-  proportions: [1, 1],
 };
 
 const percentFmter = new Intl.NumberFormat(undefined, { maximumFractionDigits: 2, style: "percent" });
@@ -402,29 +350,6 @@ const RandomSwitchNode = (props: NodeProps<RandomSwitch>) => {
       </div>
     </div>
   )
-};
-
-interface PlayerReply {
-  text: string;
-  lockVariable: string | undefined;
-  // FIXME: replace with "lock negation"... this is not an action, it's whether the gate must
-  // be "locked" or "unlocked" for this reply to be locked or unlocked
-  lockAction: "none" | "lock" | "unlock";
-}
-
-interface PlayerReplies {
-  replies: PlayerReply[];
-}
-
-const defaultPlayerRepliesProps: PlayerReplies = {
-  replies: [
-    {
-      text: "",
-      // FIXME: note, people may want compound boolean checks...
-      lockVariable: undefined,
-      lockAction: "none",
-    },
-  ],
 };
 
 // FIXME: replace with the lock icon but crossed-out
@@ -689,6 +614,7 @@ const RerouteNode = (props: NodeProps<{}>) => {
   );
 };
 
+/** @deprecated remove */
 const withNodeContextMenu = <P extends NodeProps<{}>>(Node: React.ComponentType<P>) => {
   return (p: P) => {
     const nodeContextMenuOpts: ContextMenuOptions.Option[] = React.useMemo(() => [
@@ -722,7 +648,6 @@ const nodeTypes = {
   entry: withNodeContextMenu(EntryNode),
   reroute: withNodeContextMenu(RerouteNode),
   goto: GotoNode,
-  //label: withNodeContextMenu(LabelNode),
   default: withNodeContextMenu(UnknownNode),
 };
 
@@ -735,7 +660,6 @@ const nodeTypeNames: Record<keyof typeof nodeTypes, string> = {
   entry: "Entry",
   reroute: "Reroute",
   goto: "Goto",
-  label: "Label",
   default: "Unknown",
 };
 

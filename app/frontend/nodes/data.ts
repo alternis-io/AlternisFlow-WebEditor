@@ -38,10 +38,13 @@ export interface PlayerReply {
 }
 
 export interface PlayerReplies extends BaseNodeData {
+  // FIXME: maybe shouldn't be allowed to be undefined?
+  speaker: number | undefined;
   replies: PlayerReply[];
 }
 
 export const defaultPlayerRepliesProps: PlayerReplies = {
+  speaker: undefined,
   replies: [
     {
       text: "",

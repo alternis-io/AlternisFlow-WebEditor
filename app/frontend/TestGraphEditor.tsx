@@ -445,6 +445,13 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
   const data = getNode<PlayerReplies>(props.id)?.data;
   const set = makeNodeDataSetter<PlayerReplies>(props.id);
   const updateNodeInternals = useUpdateNodeInternals();
+  const participants = useAppState(s => s.document.participants);
+  const speaker = useMemo(
+    () => props.data.speaker !== undefined
+      ? participants[props.data.speaker]
+      : undefined,
+    [participants, props.data.speaker]
+  );
 
   const nodeBodyRef = React.useRef<HTMLDivElement>(null);
 
@@ -475,7 +482,15 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
         className={styles.handle}
         isConnectable
       />
-      <p>Player</p>
+      <select
+        title={participants.length === 0 ? "You must add at least one participant to use them as in a reply" : undefined}
+        value={speaker?.name}
+        onChange={e => set(() => ({ speaker: +e.currentTarget.value }))}
+      >
+        {participants.map((p, i) => (
+            <option key={i} value={i}>{p.name}</option>
+        ))}
+      </select>
       <div className={styles.playerRepliesBody} ref={nodeBodyRef}>
         {data.replies.map((reply, index) => (
           <>

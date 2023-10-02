@@ -26,7 +26,6 @@ export const iconSizes: Record<IconSizes, { label: string }> = {
 export function ParticipantEditor() {
   const participants = useAppState((s) => s.document.participants);
   const editorPrefs = useAppState((s) => s.preferences.participantEditor);
-  const set = useAppState((s) => s.set);
 
   const setIconSize = (val: IconSizes) => useAppState.setState((s) => ({
     preferences: {
@@ -79,7 +78,7 @@ export function ParticipantEditor() {
       return;
 
     const prevName = selectedName;
-    set(s => {
+    useAppState.setState(s => {
       return {
         preferences: {
           ...s.preferences,
@@ -103,7 +102,7 @@ export function ParticipantEditor() {
   }, [name, selectedName]);
 
   const setSelectedName = (val: string) => {
-    set((s) => ({
+    useAppState.setState((s) => ({
       preferences: {
         ...s.preferences,
         participantEditor: {
@@ -116,7 +115,7 @@ export function ParticipantEditor() {
   };
 
   const setSelectedPortrait = (participantName: string, portraitUrl: string) => {
-    set((s) => ({
+    useAppState.setState((s) => ({
       document: {
         ...s.document,
         participants: s.document.participants.map(p =>
@@ -131,33 +130,47 @@ export function ParticipantEditor() {
   const details = (
     <div className={styles.details} style={{ width: "100%" }}>
       <h1> Details </h1>
-      {selectedName && selected ? <>
-        <label style={{ width: "100%" }}>
-          Participant name&nbsp;
-          <input
-            value={nameInput}
-            onChange={(e) => setNameInput(e.currentTarget.value)}
-          />
-        </label>
-        <label style={{ width: "100%" }}>
-          Portrait
-          &nbsp;
-          <button onClick={async () => {
-            const file = await uploadFile({ type: 'dataurl' })
-            setSelectedPortrait(selectedName, file.content);
-          }}>
-            Upload new portrait
+      {selectedName && selected ? (
+        <>
+          <label style={{ width: "100%" }}>
+            Participant name&nbsp;
+            <input
+              value={nameInput}
+              onChange={(e) => setNameInput(e.currentTarget.value)}
+            />
+          </label>
+          <button
+            title="Delete this participant"
+            onClick={() => useAppState.setState((s) => ({
+              document: {
+                ...s.document,
+                participants: s.document.participants.filter((p) => p !== selected)
+              }
+            }))}
+          >
+            Delete participant
           </button>
-          &nbsp;
-          <img className={styles.bigPortrait} src={selected.portraitUrl} alt={selected.name} />
-        </label>
-        <div style={{color: "#f00"}}> { nameStatus !== "success" && nameStatusMessage } </div>
-        </> : <>
+          <label style={{ width: "100%" }}>
+            Portrait
+            &nbsp;
+            <button onClick={async () => {
+              const file = await uploadFile({ type: 'dataurl' })
+              setSelectedPortrait(selectedName, file.content);
+            }}>
+              Upload new portrait
+            </button>
+            &nbsp;
+            <img className={styles.bigPortrait} src={selected.portraitUrl} alt={selected.name} />
+          </label>
+          <div style={{ color: "#f00" }}>{nameStatus !== "success" && nameStatusMessage}</div>
+        </>
+      ) : (
+        <>
           {participants.length > 0
             ? "Select a participant to see and edit them"
             : "Add a participant above to see and edit them"}
         </>
-      }
+      )}
     </div>
   );
 
@@ -169,20 +182,21 @@ export function ParticipantEditor() {
           gridTemplateColumns: `repeat(auto-fit, minmax(${
             editorPrefs.iconSize === "small"
             ? "40px"
-            : editorPrefs.iconSize === "large" 
+            : editorPrefs.iconSize === "large"
             ? "150px"
             : "80px"
-          }, 1fr))`,
+          }, 0.5fr))`,
           gridAutoRows: `fit-content`,
         }}
       >
-        <ContextMenuOptions options={Object.entries(iconSizes).map(([name, iconSize]) =>
-          ({
-            id: name,
-            "label": `Make icons ${iconSize.label}`,
-            onSelect: () => setIconSize(name as IconSizes)
-          })
-        )}
+        <ContextMenuOptions options={Object.entries(iconSizes)
+          .map(([name, iconSize]) =>
+            ({
+              id: name,
+              "label": `Make icons ${iconSize.label}`,
+              onSelect: () => setIconSize(name as IconSizes)
+            }))
+          }
         />
         {participants.map((p, i) =>
           <div
@@ -191,9 +205,6 @@ export function ParticipantEditor() {
             {...classNames(styles.portraitImage, "hoverable", "draggable", "center")}
             onClick={() => setSelectedName(p.name)}
             title={p.name + `\nClick to edit. Drag and drop into the graph to add a line node`}
-            onContextMenu={(e) => {
-              // FIXME: add a delete here
-            }}
           >
             <img
               src={p.portraitUrl}

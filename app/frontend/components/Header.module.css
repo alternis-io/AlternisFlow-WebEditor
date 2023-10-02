@@ -1,13 +1,15 @@
-
-.split {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
-  /* not doing the runtime yet */
-  /* grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 2fr); */
-}
-
 .projectDataEditor {
   padding: 10px;
   box-shadow: black 0 5px 5px;
   overflow-y: scroll;
+}
+
+.logoLink {
+  color: var(--fg-1);
+  text-decoration: initial;
+
+  /* FIXME: dedup from header.module.css */
+  font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  font-size: 2rem;
+  font-weight: 500;
 }

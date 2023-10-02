@@ -20,7 +20,13 @@ export function Header() {
         paddingTop: 2,
         paddingBottom: 2,
       }}>
-        <Link to={baseUrl}>
+        <Link to={baseUrl} className={styles.logoLink} style={{
+          // FIXME: really need a standard
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "center",
+          gap: "var(--gap)",
+        }}>
           <img src={logoPath} height={40} className="hoverable" />
           Alternis
         </Link>

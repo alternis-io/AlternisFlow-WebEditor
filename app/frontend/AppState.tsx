@@ -118,7 +118,7 @@ Object.freeze(defaultAppState);
 
 export type AppState = typeof defaultAppState;
 
-const appStateKey = "appState";
+const appStateKey = "alternis-v1_appState";
 
 import template1 from "./templates/template1.json";
 

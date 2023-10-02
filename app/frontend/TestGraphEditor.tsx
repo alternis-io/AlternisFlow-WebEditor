@@ -40,6 +40,7 @@ import { GotoNode } from './nodes';
 import { NodeHandle } from './nodes/handle';
 import { BaseNode } from './nodes/BaseNode';
 import { DialogueEntry, Emit, Lock, RandomSwitch, PlayerReplies, PlayerReply, defaultRandomSwitchProps, defaultPlayerRepliesProps } from './nodes/data';
+import { Tutorial1 } from './Tutorial1';
 
 // FIXME: rename
 const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
@@ -819,7 +820,7 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
   const noHeaderRequested = location.search.includes("noHeader");
 
   return (
-    <div ref={editorRef}>
+    <div ref={editorRef} className="rel-anchor">
       <ContextMenuOptions
         forceEventKey={forceAddNodeEvent}
         mouseBinding={addNodeMouseBinding}
@@ -974,6 +975,7 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
           <Background />
         </ReactFlow>
       </div>
+      <Tutorial1 />
     </div>
   );
 }

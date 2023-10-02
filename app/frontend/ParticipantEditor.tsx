@@ -222,6 +222,7 @@ export function ParticipantEditor() {
         )}
         <div
           title={`Add a new participant`}
+          data-tut-id="participant-add-button"
           {...classNames(genericEditorStyles.newButton, "hoverable")}
           style={{ height: "100%" }}
           onClick={() => {

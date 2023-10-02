@@ -14,10 +14,11 @@ export function Header() {
   // FIXME: do real query param parsing!
   const noHeaderRequested = location.search.includes("noHeaderLogo");
 
-
   return !noHeaderRequested && <Split
     style={{
       boxShadow: "black 0 0 5px",
+      zIndex: 1,
+      position: "relative",
     }}
     left={
       <div style={{

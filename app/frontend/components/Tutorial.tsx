@@ -6,6 +6,8 @@ import { classNames } from "js-utils/lib/react-utils";
 
 export interface TutorialStep {
   body: React.ReactNode;
+  /** run any necessary state changes here, e.g. to the UI */
+  onReached?(): void;
   /** a list of ids corresponding to `data-tut-id` attributes on elements,
    * those elements will be highlighted during this step */
   highlightedTutIds?: string[];
@@ -37,25 +39,33 @@ export function Tutorial(props: Tutorial.Props) {
   const step = props.data.steps[stepIndex];
 
   useEffect(() => {
-    if (open && step.highlightedTutIds) {
-      const highlightElemGroups = step.highlightedTutIds
-        .map(id => document.querySelectorAll(`[data-tut-id="${id}"]`));
+    if (!open)
+      return;
 
-      for (const highlightElems of highlightElemGroups) {
+    const highlightElemGroups = step.highlightedTutIds
+      ?.map(id => document.querySelectorAll(`[data-tut-id="${id}"]`));
+
+    // need to await this or something, it might queue updates!
+    step?.onReached?.();
+
+    // FIXME: horrible; wait for queued state to flush, these elements might not exist yet!
+    const timeout = setTimeout(() => {
+      for (const highlightElems of highlightElemGroups ?? []) {
         for (const highlightElem of highlightElems) {
           highlightElem.classList.add(highlightClass);
         }
       }
+    }, 0);
 
-      return () => {
-        for (const highlightElems of highlightElemGroups) {
-          for (const highlightElem of highlightElems) {
-            highlightElem.classList.remove(highlightClass);
-          }
+    return () => {
+      clearTimeout(timeout);
+      for (const highlightElems of highlightElemGroups ?? []) {
+        for (const highlightElem of highlightElems) {
+          highlightElem.classList.remove(highlightClass);
         }
       }
     }
-  }, [stepIndex, open]);
+  }, [stepIndex, step, open]);
   
   const onCloseStep = stepIndex === props.data.steps.length - 1;
 
@@ -78,7 +88,7 @@ export function Tutorial(props: Tutorial.Props) {
           className={styles.next}
           onClick={() => onCloseStep ? setOpen(false) : setStepIndex(prev => prev + 1)}
         >
-          {onCloseStep ? "close" : "next"}
+          {onCloseStep ? "exit tutorial" : "next"}
         </button>
       </dialog>
     </div>

@@ -5,7 +5,6 @@ import { DialogueViewer } from "./DialogueViewer";
 import { ProjectDataEditor } from "./ProjectDataEditor";
 import { useAppState, useTemporalAppState } from "./AppState";
 import { Header } from "./components/Header.1";
-import { Tutorial1 } from "./Tutorial1";
 import { useLocation } from "react-router-dom";
 
 export function Ide(_props: Ide.Props) {
@@ -52,7 +51,6 @@ export function Ide(_props: Ide.Props) {
       <span className={styles.graphEditor}>
         <TestGraphEditor />
       </span>
-      <Tutorial1 />
     </div>
   );
 }

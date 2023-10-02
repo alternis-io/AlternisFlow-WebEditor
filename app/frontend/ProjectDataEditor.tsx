@@ -65,8 +65,13 @@ const dataPanes = {
 type DataPanes = keyof typeof dataPanes;
 type DataPane = (typeof dataPanes)[DataPanes];
 
+// HACK: expose the setter for the tutorial. There should only ever be one of this component...
+// a context or even zustand store would probably be better
+export let setOpenDataPane: (d: DataPanes | ((d: DataPanes) => DataPanes)) => void;
+
 export function ProjectDataEditor(_props: ProjectDataEditor.Props) {
-  const [openDataPane, setOpenDataPane] = useState<DataPanes>("participants");
+  let openDataPane: DataPanes;
+  ([openDataPane, setOpenDataPane] = useState<DataPanes>("participants"));
   const PaneComponent = dataPanes[openDataPane].component;
 
   return (

@@ -130,6 +130,7 @@ export function GenericEditor<T extends SupportedKeys>(
           </div>
         </div>
       : <div
+          data-tut-id="generic-proj-data-add-button"
           title={`Add a new ${props.singularEntityName}`}
           {...classNames(styles.newButton, "hoverable", "")}
           onClick={() => setProposedName("")}

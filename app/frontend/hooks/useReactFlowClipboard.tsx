@@ -1,8 +1,9 @@
 import React, { useEffect } from "react";
 import { AppState, clientIsMac, useAppState } from "../AppState";
 import { useStable } from "@bentley/react-hooks";
-import { useOnSelectionChange } from "reactflow";
+import { XYPosition, useOnSelectionChange, useReactFlow } from "reactflow";
 import { assert } from "js-utils/lib/browser-utils";
+import { useTrackMouse } from "./useTrackMouse";
 
 // FIXME: dedup
 function getNewId(nodes: { id: string }[]) {
@@ -14,11 +15,18 @@ function getNewId(nodes: { id: string }[]) {
   return `${maxId + 1}`;
 }
 
-export function useReactFlowClipboard(): void {
+export function useReactFlowClipboard(args: {
+  graphContainerElem: React.RefObject<HTMLDivElement>,
+}): void {
   type NodeEdgeState = Pick<AppState["document"], "edges" | "nodes">;
-  const [clipboard, setClipboard] = React.useState<NodeEdgeState | undefined>();
-  const [selection, setSelection] = React.useState<NodeEdgeState | undefined>();
-  useOnSelectionChange(useStable(() => ({ onChange: setSelection })));
+  //const [clipboard, setClipboard] = React.useState<NodeEdgeState | undefined>();
+  //const [selection, setSelection] = React.useState<NodeEdgeState | undefined>();
+  const clipboard = React.useRef<NodeEdgeState>();
+  const selection = React.useRef<NodeEdgeState>();
+  useOnSelectionChange({ onChange: (s) => (selection.current = s) });
+
+  const graph = useReactFlow();
+  const { position } = useTrackMouse();
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -29,14 +37,14 @@ export function useReactFlowClipboard(): void {
 
       if (!copyPressed && !cutPressed && !pastePressed) return;
 
-      const copySelection = () => setClipboard(selection);
+      const copySelection = () => clipboard.current = selection.current;
 
       if (copyPressed) {
         copySelection();
 
       } else if (cutPressed) {
-        const edgeIdSet = new Set(clipboard?.edges.map(e => e.id));
-        const nodeIdSet = new Set(clipboard?.nodes.map(n => n.id));
+        const edgeIdSet = new Set(clipboard.current?.edges.map(e => e.id));
+        const nodeIdSet = new Set(clipboard.current?.nodes.map(n => n.id));
         copySelection();
         useAppState.setState(s => ({
           document: {
@@ -48,8 +56,20 @@ export function useReactFlowClipboard(): void {
 
       } else if (pastePressed) {
         useAppState.setState(s => {
-          const nodeRemapTable = new Map(selection?.nodes.map(({id}) => [id, getNewId(s.document.nodes)] as const));
-          const edgeRemapTable = new Map(selection?.edges.map(({id}) => [id, getNewId(s.document.edges)] as const));
+          if (selection.current === undefined)
+            return s;
+
+          let nodeRemapTable = new Map<string, string>();
+          let edgeRemapTable = new Map<string, string>();
+          {
+            let nextNodeId = +getNewId(s.document.nodes);
+            for (const { id }  of selection.current.nodes)
+              nodeRemapTable.set(id, String(nextNodeId++));
+
+            let nextEdgeId = +getNewId(s.document.edges);
+            for (const { id }  of selection.current.edges)
+              edgeRemapTable.set(id, String(nextEdgeId++));
+          }
 
           // as defined in NodeHandle, all handles follow the pattern: `${props.nodeId}_${props.type}_${props.index}`
           const remapHandle = (handle: string) => {
@@ -61,34 +81,45 @@ export function useReactFlowClipboard(): void {
             return `${remappedNodeId}_${handle.slice(endNodeIdIndex + 1)}`;
           };
 
+          const basePosition = {
+            x: selection.current.nodes.reduce((prev, n) => Math.min(n.position.x, prev), Number.POSITIVE_INFINITY),
+            y: selection.current.nodes.reduce((prev, n) => Math.min(n.position.y, prev), Number.POSITIVE_INFINITY),
+          };
+
+          // FIXME: use this
+          const reposition = (p: XYPosition): XYPosition => {
+            const { top, left } = args.graphContainerElem.current!.getBoundingClientRect();
+            // FIXME: this should use the clientX/Y within the graphContainerElem, not position.current.pageX...
+            return graph.project({
+              x: position.current.pageX - left - 150/2 + (p.x - basePosition.x),
+              y: position.current.pageY - top + (p.y - basePosition.y),
+            });
+          };
+
           return {
             document: {
               ...s.document,
-              nodes: selection
-                ? s.document.nodes.concat(selection.nodes.map(n => ({
-                  ...n,
-                  id: nodeRemapTable.get(n.id)!,
-                  // FIXME: get mouse last position
-                  position: { x: n.position.x + 200, y: n.position.y + 200 },
-                })))
-                : s.document.nodes,
-              edges: selection
-                ? s.document.edges.concat(selection.edges.map(e => ({
-                  ...e,
-                  id: edgeRemapTable.get(e.id)!,
-                  source: nodeRemapTable.get(e.source) ?? e.source,
-                  target: nodeRemapTable.get(e.target) ?? e.target,
-                  sourceHandle: e.sourceHandle && remapHandle(e.sourceHandle) || e.sourceHandle,
-                  targetHandle: e.targetHandle && remapHandle(e.targetHandle) || e.targetHandle,
-                })))
-                : s.document.edges,
+              nodes: s.document.nodes.concat(selection.current.nodes.map(n => ({
+                ...n,
+                id: nodeRemapTable.get(n.id)!,
+                position: { x: n.position.x + 200, y: n.position.y + 200 },
+              }))),
+              edges: s.document.edges.concat(selection.current.edges.map(e => ({
+                ...e,
+                id: edgeRemapTable.get(e.id)!,
+                source: nodeRemapTable.get(e.source) ?? e.source,
+                target: nodeRemapTable.get(e.target) ?? e.target,
+                sourceHandle: e.sourceHandle && remapHandle(e.sourceHandle) || e.sourceHandle,
+                targetHandle: e.targetHandle && remapHandle(e.targetHandle) || e.targetHandle,
+              }))),
             },
           };
         });
       }
     };
 
+    // FIXME: why capture?
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
-  }, [clipboard, selection]);
+  }, [graph]);
 }

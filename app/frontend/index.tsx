@@ -19,8 +19,10 @@ function ResettingErrorBoundary(props: React.PropsWithChildren<{}>) {
       <div style={{ padding: 20 }}>
         <p>
           An error has occurred, the event was anonymized and sent logged for us to investigate.
-          To continue, you must reset the local state, which will destroy unsaved changes.
+          To continue, try reloading the page. If that doesn't work, you must reset the local state,
+          which will likely destroy unsaved changes.
         </p>
+        {/* FIXME: maybe they can just use "undo" ? */}
         <p>
           Try contacting <a href="mailto:support@alternis.io">support</a> with the
           advanced error data if that is an issue.
@@ -51,8 +53,10 @@ const router = createHashRouter([
     path: "/",
     element: <>
       <RedirectIfNotLoggedIn />
-      <Header />
-      <ReactFlowProvider><Ide /></ReactFlowProvider>
+      <ReactFlowProvider>
+        <Header />
+        <Ide />
+      </ReactFlowProvider>
     </>,
     ErrorBoundary: ResettingErrorBoundary,
   },

@@ -35,52 +35,9 @@ import { assert } from 'js-utils/lib/browser-utils'
 import { useValidatedInput } from '@bentley/react-hooks'
 import { InputStatus } from './hooks/useValidatedInput'
 import { useReactFlowClipboard } from './hooks/useReactFlowClipboard'
-
-// FIXME: clean up/remove exprimental easy grab handle
-function NodeHandle(
-  props: HandleProps
-    & Omit<React.HTMLAttributes<HTMLDivElement>, "id">
-    & {
-      index: number;
-      nodeId: string;
-    }
-) {
-  const { nodeId, index, ...divProps } = props;
-  //const graph = useReactFlow();
-  //const radius = 12;
-  return <Handle
-    id={`${nodeId}_${props.type}_${index}`}
-    {...divProps}
-    {...classNames(styles.handle, props.className)}
-    style={{
-      ...props.style,
-      //left: props.style?.position === "relative"
-        //? undefined
-        //: `calc(${props.type === "source" ? 100 : 0}% - ${radius}px)`,
-      // FIXME: scale with zoom?
-      //width: 2 * radius,
-      //height: 2 * radius,
-      //borderRadius: "50%",
-      //border: `${radius}px solid transparent`,
-      //backgroundColor: "transparent",
-    }}
-  >
-    {/*
-    <Center>
-      <div
-        style={{
-          height: "100%",
-          width: "100%",
-          borderRadius: "50%",
-          backgroundColor: "#888888",
-          pointerEvents: "none",
-          transform: "scale(0.5, 0.5)",
-        }}
-      />
-    </Center>
-    */}
-  </Handle>;
-}
+import { GotoNode, LabelNode } from './nodes';
+import { NodeHandle } from './nodes/handle';
+import { BaseNode } from './nodes/BaseNode';
 
 // FIXME: move to common/
 export interface DialogueEntry {
@@ -112,81 +69,83 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
   const [showMore, setShowMore] = React.useState(false);
 
   return !data ? null : (
-    <div
-      className={styles.node}
-      style={{ width: "max-content" }}
-      title={
-        "The 'Dialogue Entry' node, has a participant say a particular line.\n"
-        + "The line may be locked by a true/false variable."
-      }
-    >
-      <NodeHandle
-        type="target"
-        nodeId={props.id}
-        index={0}
-        position={Position.Left}
-        className={styles.handle}
-        isConnectable
-      />
-      {participant
-        ? <>
-          <div className={styles.nodeHeader}>
-            <div>{participant.name}</div>
-            <img height="80px" style={{ width: "auto" }} src={participant.portraitUrl} />
-          </div>
-          <label>
-            text
-            <textarea
-              ref={textInput}
-              className="nodrag"
-              onChange={(e) => set({ text: e.currentTarget.value })}
-              // FIXME: why not use a controlled component?
-              value={data.text}
-            />
-          </label>
-          {showMore && <>
+    <BaseNode id={props.id}>
+      <div
+        className={styles.node}
+        style={{ width: "max-content" }}
+        title={
+          "The 'Dialogue Entry' node, has a participant say a particular line.\n"
+          + "The line may be locked by a true/false variable."
+        }
+      >
+        <NodeHandle
+          type="target"
+          nodeId={props.id}
+          index={0}
+          position={Position.Left}
+          className={styles.handle}
+          isConnectable
+        />
+        {participant
+          ? <>
+            <div className={styles.nodeHeader}>
+              <div>{participant.name}</div>
+              <img height="80px" style={{ width: "auto" }} src={participant.portraitUrl} />
+            </div>
             <label>
-              title
-              <input
+              text
+              <textarea
+                ref={textInput}
                 className="nodrag"
-                onChange={(e) => set({ title: e.currentTarget.value })}
-                value={data.title}
+                onChange={(e) => set({ text: e.currentTarget.value })}
+                // FIXME: why not use a controlled component?
+                value={data.text}
               />
             </label>
-          </>}
-          {/* FIXME: use an icon, this is ugly af */}
-          <Center
-            {...classNames(styles.entryNodeShowMoreIndicator, "hoverable")}
-            onClick={() => setShowMore(prev => !prev)}
-          >
-            <strong style={{ transform: "scale(2, 0.8)", display: "block", width: "100%", textAlign: "center" }}>
-              <svg
-                viewBox="-5 -5 15 15"
-                height="15px" width="30px"
-                strokeWidth={"2px"}
-                strokeLinecap="round"
-                style={{
-                  transform: showMore ? "scale(1, -1)" : undefined, stroke: "white", fill: "none"
-                }}
-                className={"hoverable"}
-              >
-                <path d="M0 0 l5 5 l5 -5" />
-              </svg>
-            </strong>
-          </Center>
-        </>
-      : <> unknown participant </>
-      }
-      <NodeHandle
-        nodeId={props.id}
-        index={0}
-        type="source"
-        position={Position.Right}
-        className={styles.handle}
-        isConnectable
-      />
-    </div>
-  )
+            {showMore && <>
+              <label>
+                title
+                <input
+                  className="nodrag"
+                  onChange={(e) => set({ title: e.currentTarget.value })}
+                  value={data.title}
+                />
+              </label>
+            </>}
+            {/* FIXME: use an icon, this is ugly af */}
+            <Center
+              {...classNames(styles.entryNodeShowMoreIndicator, "hoverable")}
+              onClick={() => setShowMore(prev => !prev)}
+            >
+              <strong style={{ transform: "scale(2, 0.8)", display: "block", width: "100%", textAlign: "center" }}>
+                <svg
+                  viewBox="-5 -5 15 15"
+                  height="15px" width="30px"
+                  strokeWidth={"2px"}
+                  strokeLinecap="round"
+                  style={{
+                    transform: showMore ? "scale(1, -1)" : undefined, stroke: "white", fill: "none"
+                  }}
+                  className={"hoverable"}
+                >
+                  <path d="M0 0 l5 5 l5 -5" />
+                </svg>
+              </strong>
+            </Center>
+          </>
+        : <> unknown participant </>
+        }
+        <NodeHandle
+          nodeId={props.id}
+          index={0}
+          type="source"
+          position={Position.Right}
+          className={styles.handle}
+          isConnectable
+        />
+      </div>
+    </BaseNode>
+  );
 };
 
 export interface Lock {
@@ -212,12 +171,6 @@ const LockNode = (props: NodeProps<Lock>) => {
         + "Right click to change whether it locks or unlocks it"
       }
       style={{ width: "max-content" }}
-      onContextMenuCapture={(e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        set(({ action }) => ({ action: action === "lock" ? "unlock" : "lock" }));
-        return false;
-      }}
     >
       <NodeHandle
         nodeId={props.id}
@@ -229,6 +182,12 @@ const LockNode = (props: NodeProps<Lock>) => {
       />
       <Center>
         <Icon
+          onContextMenuCapture={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            set(({ action }) => ({ action: action === "lock" ? "unlock" : "lock" }));
+            return false;
+          }}
           style={{
             height: 80,
             width: 80,
@@ -355,6 +314,7 @@ const RandomSwitchInput = (props: {
     <div key={index} className={styles.randomSwitchInput}>
       <input
         title={inputMessage ? inputMessage : undefined}
+        className="nodrag"
         style={{
           outline: inputStatus !== InputStatus.Success
             ? "1px solid #ee2222"
@@ -368,7 +328,7 @@ const RandomSwitchInput = (props: {
         ({percentFmter.format(proportion / totalProportion)})
       </span>
       <Center
-          className="hoverable"
+          className="hoverable hoverable-red"
           title="Delete this possibility"
           onClick={() => set(s => {
             const proportions = s.proportions.slice();
@@ -729,7 +689,7 @@ const RerouteNode = (props: NodeProps<{}>) => {
   );
 };
 
-const withNodeContextMenu = <P extends NodeProps<{}>,R extends React.ReactNode>(Node: (a: P) => R) => {
+const withNodeContextMenu = <P extends NodeProps<{}>>(Node: React.ComponentType<P>) => {
   return (p: P) => {
     const nodeContextMenuOpts: ContextMenuOptions.Option[] = React.useMemo(() => [
       {
@@ -761,6 +721,8 @@ const nodeTypes = {
   emitNode: withNodeContextMenu(EmitNode),
   entry: withNodeContextMenu(EntryNode),
   reroute: withNodeContextMenu(RerouteNode),
+  goto: GotoNode,
+  //label: withNodeContextMenu(LabelNode),
   default: withNodeContextMenu(UnknownNode),
 };
 
@@ -771,8 +733,10 @@ const nodeTypeNames: Record<keyof typeof nodeTypes, string> = {
   lockNode: "Lock",
   emitNode: "Emit",
   entry: "Entry",
+  reroute: "Reroute",
+  goto: "Goto",
+  label: "Label",
   default: "Unknown",
-  reroute: "Reroute"
 };
 
 const CustomEdge = (props: EdgeProps) => {
@@ -892,8 +856,6 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
       setTrialMessageShown(true);
   }, [nodes, permsVersion]);
 
-  useReactFlowClipboard();
-
   const dragBoxSelectMouseBinding = useAppState(s => s.preferences.graph.dragBoxSelectMouseBinding);
   const appendToSelectModifier = useAppState(s => s.preferences.graph.appendToSelectModifier);
   const dragPanMouseBinding = useAppState(s => s.preferences.graph.dragPanMouseBinding);
@@ -902,6 +864,8 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
 
   const connectingNodeId = React.useRef<string>();
   const graphContainerElem = React.useRef<HTMLDivElement>(null);
+
+  useReactFlowClipboard({ graphContainerElem });
 
   // FIXME: mitigate an apparent firefox bug
   useLayoutEffect(() => {

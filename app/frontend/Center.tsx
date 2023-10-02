@@ -1,3 +1,5 @@
+// FIXME: move to components
+
 import React from "react";
 import "./shared.global.css";
 

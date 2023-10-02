@@ -4,3 +4,4 @@ lib
 # vite
 dist
 .vite-inspect
+rollup-bundle-analysis.html

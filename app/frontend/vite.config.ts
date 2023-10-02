@@ -53,7 +53,15 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         // NOTE: rollup plugins are mostly treated as vite plugins that take place after normal vite-plugins
         // they may not be compatible at all, so be warned
-        plugins: [...(mode === "development" ? [rollupVisualizer()] : [])],
+        plugins: [
+          rollupVisualizer({
+            template: "sunburst",
+            open: true,
+            gzipSize: true,
+            brotliSize: true,
+            filename: "rollup-bundle-analysis.html"
+          }),
+        ],
       },
     },
     envPrefix: "MDXEDIT_",

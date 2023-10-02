@@ -34,7 +34,7 @@ export function LoginState(_props: LoginPage.Props) {
   const [password, passwordInput, setPasswordInput, _passwordStatus, passwordError] = useValidatedInput<string>("", {
     parse: (x) => ({ value: x }),
     validate: isValidPassword,
-    pattern: /(?:)/
+    pattern: /(?:)/,
   });
 
   const inputValid = email !== null && password !== null;
@@ -96,7 +96,7 @@ export function LoginState(_props: LoginPage.Props) {
                   onKeyDown={(e) => inputValid && e.key === 'Enter' && login()}
                 />
               </label>
-              <div style={{color: "red"}}>{emailError}</div>
+              <div className="invalidInputMessage">{emailError}</div>
               <label className="split" style={{ minWidth: 300 }}>
                 Password:
                 <input
@@ -107,7 +107,7 @@ export function LoginState(_props: LoginPage.Props) {
                   onKeyDown={(e) => inputValid && e.key === 'Enter' && login()}
                 />
               </label>
-              <div style={{color: "red"}}>{passwordError}</div>
+              <div className="invalidInputMessage">{passwordError}</div>
               <Center>
                 <button
                   onClick={login}

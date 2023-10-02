@@ -22,7 +22,7 @@ export function Header() {
       }}>
         <Link to={baseUrl}>
           <img src={logoPath} height={40} className="hoverable" />
-          {/*Alternis*/}
+          Alternis
         </Link>
       </div>
     }

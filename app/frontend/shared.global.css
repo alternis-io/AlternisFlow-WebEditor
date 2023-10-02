@@ -36,6 +36,14 @@
   background-color: var(--bg-1-hover);
 }
 
+.invalidInput {
+  outline: 1px solid #ee2222;
+  width: 6em;
+}
+
+.invalidInputMessage {
+  color: #ee2222;
+}
 
 .newButton {
   padding: 0.7em;

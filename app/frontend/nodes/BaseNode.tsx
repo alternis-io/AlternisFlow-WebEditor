@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { ContextMenuOptions } from "../components/ContextMenu";
+import { UniqueInput } from "../components/UniqueInput";
 import { getNode, makeNodeDataSetter, useAppState } from "../AppState";
 import styles from "../TestGraphEditor.module.css"
 import { Center } from "../Center";
@@ -9,6 +10,9 @@ import { BaseNodeData } from "./data";
 export const BaseNode = (props: BaseNode.Props) => {
   const data = getNode<BaseNodeData>(props.id)?.data;
   const set = makeNodeDataSetter<BaseNodeData>(props.id);
+  const nodes = useAppState(s => s.document.nodes);
+  const otherLabeledNodes = useMemo(() => nodes.filter((n) => n.data?.label && n.id !== props.id), [nodes]);
+  const takenLabels = useMemo(() => otherLabeledNodes.map(n => n.data.label as string), [otherLabeledNodes]);
 
   const { id, children, showMoreContent, noLabel, ...divProps } = props;
 
@@ -60,11 +64,12 @@ export const BaseNode = (props: BaseNode.Props) => {
         {showMore && !noLabel &&
           <label title="The label that can be used by jump nodes">
             label
-            <input
+            <UniqueInput
+              initialValue={data.label}
+              takenSet={takenLabels}
               style={{ maxWidth: 100 }}
               className="nodrag"
-              onChange={(e) => set({ label: e.currentTarget.value || undefined })}
-              value={data.label}
+              onChange={(s) => set({ label: s || undefined })}
             />
           </label>
         }

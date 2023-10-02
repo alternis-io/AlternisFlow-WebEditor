@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useState } from 'react'
+import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import ReactFlow, {
   Handle,
   NodeProps,
@@ -114,7 +114,7 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
 
 const LockNode = (props: NodeProps<Lock>) => {
   const variables = useAppState(s => s.document.variables);
-  const bools = Object.entries(variables).filter(([, v]) => v.type === "boolean");
+  const bools = useMemo(() => Object.entries(variables).filter(([, v]) => v.type === "boolean"), [variables]);
   // REPORTME: react-flow seems to sometimes render non-existing nodes briefly?
   const data = getNode<Lock>(props.id)?.data;
   const set = makeNodeDataSetter<Lock>(props.id);
@@ -373,7 +373,7 @@ const ReplyLock = (props: {
   index: number;
 }) => {
   const variables = useAppState(s => s.document.variables);
-  const bools = Object.entries(variables).filter(([, v]) => v.type === "boolean");
+  const bools = useMemo(() => Object.entries(variables).filter(([, v]) => v.type === "boolean"), [variables]);
   const Icon
     = props.reply.lockAction === "none"
     ? AddLockIcon

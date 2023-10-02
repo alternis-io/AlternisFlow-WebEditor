@@ -35,7 +35,7 @@ const tutorial1Data: TutorialData = {
           to add a participant, or click on a portrait to edit one.
         </p>
       </div>,
-      highlightedTutIds: ["generic-proj-data-add-button"],
+      highlightedTutIds: ["participant-add-button"],
     },
     {
       onReached() {
@@ -48,15 +48,15 @@ const tutorial1Data: TutorialData = {
         </p>
         <ul>
           <li>values set by the environment at startup time</li>
-          <li>values changed when you call a <em>function</em> in the environment</li>
+          <li>values changed when you call a <em>function</em> from the environment</li>
           <li>boolean (true/false) values locked (set false) or unlocked (set true) by lock nodes</li>
         </ul>
         <p>
-          You can add them and change their types to expose to the environment, or to use when locking
+          You can add new ones to expose to the environment, or to use when locking
           dialogue paths.
         </p>
       </div>,
-      highlightedTutIds: ["participant-add-button"],
+      highlightedTutIds: ["generic-proj-data-add-button"],
     },
   ],
 };

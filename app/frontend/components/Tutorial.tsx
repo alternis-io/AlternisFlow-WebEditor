@@ -42,20 +42,22 @@ export function Tutorial(props: Tutorial.Props) {
     if (!open)
       return;
 
-    const highlightElemGroups = step.highlightedTutIds
-      ?.map(id => document.querySelectorAll(`[data-tut-id="${id}"]`));
-
     // need to await this or something, it might queue updates!
     step?.onReached?.();
 
+    let highlightElemGroups: NodeListOf<Element>[] | undefined;
+
     // FIXME: horrible; wait for queued state to flush, these elements might not exist yet!
     const timeout = setTimeout(() => {
+      highlightElemGroups = step.highlightedTutIds
+        ?.map(id => document.querySelectorAll(`[data-tut-id="${id}"]`));
+
       for (const highlightElems of highlightElemGroups ?? []) {
         for (const highlightElem of highlightElems) {
           highlightElem.classList.add(highlightClass);
         }
       }
-    }, 0);
+    }, 10);
 
     return () => {
       clearTimeout(timeout);

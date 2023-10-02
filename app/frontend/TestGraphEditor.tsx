@@ -214,7 +214,7 @@ const EmitNode = (props: NodeProps<Emit>) => {
         <span style={{ fontSize: "4rem", fontWeight: "bold" }}>!</span>
       </Center>
       <label>
-        event
+        function
         <select
           value={data.function}
           onChange={e => set(() => ({ function: e.currentTarget.value }))}

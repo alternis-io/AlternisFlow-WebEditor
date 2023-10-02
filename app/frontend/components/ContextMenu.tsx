@@ -42,11 +42,11 @@ export const ContextMenu = React.forwardRef<ContextMenu.Ref, ContextMenu.Props>(
     //mouseUninterested.forceInterest();
   };
 
-  // FIXME: doesn't work
-  useOnExternalClick(rootElemRef, () => {
-    if (isShown())
-      hide();
-  });
+  // FIXME: need to inline this logic into our own click handler
+  // useOnExternalClick(rootElemRef, () => {
+  //   if (isShown())
+  //     hide();
+  // });
 
   useImperativeHandle(ref, () => ({
     hide,
@@ -62,7 +62,7 @@ export const ContextMenu = React.forwardRef<ContextMenu.Ref, ContextMenu.Props>(
       if (!eventMatchesMouseBinding(e, mouseBinding) && e.type !== forceEventKey)
         return;
       e.preventDefault();
-      e.stopImmediatePropagation();
+      e.stopPropagation();
       if (rootElemRef.current) {
         // FIXME: use a react portal to prevent stacking contexts from causing weird offsets
         rootElemRef.current.style.top = `${e.pageY}px`;

@@ -39,7 +39,7 @@ import { useReactFlowClipboard } from './hooks/useReactFlowClipboard'
 import { GotoNode } from './nodes';
 import { NodeHandle } from './nodes/handle';
 import { BaseNode } from './nodes/BaseNode';
-import { DialogueEntry, Emit, Lock, RandomSwitch, PlayerReplies, PlayerReply } from './nodes/data';
+import { DialogueEntry, Emit, Lock, RandomSwitch, PlayerReplies, PlayerReply, defaultRandomSwitchProps, defaultPlayerRepliesProps } from './nodes/data';
 
 // FIXME: rename
 const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
@@ -58,8 +58,6 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
   React.useEffect(() => {
     textInput.current?.focus();
   }, []);
-
-  const [showMore, setShowMore] = React.useState(false);
 
   return !data ? null : (
     <BaseNode
@@ -124,14 +122,28 @@ const LockNode = (props: NodeProps<Lock>) => {
   // FIXME: this might be low-performance? not sure it matters tbh
   const Icon = data?.action === "lock" ? LockIcon : UnlockIcon;
 
+  const iconRef = React.useRef<HTMLDivElement>(null);
+
+  // need to use a DOM callback to intercept contextmenu
+  React.useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (e.button !== 2) return;
+      e.stopImmediatePropagation();
+      e.preventDefault();
+      set(({ action }) => ({ action: action === "lock" ? "unlock" : "lock" }));
+      return false;
+    };
+    iconRef.current?.addEventListener("mousedown", handler, true);
+    return () => iconRef.current?.removeEventListener("mousedown", handler, true);
+  }, [set, iconRef.current]);
+
   return !data ? null : (
-    <div
-      className={styles.node}
+    <BaseNode
+      id={props.id}
       title={
         "The 'Lock' node, changes the state of a gate.\n"
         + "Right click to change whether it locks or unlocks it"
       }
-      style={{ width: "max-content" }}
     >
       <NodeHandle
         nodeId={props.id}
@@ -141,14 +153,8 @@ const LockNode = (props: NodeProps<Lock>) => {
         className={styles.handle}
         isConnectable
       />
-      <Center>
+      <Center ref={iconRef}>
         <Icon
-          onContextMenuCapture={(e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            set(({ action }) => ({ action: action === "lock" ? "unlock" : "lock" }));
-            return false;
-          }}
           style={{
             height: 80,
             width: 80,
@@ -162,13 +168,13 @@ const LockNode = (props: NodeProps<Lock>) => {
       <label>
         variable
         <select
+          title={bools.length === 0 ? "You must create a boolean variable to lock/unlock it" : undefined}
           value={data.variable}
           onChange={e => set(() => ({ variable: e.currentTarget.value }))}
         >
           {bools.map(([boolName]) => (
               <option key={boolName} value={boolName}>{boolName}</option>
-            )
-          )}
+          ))}
         </select>
       </label>
       <NodeHandle
@@ -179,7 +185,7 @@ const LockNode = (props: NodeProps<Lock>) => {
         className={styles.handle}
         isConnectable
       />
-    </div>
+    </BaseNode>
   )
 };
 
@@ -190,9 +196,8 @@ const EmitNode = (props: NodeProps<Emit>) => {
   const set = makeNodeDataSetter<Emit>(props.id);
 
   return !data ? null : (
-    <div
-      className={styles.node}
-      style={{ width: "max-content" }}
+    <BaseNode
+      id={props.id}
       title={
         "The 'Function Call' node, triggers environment-registered handlers to run custom logic"
       }
@@ -229,7 +234,7 @@ const EmitNode = (props: NodeProps<Emit>) => {
         className={styles.handle}
         isConnectable
       />
-    </div>
+    </BaseNode>
   )
 };
 
@@ -306,9 +311,8 @@ const RandomSwitchNode = (props: NodeProps<RandomSwitch>) => {
   const updateNodeInternals = useUpdateNodeInternals();
 
   return !data ? null : (
-    <div
-      className={styles.node}
-      style={{ width: "max-content" }}
+    <BaseNode
+      id={props.id}
       title={
         "The 'Random Switch' node picks a random output.\n"
         + "Each output has a number of chances compared out of the total to be reached. "
@@ -348,8 +352,8 @@ const RandomSwitchNode = (props: NodeProps<RandomSwitch>) => {
           <Center>+</Center>
         </div>
       </div>
-    </div>
-  )
+    </BaseNode>
+  );
 };
 
 // FIXME: replace with the lock icon but crossed-out
@@ -455,9 +459,8 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
   }, [data?.replies.length]);
 
   return !data ? null : (
-    <div
-      className={styles.node}
-      style={{ width: "max-content" }}
+    <BaseNode
+      id={props.id}
       title={
         "The 'Replies' node gives a participant the option to choose from multiple options.\n"
         + "Each output has a number of chances compared out of the total to be reached. "
@@ -549,31 +552,34 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
           <Center>+</Center>
         </div>
       </div>
-    </div>
+    </BaseNode>
   );
 };
 
-const UnknownNode = (_props: NodeProps<{}>) => {
+const UnknownNode = (props: NodeProps<{}>) => {
   // TODO: store connections on data in case the correct type is restored
   // FIXME: log to support immediately
   return (
-    <div
-      className={styles.node}
+    <BaseNode
+      id={props.id}
       title="This is an error. Please contact support"
+      noLabel
     >
       <Center>
         <strong>Unknown node</strong>
       </Center>
-    </div>
-  )
+    </BaseNode>
+  );
 };
 
 const EntryNode = (props: NodeProps<{}>) => {
   return (
     <div
+      //id={props.id}
       className={styles.node}
       // FIXME: for a particular participant
       title="The node that defines the beginning of the dialogue"
+      //noLabel
     >
       <Center style={{ padding: 5 }}>
         <strong>Start</strong>
@@ -587,17 +593,17 @@ const EntryNode = (props: NodeProps<{}>) => {
         isConnectable
       />
     </div>
-  )
+  );
 };
 
 const RerouteNode = (props: NodeProps<{}>) => {
   return (
-    <div
-      className={styles.node}
-      // FIXME: for a particular participant
+    <BaseNode
+      id={props.id}
       title="The 'Reroute' node helps you organize curvier dialogues with cycles"
       // FIXME: not very usable
       style={{ height: 5, width: 5 }}
+      noLabel
     >
       <NodeHandle
         id={props.id}
@@ -610,45 +616,21 @@ const RerouteNode = (props: NodeProps<{}>) => {
         className={styles.handle}
         isConnectable
       />
-    </div>
+    </BaseNode>
   );
-};
-
-/** @deprecated remove */
-const withNodeContextMenu = <P extends NodeProps<{}>>(Node: React.ComponentType<P>) => {
-  return (p: P) => {
-    const nodeContextMenuOpts: ContextMenuOptions.Option[] = React.useMemo(() => [
-      {
-        id: "delete",
-        onSelect: () => useAppState.setState(s => ({
-          document: {
-            ...s.document,
-            nodes: s.document.nodes.filter(n => n.id !== p.id)
-          }
-        })),
-      }
-    ], []);
-
-    return (
-      <div>
-        <ContextMenuOptions options={nodeContextMenuOpts} />
-        <Node {...p} />
-      </div>
-    );
-  };
 };
 
 const nodeTypes = {
   //FIXME: rename to dialogue line?
-  dialogueEntry: withNodeContextMenu(DialogueEntryNode),
-  randomSwitch: withNodeContextMenu(RandomSwitchNode),
-  playerReplies: withNodeContextMenu(PlayerRepliesNode),
-  lockNode: withNodeContextMenu(LockNode),
-  emitNode: withNodeContextMenu(EmitNode),
-  entry: withNodeContextMenu(EntryNode),
-  reroute: withNodeContextMenu(RerouteNode),
+  dialogueEntry: DialogueEntryNode,
+  randomSwitch: RandomSwitchNode,
+  playerReplies: PlayerRepliesNode,
+  lockNode: LockNode,
+  emitNode: EmitNode,
+  entry: EntryNode,
+  reroute: RerouteNode,
   goto: GotoNode,
-  default: withNodeContextMenu(UnknownNode),
+  default: UnknownNode,
 };
 
 const nodeTypeNames: Record<keyof typeof nodeTypes, string> = {

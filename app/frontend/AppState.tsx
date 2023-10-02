@@ -4,7 +4,8 @@ import { deepCloneJson } from "js-utils/lib/react-utils";
 import { create, useStore } from "zustand";
 import { TemporalState, temporal } from "zundo";
 import { DeepPartial } from "ts-essentials/dist/deep-partial";
-import { MouseBinding, KeyBinding } from "./components/KeyBindingInput" ;
+import { MouseBinding } from "./components/KeyBindingInput" ;
+import { BaseNodeData } from './nodes/data';
 
 // FIXME: move out icon data and get type from that list
 export type IconSizes = "small" | "medium" | "large";
@@ -98,7 +99,7 @@ export const defaultAppState = {
       id: '1',
       type: 'entry',
       position: { x: 540, y: 100 },
-    }] as Node<any>[],
+    }] as Node<BaseNodeData>[],
     edges: [] as Edge<any>[],
     participants: [] as Participant[],
     variables: {} as {

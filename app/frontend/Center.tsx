@@ -3,8 +3,6 @@
 import React from "react";
 import "./shared.global.css";
 
-export function Center(props: React.HTMLProps<HTMLDivElement>) {
-  return (
-    <div className="center" {...props} />
-  );
-}
+export const Center = React.forwardRef<HTMLDivElement, React.HTMLProps<HTMLDivElement>>((props, ref) =>
+  <div className="center" ref={ref} {...props} />
+);

@@ -1,9 +1,9 @@
 export interface BaseNodeData {
-  label: string | undefined;
+  label?: string;
 }
 
 // FIXME: move to common/
-export interface DialogueEntry {
+export interface DialogueEntry extends BaseNodeData {
   speakerIndex: number;
   specificPortraitUrl?: string;
   title?: string;
@@ -11,17 +11,17 @@ export interface DialogueEntry {
   customData?: any;
 }
 
-export interface Lock {
+export interface Lock extends BaseNodeData {
   variable: string;
   action: "lock" | "unlock";
 }
 
 // FIXME: rename to function call?
-export interface Emit {
+export interface Emit extends BaseNodeData {
   function: string;
 }
 
-export interface RandomSwitch {
+export interface RandomSwitch extends BaseNodeData {
   proportions: number[];
 }
 
@@ -37,7 +37,7 @@ export interface PlayerReply {
   lockAction: "none" | "lock" | "unlock";
 }
 
-export interface PlayerReplies {
+export interface PlayerReplies extends BaseNodeData {
   replies: PlayerReply[];
 }
 
@@ -52,3 +52,6 @@ export const defaultPlayerRepliesProps: PlayerReplies = {
   ],
 };
 
+export interface Goto {
+  target: string;
+}

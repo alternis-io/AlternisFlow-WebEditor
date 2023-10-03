@@ -63,6 +63,11 @@
   position: relative;
 }
 
+.propagate-size {
+  height: 100%;
+  width: 100%;
+}
+
 .newButton {
   padding: 0.7em;
   height: 1em;

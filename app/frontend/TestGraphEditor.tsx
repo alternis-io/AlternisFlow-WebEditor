@@ -796,12 +796,13 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
 
   useReactFlowClipboard({ graphContainerElem });
 
-  // FIXME: mitigate an apparent firefox bug
+  // FIXME: (unnecessarily) mitigate bad sizing that react-flow hates
   useLayoutEffect(() => {
     const reactFlowRenderer = document.querySelector(".react-flow") as HTMLDivElement | null;
     if (reactFlowRenderer === null) return;
     reactFlowRenderer.style.position = "initial";
-    setTimeout(() => (reactFlowRenderer.style.position = "relative"));
+    //reactFlowRenderer.style.position = "relative";
+    setTimeout(() => (reactFlowRenderer.style.position = "relative"), 15);
   }, []);
 
   const editorRef = React.useRef<HTMLDivElement>(null);
@@ -824,7 +825,7 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
   const noHeaderRequested = location.search.includes("noHeader");
 
   return (
-    <div ref={editorRef} className="rel-anchor">
+    <div ref={editorRef} className="rel-anchor propagate-size">
       <ContextMenuOptions
         forceEventKey={forceAddNodeEvent}
         mouseBinding={addNodeMouseBinding}
@@ -852,7 +853,7 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
         }
       />
       <div
-        className={styles.graph}
+        {...classNames(styles.graph, "propagate-size")}
         data-tut-id="graph"
         data-tut-inset
         ref={graphContainerElem}

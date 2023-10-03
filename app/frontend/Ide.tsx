@@ -6,6 +6,7 @@ import { ProjectDataEditor } from "./ProjectDataEditor";
 import { useAppState, useTemporalAppState } from "./AppState";
 import { Header } from "./components/Header.1";
 import { useLocation } from "react-router-dom";
+import { classNames } from "js-utils/lib/react-utils";
 
 export function Ide(_props: Ide.Props) {
   const redo = useTemporalAppState(s => s.redo);
@@ -48,7 +49,7 @@ export function Ide(_props: Ide.Props) {
     }}>
       <ProjectDataEditor />
       {/*<DialogueViewer />*/}
-      <span className={styles.graphEditor}>
+      <span {...classNames(styles.graphEditor, "propagate-size")}>
         <TestGraphEditor />
       </span>
     </div>

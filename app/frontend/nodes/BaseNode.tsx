@@ -37,6 +37,7 @@ export const BaseNode = (props: BaseNode.Props) => {
       <div
         className={styles.node}
         style={{ width: "max-content" }}
+        data-tut-id={data.label && `node-${data.label}`}
       >
         {children}
         {(showMoreContent || !noLabel) && 

@@ -84,7 +84,7 @@ export function Preferences() {
   const enableBoxSelectOnDrag = useBindingSetting("enableBoxSelectOnDrag");
 
   return (
-    <div>
+    <div data-tut-id="preferences">
       <label title="Which mouse button you can click and drag to move around the graph" className="split">
         <span>
           Pan graph method

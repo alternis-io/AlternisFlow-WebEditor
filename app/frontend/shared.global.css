@@ -45,10 +45,18 @@
   color: #ee2222;
 }
 
+.inline-code {
+  display: inline;
+  font-family: monospace;
+}
+
 .tutorial-highlighted {
-  /* FIXME: use inner/negative boxshadow */
-  box-shadow: inset 0 0 4px 4px #ffff00 !important;
+  box-shadow: 0 0 4px 4px #ffff00 !important;
   z-index: 1;
+}
+
+.tutorial-highlighted[data-tut-inset] {
+  box-shadow: inset 0 0 4px 4px #ffff00 !important;
 }
 
 .rel-anchor {

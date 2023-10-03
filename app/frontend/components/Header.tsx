@@ -52,6 +52,7 @@ export function Header() {
           <button>Projects</button>
         </Link>
         <button
+          data-tut-id="export-button"
           onClick={() => {
             downloadFile({
               fileName: 'doc.name.json',

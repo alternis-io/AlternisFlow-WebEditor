@@ -14,6 +14,7 @@
   width: max-content;
   min-width: 250px;
   padding-bottom: 40px;
+  z-index: 2; /* must be higher than tutorial-highlighted */
 }
 
 .prev {

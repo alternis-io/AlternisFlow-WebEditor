@@ -104,7 +104,7 @@ export const defaultAppState = {
     participants: [] as Participant[],
     variables: {} as {
       [name: string]: {
-        type: "number" | "string" | "boolean",
+        type: "string" | "boolean",
         default: string,
       },
     },

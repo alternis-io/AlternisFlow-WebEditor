@@ -25,9 +25,8 @@ const dataPanes = {
               set({ type: e.currentTarget.value });
             }}
           >
-            <option value="boolean" title="true/false">Boolean</option>
-            <option value="number" title="number">Number</option>
-            <option value="string" title="text">Text</option>
+            <option value="boolean" title="true/false">true/false</option>
+            <option value="string" title="text">text</option>
           </select>
         </>
         // // NOTE: afaict no need for a default value yet
@@ -75,7 +74,11 @@ export function ProjectDataEditor(_props: ProjectDataEditor.Props) {
   const PaneComponent = dataPanes[openDataPane].component;
 
   return (
-    <div className={styles.projectDataEditor} data-tut-id="project-data-editor">
+    <div
+      className={styles.projectDataEditor}
+      data-tut-id="project-data-editor"
+      data-tut-inset
+    >
       <div style={{
         display: "flex",
         flexWrap: "wrap",

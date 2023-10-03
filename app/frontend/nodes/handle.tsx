@@ -16,6 +16,7 @@ export function NodeHandle(
   //const graph = useReactFlow();
   //const radius = 12;
   return <Handle
+    data-tut-id="node-handle"
     id={`${nodeId}_${props.type}_${index}`}
     {...divProps}
     {...classNames(styles.handle, props.className)}

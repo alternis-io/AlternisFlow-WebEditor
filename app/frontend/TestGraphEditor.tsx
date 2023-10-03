@@ -140,6 +140,7 @@ const LockNode = (props: NodeProps<Lock>) => {
 
   return !data ? null : (
     <BaseNode
+      data-tut-id="node-lock"
       id={props.id}
       title={
         "The 'Lock' node, changes the state of a gate.\n"
@@ -198,6 +199,7 @@ const EmitNode = (props: NodeProps<Emit>) => {
 
   return !data ? null : (
     <BaseNode
+      data-tut-id="node-function"
       id={props.id}
       title={
         "The 'Function Call' node, triggers environment-registered handlers to run custom logic"
@@ -314,6 +316,7 @@ const RandomSwitchNode = (props: NodeProps<RandomSwitch>) => {
   return !data ? null : (
     <BaseNode
       id={props.id}
+      data-tut-id="node-random-switch"
       title={
         "The 'Random Switch' node picks a random output.\n"
         + "Each output has a number of chances compared out of the total to be reached. "
@@ -469,6 +472,7 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
   return !data ? null : (
     <BaseNode
       id={props.id}
+      data-tut-id="node-reply"
       title={
         "The 'Replies' node gives a participant the option to choose from multiple options.\n"
         + "Each output has a number of chances compared out of the total to be reached. "
@@ -849,6 +853,8 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
       />
       <div
         className={styles.graph}
+        data-tut-id="graph"
+        data-tut-inset
         ref={graphContainerElem}
         style={{ height: noHeaderRequested ? "100vh" : undefined }}
       >

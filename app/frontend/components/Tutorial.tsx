@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import styles from "./Tutorial.module.css";
 import { assert } from "js-utils/lib/browser-utils";
 import { Center } from "../Center";
@@ -12,7 +12,7 @@ export interface TutorialStep {
    * those elements will be highlighted during this step */
   highlightedTutIds?: string[];
   corner?: "bottom-right" | "bottom-left";
-  showEarlyCloseButton?: boolean;
+  noCloseButton?: boolean;
 }
 
 export interface TutorialData {
@@ -37,6 +37,8 @@ export function Tutorial(props: Tutorial.Props) {
   const [open, setOpen] = useState(true);
   const [stepIndex, setStepIndex] = useState(0);
   const step = props.data.steps[stepIndex];
+
+  const onLastStep = stepIndex === props.data.steps.length - 1;
 
   useEffect(() => {
     if (!open)
@@ -71,6 +73,13 @@ export function Tutorial(props: Tutorial.Props) {
   
   const onCloseStep = stepIndex === props.data.steps.length - 1;
 
+  const onClose = () => {
+    setOpen(false);
+    props.onClose?.();
+  }
+
+  const nextButton = useRef<HTMLButtonElement>(null);
+
   return (
     <div {...classNames(styles.root, "center")}>
       <dialog className={styles.dialog} open={open}>
@@ -81,14 +90,24 @@ export function Tutorial(props: Tutorial.Props) {
             previous
           </button>
         )}
-        {step.showEarlyCloseButton && (
-          <button className={styles.earlyExitBtn} onClick={() => setOpen(false)}>
+        {!step.noCloseButton && !onLastStep && (
+          <button
+            className={styles.earlyExitBtn}
+            onClick={onClose}
+          >
             exit tutorial
           </button>
         )}
         <button
           className={styles.next}
-          onClick={() => onCloseStep ? setOpen(false) : setStepIndex(prev => prev + 1)}
+          onClick={() => {
+            if (onCloseStep) {
+              onClose();
+            } else {
+              setStepIndex(prev => prev + 1);
+              nextButton.current?.focus();
+            }
+          }}
         >
           {onCloseStep ? "exit tutorial" : "next"}
         </button>

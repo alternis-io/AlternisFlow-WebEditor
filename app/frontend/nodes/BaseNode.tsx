@@ -42,10 +42,11 @@ export const BaseNode = (props: BaseNode.Props) => {
         {children}
         {(showMoreContent || !noLabel) && 
           <Center
+            title="Click to toggle details"
             {...classNames(styles.entryNodeShowMoreIndicator, "hoverable")}
             onClick={() => setShowMore(prev => !prev)}
           >
-            <strong style={{ transform: "scale(2, 0.8)", display: "block", width: "100%", textAlign: "center" }}>
+            <strong style={{ /*transform: "scale(2, 0.8)",*/ display: "block", width: "100%", textAlign: "center" }}>
               <svg
                 viewBox="-5 -5 15 15"
                 height="15px" width="30px"

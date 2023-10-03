@@ -7,11 +7,11 @@ import * as jose from "jose";
 
 const authv1key = "authv1_tok";
 
-const DEFAULT_DEV_API_PORT = 4222;
+const DEFAULT_DEV_PORT = 4222;
 
 export const baseUrl = import.meta.env.PROD
   ? `https://${window.location.hostname}`
-  : `http://${window.location.hostname}:${DEFAULT_DEV_API_PORT}`;
+  : `http://${window.location.hostname}:${DEFAULT_DEV_PORT}`;
 
 export const apiBaseUrl = `${baseUrl}/api/v1`;
 

@@ -13,7 +13,7 @@ export const defaultCustomEventKey = "force-custom-contextmenu";
 
 /** raw context menu primitive, prefer @see ContextMenuOptions usually */
 export const ContextMenu = React.forwardRef<ContextMenu.Ref, ContextMenu.Props>(({
-  autoCloseDelay = 1_000,
+  autoCloseDelay = 500,
   children,
   mouseBinding = { button: 2 },
   onHide,

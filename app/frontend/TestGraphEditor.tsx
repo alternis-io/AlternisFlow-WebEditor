@@ -862,7 +862,7 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
         <ReactFlow
           nodes={nodes}
           edges={edges}
-          deleteKeyCode={["Backspace", "Delete", "x"]}
+          deleteKeyCode={["Backspace", "Delete"]}
           onNodesChange={(changes) => useAppState.setState(s => ({
             document: {
               ...s.document,

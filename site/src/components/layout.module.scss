@@ -22,9 +22,9 @@ main > * {
 
 :global(.full-size) {
   position: relative;
-  height: 50vh;
   width: 100vw;
   margin: 0.25in 0;
+  padding: 20px 0;
 }
 
 html, body {

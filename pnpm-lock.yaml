@@ -235,6 +235,10 @@ importers:
         version: 5.2.2
 
   site:
+    dependencies:
+      '@bentley/react-hooks':
+        specifier: ^1.2.0
+        version: 1.2.0(react@18.2.0)
     devDependencies:
       '@types/react':
         specifier: ^18.2.14
@@ -1781,7 +1785,6 @@ packages:
       react: ^16.13.0
     dependencies:
       react: 18.2.0
-    dev: true
 
   /@builder.io/partytown@0.7.6:
     resolution: {integrity: sha512-snXIGNiZpqjno3XYQN2lbBB+05hsQR/LSttbtIW1c0gmZ7Kh/DIo0YrxlDxCDulAMFPFM8J+4voLwvYepSj3sw==}

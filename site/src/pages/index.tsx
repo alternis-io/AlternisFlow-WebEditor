@@ -12,6 +12,7 @@ import { useOnNoLongerMouseInteracted } from "js-utils/lib/react-utils";
 const Homepage = () => {
   const [iframeInteractable, setIframeInteractable] = React.useState(false);
   const mouseInteract = useOnNoLongerMouseInteracted({
+    delayMs: 1500,
     onUninterested: () => setIframeInteractable(false),
   });
 
@@ -31,6 +32,10 @@ const Homepage = () => {
           setIframeInteractable(true);
         }}
         {...mouseInteract.props}
+        style={{
+          height: "50vh",
+          padding: 0,
+        }}
       >
         <iframe
           src={process.env.NODE_ENV === "development"

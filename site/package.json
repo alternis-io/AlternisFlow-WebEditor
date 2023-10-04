@@ -23,30 +23,32 @@
     "gatsby-plugin-image": "^3.12.0",
     "gatsby-plugin-manifest": "^5.12.0",
     "gatsby-plugin-offline": "^6.12.0",
+    "gatsby-plugin-pnpm": "^1.2.10",
     "gatsby-plugin-react-helmet": "^6.12.0",
+    "gatsby-plugin-sass": "^6.12.0",
     "gatsby-plugin-sharp": "^5.12.0",
+    "gatsby-plugin-typescript": "^5.12.0",
     "gatsby-remark-prismjs": "^7.12.0",
     "gatsby-source-filesystem": "^5.12.0",
-    "gatsby-transformer-sharp": "^5.12.0",
-    "gatsby-plugin-pnpm": "^1.2.10",
-    "gatsby-plugin-sass": "^6.12.0",
-    "gatsby-plugin-typescript": "^5.12.0",
     "gatsby-transformer-remark": "^6.12.0",
+    "gatsby-transformer-sharp": "^5.12.0",
     "html-loader": "^0.5.5",
     "image-webpack-loader": "^6.0.0",
-    "prismjs": "^1.29.0",
     "js-utils": "workspace:*",
+    "markdown-loader": "^5.1.0",
+    "prettier": "^1.19.1",
+    "prismjs": "^1.29.0",
     "prop-types": "^15.8.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-helmet": "^5.2.1",
     "sass": "^1.67.0",
-    "markdown-loader": "^5.1.0",
-    "prettier": "^1.19.1",
     "url-loader": "^3.0.0"
   },
   "//": [
     "everything is bundled, no prod deps"
   ],
-  "dependencies": {}
+  "dependencies": {
+    "@bentley/react-hooks": "^1.2.0"
+  }
 }

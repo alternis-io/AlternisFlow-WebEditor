@@ -1,0 +1,3 @@
+[submodule "external-repos/alternis-dialogue-engine"]
+	path = external-repos/alternis-dialogue-engine
+	url = https://github.com/MichaelBelousov/alternis-dialogue-engine.git

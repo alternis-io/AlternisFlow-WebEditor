@@ -48,10 +48,10 @@ export function Ide(_props: Ide.Props) {
         : "calc(100vh - var(--header-height))"
     }}>
       <ProjectDataEditor />
-      {/*<DialogueViewer />*/}
       <span {...classNames(styles.graphEditor, "propagate-size")}>
         <TestGraphEditor />
       </span>
+      <DialogueViewer />
     </div>
   );
 }

@@ -656,7 +656,9 @@ const nodeTypes = {
   default: UnknownNode,
 };
 
-const nodeTypeNames: Record<keyof typeof nodeTypes, string> = {
+export type NodeTypes = keyof typeof nodeTypes;
+
+const nodeTypeNames: Record<NodeTypes, string> = {
   dialogueEntry: "Line",
   randomSwitch: "Random",
   playerReplies: "Player Replies",

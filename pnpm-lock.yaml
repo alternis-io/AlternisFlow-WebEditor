@@ -123,6 +123,9 @@ importers:
 
   app/frontend:
     dependencies:
+      alternis-js:
+        specifier: workspace:^
+        version: link:../../external-repos/alternis-dialogue-engine/js
       jose:
         specifier: ^4.14.6
         version: 4.14.6

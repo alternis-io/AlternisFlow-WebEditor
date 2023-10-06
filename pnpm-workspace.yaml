@@ -4,3 +4,5 @@ packages:
   - app/common
   - site
   - js-utils
+  - external-repos/alternis-dialogue-engine/lib
+  - external-repos/alternis-dialogue-engine/js

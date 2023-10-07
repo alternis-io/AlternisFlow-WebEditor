@@ -6,6 +6,7 @@ import { resetAllAppState, useAppState } from "../AppState";
 import downloadFile, { uploadFile } from "../localFileManip";
 import { baseUrl, useApi } from "../hooks/useApi";
 import logoPath from "../../../resources/logo2.png";
+import { exportToJson } from "../export";
 
 export function Header() {
   const logout = useApi(s => s.api.logout);
@@ -52,11 +53,22 @@ export function Header() {
           <button>Projects</button>
         </Link>
         <button
-          data-tut-id="export-button"
+          data-tut-id="export-dev-state-button"
           onClick={() => {
             downloadFile({
               fileName: 'doc.name.json',
               content: JSON.stringify(useAppState.getState().document, undefined, "  "),
+            });
+          }}
+        >
+          Dev State
+        </button>
+        <button
+          data-tut-id="export-button"
+          onClick={() => {
+            downloadFile({
+              fileName: 'doc.alternis.json',
+              content: JSON.stringify(exportToJson(useAppState.getState().document), undefined, "  "),
             });
           }}
         >

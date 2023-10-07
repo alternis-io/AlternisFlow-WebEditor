@@ -10,9 +10,24 @@ export function exportToJson(doc: AppState["document"]) {
   const nodes: any[] = [];
 
   const perNodeOutputs = new Map<number, number[]>();
+  const nodeIdToIndexMap = new Map(doc.nodes.map((n, i) => [+n.id, i]));
+  const remapNodeId = (nodeId: string | number): number => {
+    if (typeof nodeId === "string") {
+      const id = +nodeId;
+      assert(!Number.isNaN(id), `invalid node id: '${nodeId}'`);
+      nodeId = id;
+    }
+    return nodeIdToIndexMap.get(nodeId) ?? assert(false, "unknown node id") as never;
+  };
 
   for (const edge of doc.edges) {
-    assert(edge.sourceHandle && edge.targetHandle, "handle ids are invalid!");
+    if (!edge.sourceHandle || !edge.targetHandle) {
+      perNodeOutputs.set(
+        remapNodeId(edge.source),
+        [remapNodeId(edge.target)],
+      );
+      continue;
+    }
 
     const [startNodeId, startHandleType, startHandleIndex] = edge.sourceHandle.split("_");
     const [endNodeId, _endHandleType, endHandleIndex] = edge.targetHandle.split("_");
@@ -34,29 +49,27 @@ export function exportToJson(doc: AppState["document"]) {
     let nodeOutputs = perNodeOutputs.get(sourceNodeId);
     if (nodeOutputs === undefined) {
       nodeOutputs = [];
-      perNodeOutputs.set(sourceNodeId, nodeOutputs);
+      perNodeOutputs.set(remapNodeId(sourceNodeId), nodeOutputs);
     }
 
-    nodeOutputs[sourceHandleIndex] = targetNodeId;
+    nodeOutputs[sourceHandleIndex] = remapNodeId(targetNodeId);
   }
 
   for (const node of doc.nodes) {
-    const id = +node.id;
-    assert(!Number.isNaN(id), `node id '${node.id}' not an integer`);
     const type = node.type as NodeTypes;
-    const nexts = perNodeOutputs.get(id);
+    const nexts = perNodeOutputs.get(remapNodeId(node.id));
     const next = nexts?.[0];
 
-    // FIXME: type this stuff
+    // FIXME: better types
     const exportedNode: Record<string, any> = {
-      id: +node.id,
+      id: remapNodeId(node.id),
     };
 
     if (type === "dialogueEntry") {
       const data = node.data as DialogueEntry;
       exportedNode.line = {
         data: {
-          speaker: doc.participants[data.speakerIndex],
+          speaker: doc.participants[data.speakerIndex].name,
           text: data.text,
           metadata: data.customData,
         },
@@ -99,14 +112,16 @@ export function exportToJson(doc: AppState["document"]) {
     }
 
     else if (type === "entry") {
-      entryId = id;
+      entryId = next;
       continue; // skip push
     }
 
+    // FIXME: remove reroutes
     else if (type === "reroute") {
       continue; // skip push
     }
 
+    // FIXME: support this
     else if (type === "goto") {
       continue; // skip push
     }

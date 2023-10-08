@@ -55,11 +55,12 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
   );
   const set = makeNodeDataSetter<DialogueEntry>(props.id);
 
-  // focus on first mount (FIXME: how does this react to document opening?)
   const textInput = React.useRef<HTMLTextAreaElement>(null);
-  React.useEffect(() => {
-    textInput.current?.focus();
-  }, []);
+
+  // FIXME: focusing while loading reactflow seems to cause unalignment of the renderer
+  // React.useEffect(() => {
+  //   textInput.current?.focus();
+  // }, []);
 
   return !data ? null : (
     <BaseNode
@@ -460,15 +461,16 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
 
   const nodeBodyRef = React.useRef<HTMLDivElement>(null);
 
-  React.useEffect(() => {
-    // FIXME: reenable
-    const nodeBody = nodeBodyRef.current;
-    if (!nodeBody) return;
+  // FIXME: focusing while loading reactflow seems to cause unalignment of the renderer
+  // React.useEffect(() => {
+  //   // FIXME: reenable
+  //   const nodeBody = nodeBodyRef.current;
+  //   if (!nodeBody) return;
 
-    const firstInput = nodeBody.querySelector("input");
-    if (!firstInput) return;
-    firstInput.focus();
-  }, [data?.replies.length]);
+  //   const firstInput = nodeBody.querySelector("input");
+  //   if (!firstInput) return;
+  //   firstInput.focus();
+  // }, [data?.replies.length]);
 
   return !data ? null : (
     <BaseNode
@@ -798,15 +800,6 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
   const graphContainerElem = React.useRef<HTMLDivElement>(null);
 
   useReactFlowClipboard({ graphContainerElem });
-
-  // FIXME: (unnecessarily) mitigate bad sizing that react-flow hates
-  useLayoutEffect(() => {
-    const reactFlowRenderer = document.querySelector(".react-flow") as HTMLDivElement | null;
-    if (reactFlowRenderer === null) return;
-    reactFlowRenderer.style.position = "initial";
-    //reactFlowRenderer.style.position = "absolute";
-    setTimeout(() => (reactFlowRenderer.style.position = "relative"), 15);
-  }, []);
 
   const editorRef = React.useRef<HTMLDivElement>(null);
 

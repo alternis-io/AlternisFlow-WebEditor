@@ -6,16 +6,17 @@ import { exportToJson } from "./export";
 import { useAsyncEffect } from "@bentley/react-hooks";
 import { useWithPrevDepsEffect } from "./hooks/usePrevValue";
 
-export function DialogueViewer(props: DialogueViewer.Props) {
-  const doc = useAppState(s => s.document);
+// FIXME: use a worker
+//const alternisWorker = new Worker("", {});
 
+function useDialogueContext(json: string) {
   const [dialogueCtx, setDialogueCtx] = useState<DialogueContext>();
 
-  // FIXME: it would be much more efficient to expose an API for dynamically modifying stuff...
-  // FIXME: avoid running this expensive calculation on simple state changes like node movement
-  const json = useMemo(() => JSON.stringify(exportToJson(doc)), [doc]);
+  //alternisWorker.postMessage(dialogueCtx);
+
 
   useAsyncEffect(async ({ isStale }) => {
+    // FIXME: use this in a worker
     const ctx = await makeDialogueContext(json);
     if (!isStale())
       setDialogueCtx(ctx);
@@ -28,16 +29,23 @@ export function DialogueViewer(props: DialogueViewer.Props) {
     }
   }, [dialogueCtx])
 
+  return dialogueCtx;
+}
+
+export function DialogueViewer(_props: DialogueViewer.Props) {
+  const doc = useAppState(s => s.document);
+
+  // FIXME: it would be much more efficient to expose an API for dynamically modifying stuff...
+  // FIXME: avoid running this expensive calculation on simple state changes like node movement
+  const json = useMemo(() => JSON.stringify(exportToJson(doc)), [doc]);
+
+  const dialogueCtx = useDialogueContext(json);
+
   const [currentStep, setCurrentStep] = useState<DialogueContext.StepResult>();
 
   return (
     <div className={styles.textEditor}>
-      {currentStep && "line" in currentStep ? (
-        <div>
-          <div>speaker: <span>{currentStep.line.speaker}</span></div>
-          <div>text: <span>{currentStep.line.text}</span></div>
-        </div>
-      ) : currentStep && "options" in currentStep ? (
+      {currentStep && "options" in currentStep ? (
         <div>
           {currentStep.options.map((o, i) => (
             <button key={i} onClick={() => dialogueCtx?.reply(i)}>
@@ -45,12 +53,24 @@ export function DialogueViewer(props: DialogueViewer.Props) {
             </button>
           ))}
         </div>
-      ) : currentStep && "none" in currentStep ? (
+      ) : currentStep && "none" in currentStep  ? (
         <div>dialogue ended</div>
       ) : (
         <div>
-          dialogue not started
-          <button onClick={() => dialogueCtx?.step()}>
+          { currentStep && "line" in currentStep ? (
+            <div>
+              <div>speaker: <span>{currentStep.line.speaker}</span></div>
+              <div>text: <span>{currentStep.line.text}</span></div>
+            </div>
+          ) : (
+            <div>
+              Dialogue not started
+            </div>
+          )}
+          <button onClick={() => {
+            if (dialogueCtx)
+              setCurrentStep(dialogueCtx.step());
+          }}>
             step
           </button>
         </div>

@@ -353,7 +353,7 @@ const RandomSwitchNode = (props: NodeProps<RandomSwitch>) => {
       />
       <div className={styles.randomSwitchBody} ref={nodeBodyRef}>
         <Center>
-          <strong style={{fontSize: "2rem"}}>?</strong>
+          <strong style={{ fontSize: "2rem" }}>?</strong>
         </Center>
         {data.proportions.map((proportion, index) => (
           <RandomSwitchInput

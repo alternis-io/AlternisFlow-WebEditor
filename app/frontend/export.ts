@@ -1,37 +1,15 @@
 import { assert } from "js-utils/lib/browser-utils";
 import { AppState } from "./AppState";
 import type { NodeTypes } from "./TestGraphEditor";
-import { DialogueEntry, PlayerReplies, RandomSwitch, Lock, Emit, Goto } from "./nodes/data";
-
+import { DialogueEntry, PlayerReplies, RandomSwitch, Lock, Emit, Goto, BaseNodeData } from "./nodes/data";
+import { Node } from "reactflow";
 
 /** export to the external format */
 export function exportToJson(doc: AppState["document"]) {
-  let entryId: number | undefined;
   const nodes: any[] = [];
 
-  const perNodeOutputs = new Map<number, number[]>();
-
-  // FIXME: make entryIndex static (0)
-  const entryIndex = doc.nodes.findIndex(n => n.type as NodeTypes === "entry");
-  // FIXME: would be nice to not rebuild this map every export...
-  // FIXME: test this!
-  const nodeIdToIndexMap = new Map(doc.nodes
-    //.filter(n => (n.type as NodeTypes) !== "goto")
-    .map((n, i) => [
-      +n.id,
-      entryIndex !== -1 && i >= entryIndex
-        ? i - 1
-        : i
-    ]));
-
-  const remapNodeId = (nodeId: string | number): number => {
-    if (typeof nodeId === "string") {
-      const id = +nodeId;
-      assert(!Number.isNaN(id), `invalid node id: '${nodeId}'`);
-      nodeId = id;
-    }
-    return nodeIdToIndexMap.get(nodeId) ?? assert(false, `unknown node id: '${nodeId}'`) as never;
-  };
+  const nodeByIdMap = new Map(doc.nodes.map(n => [n.id, n]));
+  const nodeOutputsMap = new Map<string, string[]>();
 
   for (const edge of doc.edges) {
     assert(edge.sourceHandle && edge.targetHandle);
@@ -40,12 +18,11 @@ export function exportToJson(doc: AppState["document"]) {
     const [endNodeId, _endHandleType, endHandleIndex] = edge.targetHandle.split("_");
     const isReverseEdge = startHandleType === "target";
 
-    const [sourceNodeId, targetNodeRawId, sourceHandleIndex]
+    const [sourceNodeId, targetNodeId, sourceHandleIndex]
       = isReverseEdge
-      ? [+endNodeId, startNodeId, +endHandleIndex]
-      : [+startNodeId, endNodeId, +startHandleIndex]
+      ? [endNodeId, startNodeId, +endHandleIndex]
+      : [startNodeId, endNodeId, +startHandleIndex]
     ;
-    const targetNodeId = +targetNodeRawId;
 
     assert(
       !Number.isNaN(sourceNodeId)
@@ -54,108 +31,190 @@ export function exportToJson(doc: AppState["document"]) {
       "invalid connection found"
     );
 
-    let nodeOutputs = perNodeOutputs.get(remapNodeId(sourceNodeId));
+    let nodeOutputs = nodeOutputsMap.get(sourceNodeId);
     if (nodeOutputs === undefined) {
       nodeOutputs = [];
-      perNodeOutputs.set(remapNodeId(sourceNodeId), nodeOutputs);
+      nodeOutputsMap.set(sourceNodeId, nodeOutputs);
     }
-
-    // is this worth caching?
-    const targetNode = doc.nodes.find(n => n.id === targetNodeRawId);
-    assert(targetNode, `couldn't find target node for edge '${edge.id}'`)
-
-    const nextRawId = targetNode.type === "goto"
-      ? doc.nodes.find(n => n.data?.label && n.data.label === (targetNode.data as Goto).target)?.id
-      : targetNodeId;
-
-    assert(nextRawId, `invalid raw next id, probably a bad goto label: '${
-      (targetNode.data as Goto).target
-    }'`);
-
-    const nextId = +nextRawId;
-    assert(!Number.isNaN(nextId), "invalid next id");
-
-    nodeOutputs[sourceHandleIndex] = remapNodeId(nextId);
+    nodeOutputs[sourceHandleIndex] = targetNodeId;
   }
 
-  for (const node of doc.nodes) {
+  // NOTE: can probably skip this...
+  const entry = doc.nodes.find(n => n.type as NodeTypes === "entry");
+  assert(entry);
+
+  const localToExportedIdMap = new Map<string, number>();
+  const remapNodeId = (nodeId: string) => {
+    let mapped = localToExportedIdMap.get(nodeId);
+    if (mapped === undefined) {
+      mapped = localToExportedIdMap.size;
+      localToExportedIdMap.set(nodeId, mapped);
+    }
+    return mapped;
+  };
+
+  function getAndRemapNodeAsNext(nodeId: string | undefined) {
+    if (nodeId === undefined) return undefined;
+
+    const node = nodeByIdMap.get(nodeId);
+    assert(node, "bad node id");
+
+    const nextId = node.type as NodeTypes === "goto"
+      ? doc.nodes
+        .find(n => n.data?.label && n.data.label === (node.data as Goto).target)?.id
+      : nodeId;
+    assert(nextId, `invalid raw next id, probably a bad goto label: '${(node.data as Goto).target}'`);
+
+    return remapNodeId(nextId);
+  }
+
+  const nodeHandlers: {
+    [K in NodeTypes]?: {
+      data?(
+        node: Node<BaseNodeData>,
+        ctx: { outputs: string[], pushNode: (patch: any) => void }
+      ): void,
+      visit?(ctx: { outputs: string[] }): void,
+    }
+  } = {
+    entry: {
+      visit(ctx) {
+        const node = nodeByIdMap.get(ctx.outputs[0]);
+        if (node) visit(node);
+      }
+    },
+
+    dialogueEntry: {
+      data(node, ctx) {
+        const data = node.data as DialogueEntry;
+        const next = getAndRemapNodeAsNext(ctx.outputs[0]);
+        ctx.pushNode({
+          line: {
+            data: {
+              speaker: doc.participants[data.speakerIndex].name,
+              text: data.text,
+              metadata: data.customData,
+            },
+            next,
+          },
+        });
+      },
+      visit(ctx) {
+        const node = nodeByIdMap.get(ctx.outputs[0]);
+        if (node) visit(node);
+      },
+    },
+
+    randomSwitch: {
+      data(node, ctx) {
+        const data = node.data as RandomSwitch;
+        const nexts = ctx.outputs.map(getAndRemapNodeAsNext);
+        ctx.pushNode({
+          random_switch: {
+            nexts,
+            chances: data.proportions,
+          },
+        });
+      },
+      visit(ctx) {
+        for (const out of ctx.outputs) {
+          const node = nodeByIdMap.get(out);
+          if (node) visit(node);
+        }
+      },
+    },
+
+    playerReplies: {
+      data(node, ctx) {
+        const data = node.data as PlayerReplies;
+        const nexts = ctx.outputs.map(getAndRemapNodeAsNext);
+        ctx.pushNode({
+          reply: {
+            nexts,
+            texts: data.replies.map(r => r.text),
+          },
+        });
+      },
+      visit(ctx) {
+        for (const out of ctx.outputs) {
+          const node = nodeByIdMap.get(out);
+          if (node) visit(node);
+        }
+      },
+    },
+
+    lockNode: {
+      data(node, ctx) {
+        const next = getAndRemapNodeAsNext(ctx.outputs[0]);
+        const data = node.data as Lock;
+        ctx.pushNode({
+          [data.action]: {
+            // FIXME: not supported yet
+            booleanVariableIndex: 0,
+            next,
+          },
+        });
+      },
+      visit(ctx) {
+        const node = nodeByIdMap.get(ctx.outputs[0]);
+        if (node) visit(node);
+      },
+    },
+
+    emitNode: {
+      data(node, ctx) {
+        const next = getAndRemapNodeAsNext(ctx.outputs[0]);
+        const data = node.data as Emit;
+        ctx.pushNode({
+          call: {
+            // FIXME: not supported yet
+            functionIndex: 0,
+            next,
+          },
+        });
+      },
+      visit(ctx) {
+        const node = nodeByIdMap.get(ctx.outputs[0]);
+        if (node) visit(node);
+      },
+    },
+
+    goto: {
+      data() {},
+      visit() {}
+    },
+  };
+
+  const alreadyVisited = new Set();
+  function visit(node: Node<BaseNodeData>) {
+    if (alreadyVisited.has(node))
+      return;
+    const id = remapNodeId(node.id);
+
     const type = node.type as NodeTypes;
-    const nexts = perNodeOutputs.get(remapNodeId(node.id));
+    const outputs = nodeOutputsMap.get(node.id) ?? [];
+    const nexts = outputs.map(remapNodeId);
     const next = nexts?.[0];
 
     // FIXME: better types
-    const exportedNode: Record<string, any> = {
-      id: remapNodeId(node.id),
-    };
+    const exportedNode: Record<string, any> = { id };
+    const pushNode = (patch: any) => nodes.push({ ...exportedNode, patch });
 
-    if (type === "dialogueEntry") {
-      const data = node.data as DialogueEntry;
-      exportedNode.line = {
-        data: {
-          speaker: doc.participants[data.speakerIndex].name,
-          text: data.text,
-          metadata: data.customData,
-        },
-        next,
-      };
-    }
-
-    else if (type === "randomSwitch") {
-      const data = node.data as RandomSwitch;
-      exportedNode.random_switch = {
-        nexts,
-        chances: data.proportions,
-      };
-    }
-
-    else if (type === "playerReplies") {
-      const data = node.data as PlayerReplies;
-      exportedNode.reply = {
-        nexts,
-        texts: data.replies.map(r => r.text),
-      };
-    }
-
-    else if (type === "lockNode") {
-      const data = node.data as Lock;
-      exportedNode[data.action] = {
-        // FIXME: not supported yet
-        booleanVariableIndex: 0,
-        next,
-      };
-    }
-
-    else if (type === "emitNode") {
-      const data = node.data as Emit;
-      exportedNode.call = {
-        // FIXME: not supported yet
-        functionIndex: 0,
-        next,
-      };
-    }
-
-    else if (type === "entry") {
-      entryId = next;
-      continue; // skip push
-    }
-
-    // FIXME: support this
-    else if (type === "goto") {
-      continue; // skip push
-    }
-
-    else {
+    if (node.type !== undefined && ((node.type in nodeHandlers) || node.type === "entry")) {
+      const handler = nodeHandlers[node.type as NodeTypes];
+      handler?.data?.(node, { outputs, pushNode });
+      handler?.visit?.({ outputs });
+    } else {
       assert(false, `unknown node type: ${type}`);
     }
-
-    nodes[exportedNode.id] = exportedNode;
   }
 
-  assert(entryId !== undefined);
+  visit(entry);
 
   return {
     version: 1,
-    entryId,
+    entryId: 0,
     nodes,
   };
 }
+

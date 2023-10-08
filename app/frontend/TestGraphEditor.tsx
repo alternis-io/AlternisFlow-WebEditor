@@ -622,30 +622,6 @@ const EntryNode = (props: NodeProps<{}>) => {
   );
 };
 
-const RerouteNode = (props: NodeProps<{}>) => {
-  return (
-    <BaseNode
-      id={props.id}
-      title="The 'Reroute' node helps you organize curvier dialogues with cycles"
-      // FIXME: not very usable
-      style={{ height: 5, width: 5 }}
-      noLabel
-    >
-      <NodeHandle
-        id={props.id}
-        index={0}
-        style={{
-          top: 15,
-          left: 1,
-        }}
-        position={Position.Right}
-        className={styles.handle}
-        isConnectable
-      />
-    </BaseNode>
-  );
-};
-
 const nodeTypes = {
   //FIXME: rename to dialogue line?
   dialogueEntry: DialogueEntryNode,
@@ -654,7 +630,6 @@ const nodeTypes = {
   lockNode: LockNode,
   emitNode: EmitNode,
   entry: EntryNode,
-  //reroute: RerouteNode,
   goto: GotoNode,
   default: UnknownNode,
 };
@@ -668,7 +643,6 @@ const nodeTypeNames: Record<NodeTypes, string> = {
   lockNode: "Lock",
   emitNode: "Emit",
   entry: "Entry",
-  //reroute: "Reroute",
   goto: "Goto",
   default: "Unknown",
 };
@@ -690,10 +664,6 @@ const CustomEdge = (props: EdgeProps) => {
   const sourceNode = nodes.find(n => n.id === props.source);
   const targetNode = nodes.find(n => n.id === props.target);
 
-  if (sourceNode?.type === "reroute" || targetNode?.type === "reroute") {
-    return <RerouteEdge {...props} />;
-  }
-
   return <BaseEdge
     interactionWidth={20}
     path={edgePath}
@@ -704,15 +674,6 @@ const CustomEdge = (props: EdgeProps) => {
     markerStart={MarkerType.ArrowClosed}
     markerEnd={MarkerType.ArrowClosed}
   />;
-}
-
-// FIXME: completely broken, just need to detect if the node
-function RerouteEdge(props: EdgeProps) {
-  const { sourceX, sourceY, targetX, targetY, id, markerEnd } = props;
-  const xDir = targetX < sourceX ? -1 : 1;
-  const edgePath = `M ${sourceX - 5} ${sourceY} C ${sourceX + xDir * 100} ${sourceY} ${targetX - xDir * 100} ${targetY} ${targetX} ${targetY}`;
-
-  return <BaseEdge {...props} path={edgePath} markerEnd={markerEnd} />;
 }
 
 const edgeTypes = {
@@ -894,13 +855,10 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
           isValidConnection={(connection) => {
             const source = nodes.find(n => n.id === connection.source);
             const target = nodes.find(n => n.id === connection.target);
-            if (source?.type === "reroute" || target?.type === "reroute")
-              // FIXME: go through reroute nodes
-              return true;
             const sourceType = connection.sourceHandle?.includes("source") ? "source" : "target";
             const targetType = connection.targetHandle?.includes("source") ? "source" : "target";
             if (!source || !target || !sourceType || !targetType) return true;
-            return sourceType !== targetType;
+            return sourceType !== targetType && source !== target;
           }}
           connectionRadius={25}
           connectOnClick

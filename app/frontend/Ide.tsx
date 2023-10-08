@@ -45,7 +45,8 @@ export function Ide(_props: Ide.Props) {
     <div className={styles.split} style={{
       height: noHeaderRequested
         ? "100vh"
-        : "calc(100vh - var(--header-height))"
+        : "calc(100vh - var(--header-height))",
+      width: "100vw",
     }}>
       <ProjectDataEditor />
       <span {...classNames(styles.graphEditor, "propagate-size")}>

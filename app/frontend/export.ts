@@ -1,7 +1,7 @@
 import { assert } from "js-utils/lib/browser-utils";
 import { AppState } from "./AppState";
 import type { NodeTypes } from "./TestGraphEditor";
-import { DialogueEntry, PlayerReplies, RandomSwitch, Lock, Emit } from "./nodes/data";
+import { DialogueEntry, PlayerReplies, RandomSwitch, Lock, Emit, Goto } from "./nodes/data";
 
 
 /** export to the external format */
@@ -10,34 +10,42 @@ export function exportToJson(doc: AppState["document"]) {
   const nodes: any[] = [];
 
   const perNodeOutputs = new Map<number, number[]>();
-  const nodeIdToIndexMap = new Map(doc.nodes.map((n, i) => [+n.id, i]));
+
+  // FIXME: make entryIndex static (0)
+  const entryIndex = doc.nodes.findIndex(n => n.type as NodeTypes === "entry");
+  // FIXME: would be nice to not rebuild this map every export...
+  // FIXME: test this!
+  const nodeIdToIndexMap = new Map(doc.nodes
+    //.filter(n => (n.type as NodeTypes) !== "goto")
+    .map((n, i) => [
+      +n.id,
+      entryIndex !== -1 && i >= entryIndex
+        ? i - 1
+        : i
+    ]));
+
   const remapNodeId = (nodeId: string | number): number => {
     if (typeof nodeId === "string") {
       const id = +nodeId;
       assert(!Number.isNaN(id), `invalid node id: '${nodeId}'`);
       nodeId = id;
     }
-    return nodeIdToIndexMap.get(nodeId) ?? assert(false, "unknown node id") as never;
+    return nodeIdToIndexMap.get(nodeId) ?? assert(false, `unknown node id: '${nodeId}'`) as never;
   };
 
   for (const edge of doc.edges) {
-    if (!edge.sourceHandle || !edge.targetHandle) {
-      perNodeOutputs.set(
-        remapNodeId(edge.source),
-        [remapNodeId(edge.target)],
-      );
-      continue;
-    }
+    assert(edge.sourceHandle && edge.targetHandle);
 
     const [startNodeId, startHandleType, startHandleIndex] = edge.sourceHandle.split("_");
     const [endNodeId, _endHandleType, endHandleIndex] = edge.targetHandle.split("_");
     const isReverseEdge = startHandleType === "target";
 
-    const [sourceNodeId, targetNodeId, sourceHandleIndex]
+    const [sourceNodeId, targetNodeRawId, sourceHandleIndex]
       = isReverseEdge
-      ? [+endNodeId, +startNodeId, +endHandleIndex]
-      : [+startNodeId, +endNodeId, +startHandleIndex]
+      ? [+endNodeId, startNodeId, +endHandleIndex]
+      : [+startNodeId, endNodeId, +startHandleIndex]
     ;
+    const targetNodeId = +targetNodeRawId;
 
     assert(
       !Number.isNaN(sourceNodeId)
@@ -46,13 +54,28 @@ export function exportToJson(doc: AppState["document"]) {
       "invalid connection found"
     );
 
-    let nodeOutputs = perNodeOutputs.get(sourceNodeId);
+    let nodeOutputs = perNodeOutputs.get(remapNodeId(sourceNodeId));
     if (nodeOutputs === undefined) {
       nodeOutputs = [];
       perNodeOutputs.set(remapNodeId(sourceNodeId), nodeOutputs);
     }
 
-    nodeOutputs[sourceHandleIndex] = remapNodeId(targetNodeId);
+    // is this worth caching?
+    const targetNode = doc.nodes.find(n => n.id === targetNodeRawId);
+    assert(targetNode, `couldn't find target node for edge '${edge.id}'`)
+
+    const nextRawId = targetNode.type === "goto"
+      ? doc.nodes.find(n => n.data?.label && n.data.label === (targetNode.data as Goto).target)?.id
+      : targetNodeId;
+
+    assert(nextRawId, `invalid raw next id, probably a bad goto label: '${
+      (targetNode.data as Goto).target
+    }'`);
+
+    const nextId = +nextRawId;
+    assert(!Number.isNaN(nextId), "invalid next id");
+
+    nodeOutputs[sourceHandleIndex] = remapNodeId(nextId);
   }
 
   for (const node of doc.nodes) {
@@ -116,11 +139,6 @@ export function exportToJson(doc: AppState["document"]) {
       continue; // skip push
     }
 
-    // FIXME: remove reroutes
-    else if (type === "reroute") {
-      continue; // skip push
-    }
-
     // FIXME: support this
     else if (type === "goto") {
       continue; // skip push
@@ -130,14 +148,14 @@ export function exportToJson(doc: AppState["document"]) {
       assert(false, `unknown node type: ${type}`);
     }
 
-    nodes.push(exportedNode);
+    nodes[exportedNode.id] = exportedNode;
   }
 
-  assert(entryId);
+  assert(entryId !== undefined);
 
   return {
     version: 1,
     entryId,
     nodes,
-  }
+  };
 }

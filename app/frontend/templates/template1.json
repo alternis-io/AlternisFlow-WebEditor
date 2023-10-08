@@ -125,7 +125,7 @@
         "y": 30
       },
       "width": 375,
-      "height": 186,
+      "height": 164,
       "selected": false,
       "positionAbsolute": {
         "x": 1920,
@@ -136,7 +136,9 @@
     {
       "id": "7",
       "type": "goto",
-      "data": {},
+      "data": {
+        "target": "name-replies"
+      },
       "position": {
         "x": 3060,
         "y": 30
@@ -200,8 +202,8 @@
         "x": 2685,
         "y": -210
       },
-      "width": 216,
-      "height": 171,
+      "width": 207,
+      "height": 151,
       "selected": false,
       "positionAbsolute": {
         "x": 2685,
@@ -277,31 +279,11 @@
       "selected": false
     },
     {
-      "id": "1",
-      "source": "2",
-      "target": "3",
-      "selected": false
-    },
-    {
-      "source": "3",
-      "sourceHandle": "3_source_0",
-      "target": "4",
-      "targetHandle": "4_target_0",
-      "id": "reactflow__edge-33_source_0-44_target_0",
-      "selected": false
-    },
-    {
       "source": "3",
       "sourceHandle": "3_source_1",
       "target": "5",
       "targetHandle": "5_target_0",
       "id": "reactflow__edge-33_source_1-55_target_0",
-      "selected": false
-    },
-    {
-      "id": "3",
-      "source": "6",
-      "target": "8",
       "selected": false
     },
     {
@@ -370,6 +352,27 @@
       "targetHandle": "6_target_0",
       "id": "reactflow__edge-1313_source_0-66_target_0",
       "selected": false
+    },
+    {
+      "source": "3",
+      "sourceHandle": "3_source_0",
+      "target": "4",
+      "targetHandle": "4_target_0",
+      "id": "reactflow__edge-33_source_0-44_target_0"
+    },
+    {
+      "source": "6",
+      "sourceHandle": "6_source_0",
+      "target": "8",
+      "targetHandle": "8_target_0",
+      "id": "reactflow__edge-66_source_0-88_target_0"
+    },
+    {
+      "source": "2",
+      "sourceHandle": "2_source_0",
+      "target": "3",
+      "targetHandle": "3_target_0",
+      "id": "reactflow__edge-22_source_0-33_target_0"
     }
   ],
   "participants": [

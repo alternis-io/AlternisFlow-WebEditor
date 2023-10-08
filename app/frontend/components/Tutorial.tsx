@@ -82,6 +82,7 @@ export function Tutorial(props: Tutorial.Props) {
 
   return (
     <div {...classNames(styles.root, "center")}>
+      {/* FIXME: can reactflow Panel component */}
       <dialog className={styles.dialog} open={open}>
         {stepIndex === 0 && <Center><h3>{props.data.name}</h3></Center>}
         <Center>{step.body}</Center>

@@ -32,7 +32,7 @@ function ResettingErrorBoundary(props: React.PropsWithChildren<{}>) {
           resetAllAppState();
           navigate(".", { replace: true });
         }}>
-          Reset local state and reload
+          <strong>delete</strong> local state and reload
         </button>
 
         <br />

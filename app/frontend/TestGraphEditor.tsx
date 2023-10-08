@@ -20,6 +20,7 @@ import ReactFlow, {
   useNodes,
   useUpdateNodeInternals,
   Position,
+  BackgroundVariant,
 } from 'reactflow'
 import 'reactflow/dist/base.css'
 import styles from './TestGraphEditor.module.css'
@@ -651,7 +652,7 @@ const nodeTypes = {
   lockNode: LockNode,
   emitNode: EmitNode,
   entry: EntryNode,
-  reroute: RerouteNode,
+  //reroute: RerouteNode,
   goto: GotoNode,
   default: UnknownNode,
 };
@@ -665,7 +666,7 @@ const nodeTypeNames: Record<NodeTypes, string> = {
   lockNode: "Lock",
   emitNode: "Emit",
   entry: "Entry",
-  reroute: "Reroute",
+  //reroute: "Reroute",
   goto: "Goto",
   default: "Unknown",
 };
@@ -803,7 +804,7 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
     const reactFlowRenderer = document.querySelector(".react-flow") as HTMLDivElement | null;
     if (reactFlowRenderer === null) return;
     reactFlowRenderer.style.position = "initial";
-    //reactFlowRenderer.style.position = "relative";
+    //reactFlowRenderer.style.position = "absolute";
     setTimeout(() => (reactFlowRenderer.style.position = "relative"), 15);
   }, []);
 
@@ -976,6 +977,7 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
           <MiniMap
             zoomable pannable
             color="var(--fg-1)"
+            // FIXME: node color should be  a function that returns based on types...
             maskColor="#2d2d2dcc" // FIXME: reference var(--bg-1)
             style={{
               backgroundColor: "var(--bg-2)",

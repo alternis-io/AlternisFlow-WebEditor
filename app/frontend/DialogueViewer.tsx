@@ -11,13 +11,15 @@ export function DialogueViewer(props: DialogueViewer.Props) {
 
   const [dialogueCtx, setDialogueCtx] = useState<DialogueContext>();
 
+  // FIXME: it would be much more efficient to expose an API for dynamically modifying stuff...
+  // FIXME: avoid running this expensive calculation on simple state changes like node movement
+  const json = useMemo(() => JSON.stringify(exportToJson(doc)), [doc]);
+
   useAsyncEffect(async ({ isStale }) => {
-    // FIXME: it would be much more efficient to expose an API for dynamically modifying stuff...
-    const json = JSON.stringify(exportToJson(doc));
     const ctx = await makeDialogueContext(json);
     if (!isStale())
       setDialogueCtx(ctx);
-  }, [doc]);
+  }, [json]);
 
   // FIXME: workaround useAsyncEffect not having cleanup
   useWithPrevDepsEffect(([prevCtx]) => {

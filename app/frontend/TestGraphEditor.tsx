@@ -315,6 +315,24 @@ const RandomSwitchNode = (props: NodeProps<RandomSwitch>) => {
   const set = makeNodeDataSetter<RandomSwitch>(props.id);
   const updateNodeInternals = useUpdateNodeInternals();
 
+  const nodeBodyRef = React.useRef<HTMLDivElement>(null);
+
+  const doFocusLastInput = React.useRef(false);
+
+  // NOTE: focusing while loading reactflow seems to cause unalignment of the renderer
+  React.useEffect(() => {
+    if (!doFocusLastInput.current)
+      return;
+    doFocusLastInput.current = false;
+
+    const nodeBody = nodeBodyRef.current;
+    if (!nodeBody) return;
+    const inputs = nodeBody.querySelectorAll("input");
+    const lastInput = inputs[inputs.length - 1];
+    if (!lastInput) return;
+    lastInput.focus();
+  }, [data?.proportions.length]);
+
   return !data ? null : (
     <BaseNode
       id={props.id}
@@ -333,7 +351,7 @@ const RandomSwitchNode = (props: NodeProps<RandomSwitch>) => {
         className={styles.handle}
         isConnectable
       />
-      <div className={styles.randomSwitchBody}>
+      <div className={styles.randomSwitchBody} ref={nodeBodyRef}>
         <Center>
           <strong style={{fontSize: "2rem"}}>?</strong>
         </Center>
@@ -353,6 +371,7 @@ const RandomSwitchNode = (props: NodeProps<RandomSwitch>) => {
               proportions: s.proportions.concat(1),
             }));
             updateNodeInternals(props.id);
+            doFocusLastInput.current = true;
           }}
         >
           <Center>+</Center>
@@ -461,16 +480,21 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
 
   const nodeBodyRef = React.useRef<HTMLDivElement>(null);
 
-  // FIXME: focusing while loading reactflow seems to cause unalignment of the renderer
-  // React.useEffect(() => {
-  //   // FIXME: reenable
-  //   const nodeBody = nodeBodyRef.current;
-  //   if (!nodeBody) return;
+  const doFocusLastInput = React.useRef(false);
 
-  //   const firstInput = nodeBody.querySelector("input");
-  //   if (!firstInput) return;
-  //   firstInput.focus();
-  // }, [data?.replies.length]);
+  // NOTE: focusing while loading reactflow seems to cause unalignment of the renderer
+  React.useEffect(() => {
+    if (!doFocusLastInput.current)
+      return;
+    doFocusLastInput.current = false;
+
+    const nodeBody = nodeBodyRef.current;
+    if (!nodeBody) return;
+    const inputs = nodeBody.querySelectorAll("input");
+    const lastInput = inputs[inputs.length - 1];
+    if (!lastInput) return;
+    lastInput.focus();
+  }, [data?.replies.length]);
 
   return !data ? null : (
     <BaseNode
@@ -573,6 +597,7 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
               replies: s.replies.concat({ text: "", lockAction: "none", lockVariable: undefined }),
             }));
             updateNodeInternals(props.id);
+            doFocusLastInput.current = true;
           }}
         >
           <Center>+</Center>

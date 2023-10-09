@@ -145,6 +145,9 @@ importers:
       '@types/jsdom-global':
         specifier: ^3.0.4
         version: 3.0.4
+      '@types/lodash.debounce':
+        specifier: ^4.0.7
+        version: 4.0.7
       '@types/mocha':
         specifier: ^10.0.1
         version: 10.0.1
@@ -175,6 +178,9 @@ importers:
       jsdom-global:
         specifier: ^3.0.2
         version: 3.0.2(jsdom@21.1.0)
+      lodash.debounce:
+        specifier: ^4.0.8
+        version: 4.0.8
       mocha:
         specifier: ^10.2.0
         version: 10.2.0
@@ -4250,6 +4256,12 @@ packages:
     resolution: {integrity: sha512-BQ5aZNSCpj7D6K2ksrRCTmKRLEpnPvWDiLPfoGyhZ++8YtiK9d/3DBKPJgry359X/P1PfruyYwvnvwFjuEiEIg==}
     dependencies:
       '@types/node': 18.11.18
+    dev: true
+
+  /@types/lodash.debounce@4.0.7:
+    resolution: {integrity: sha512-X1T4wMZ+gT000M2/91SYj0d/7JfeNZ9PeeOldSNoE/lunLeQXKvkmIumI29IaKMotU/ln/McOIvgzZcQ/3TrSA==}
+    dependencies:
+      '@types/lodash': 4.14.198
     dev: true
 
   /@types/lodash@4.14.198:

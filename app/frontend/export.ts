@@ -198,7 +198,7 @@ export function exportToJson(doc: AppState["document"]) {
 
     // FIXME: better types
     const exportedNode: Record<string, any> = { id };
-    const pushNode = (patch: any) => nodes.push({ ...exportedNode, patch });
+    const pushNode = (patch: any) => nodes.push({ ...exportedNode, ...patch });
 
     if (node.type !== undefined && ((node.type in nodeHandlers) || node.type === "entry")) {
       const handler = nodeHandlers[node.type as NodeTypes];

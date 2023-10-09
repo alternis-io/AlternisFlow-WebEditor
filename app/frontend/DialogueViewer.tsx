@@ -1,28 +1,26 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import styles from "./Ide.module.css"; // FIXME: use separate file
 import { useAppState } from "./AppState";
-import { DialogueContext, makeDialogueContext } from "alternis-js";
+// FIXME: import /worker
+import { DialogueContext } from "alternis-js";
+import { WorkerDialogueContext, makeDialogueContext } from "alternis-js/dist/worker-api";
+//import { WorkerDialogueContext, makeDialogueContext } from "alternis-js/worker";
 import { exportToJson } from "./export";
 import { useAsyncEffect } from "@bentley/react-hooks";
 import { useWithPrevDepsEffect } from "./hooks/usePrevValue";
-
-// FIXME: use a worker
-//const alternisWorker = new Worker("", {});
+import debounce from "lodash.debounce";
 
 function useDialogueContext(json: string) {
-  const [dialogueCtx, setDialogueCtx] = useState<DialogueContext>();
+  const [dialogueCtx, setDialogueCtx] = useState<WorkerDialogueContext>();
 
-  //alternisWorker.postMessage(dialogueCtx);
-
-
+  // FIXME: debounce this because of typing
   useAsyncEffect(async ({ isStale }) => {
-    // FIXME: use this in a worker
+    // FIXME: useAsyncEffect has not effective cleanup!
     const ctx = await makeDialogueContext(json);
     if (!isStale())
       setDialogueCtx(ctx);
   }, [json]);
 
-  // FIXME: workaround useAsyncEffect not having cleanup
   useWithPrevDepsEffect(([prevCtx]) => {
     if (prevCtx !== undefined) {
       prevCtx.dispose();
@@ -48,7 +46,11 @@ export function DialogueViewer(_props: DialogueViewer.Props) {
       {currentStep && "options" in currentStep ? (
         <div>
           {currentStep.options.map((o, i) => (
-            <button key={i} onClick={() => dialogueCtx?.reply(i)}>
+            <button key={i} onClick={async () => {
+              if (!dialogueCtx) return;
+              await dialogueCtx.reply(i);
+              setCurrentStep(await dialogueCtx.step());
+            }}>
               {o.text}
             </button>
           ))}
@@ -67,9 +69,9 @@ export function DialogueViewer(_props: DialogueViewer.Props) {
               Dialogue not started
             </div>
           )}
-          <button onClick={() => {
+          <button onClick={async () => {
             if (dialogueCtx)
-              setCurrentStep(dialogueCtx.step());
+              setCurrentStep(await dialogueCtx.step());
           }}>
             step
           </button>

@@ -202,7 +202,7 @@ export function ParticipantEditor() {
           <div
             key={p.name}
             // FIXME: note that center's display:flex breaks text-overflow
-            {...classNames(styles.portraitImage, "hoverable", "draggable", "center")}
+            {...classNames(styles.portraitImage, "alternis__hoverable", "alternis__draggable", "alternis__center")}
             onClick={() => setSelectedName(p.name)}
             title={p.name + `\nClick to edit. Drag and drop into the graph to add a line node`}
           >
@@ -224,7 +224,7 @@ export function ParticipantEditor() {
           title={`Add a new participant`}
           data-tut-id="participant-add-button"
           data-tut-inset
-          {...classNames(genericEditorStyles.newButton, "hoverable")}
+          {...classNames(genericEditorStyles.newButton, "alternis__hoverable")}
           style={{ height: "100%" }}
           onClick={() => {
             const newPartipant: Participant = {

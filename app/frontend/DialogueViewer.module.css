@@ -1,0 +1,48 @@
+.dialogueViewer {
+  /*
+  border: 1px solid var(--fg-2);
+  border-radius: 5px;
+  */
+
+  padding: calc(2 * var(--gap));
+}
+
+.dialogueViewer * {
+  font-size: 1.0em;
+}
+
+.speaker {
+  font-weight: bold;
+  margin: 0;
+  margin-bottom: var(--gap);
+}
+
+.dialogueContainer {
+  display: grid;
+  grid-template-areas:
+    "line nextButton";
+  align-items: center;
+  justify-content: center;
+  gap: calc(2 * var(--gap));
+}
+
+.line {
+  grid-area: line;
+}
+
+.dialogueButton {
+  padding: calc(2 * var(--gap));
+  max-width: 200px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.nextButton {
+  grid-area: nextButton;
+}
+
+.options {
+  display: flex;
+  flex-direction: row;
+  overflow-x: scroll;
+}

@@ -29,7 +29,7 @@ function ProjectTile(props: {
       onClick={() => {
         props.onSelectProject(props.doc.name);
       }}
-      {...classNames("hoverable")}
+      {...classNames("alternis__hoverable")}
       style={{
         padding: 22,
         minHeight: "25vh",
@@ -54,7 +54,7 @@ function ProjectTile(props: {
         </span>
       </Center>
       <div>
-        <span className="hoverable" onClick={() => setShowMore(p => !p)}>
+        <span className="alternis__hoverable" onClick={() => setShowMore(p => !p)}>
           ...
         </span>
         {showMore && <ContextMenuOptions options={[{
@@ -99,7 +99,7 @@ export function ProjectSelector(props: ProjectSelector.Props) {
                 void createDocument(t);
                 setCreateDocDialogShown(false);
               }}
-              className="hoverable"
+              className="alternis__hoverable"
             >
               <span>{t.name}</span>
             </div>
@@ -114,7 +114,7 @@ export function ProjectSelector(props: ProjectSelector.Props) {
                 void createDocument();
                 setCreateDocDialogShown(false);
               }}
-              className="hoverable"
+              className="alternis__hoverable"
             >
               <span>{d.name}</span>
             </div>
@@ -123,7 +123,7 @@ export function ProjectSelector(props: ProjectSelector.Props) {
       </dialog>
       <div className={styles.projectGrid}>
         <div
-          {...classNames("newButton", "hoverable")}
+          {...classNames("alternis__newButton", "alternis__hoverable")}
           title="Make a new project with the new project wizard"
           onClick={() => setCreateDocDialogShown(true)}
           style={{

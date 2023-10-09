@@ -73,7 +73,7 @@ export function GenericEditor<T extends SupportedKeys>(
                 + "Functions are callbacks into the environment that "
                 + "can invoke custom functionality during a dialogue."
               }
-              className="hoverable"
+              className="alternis__hoverable"
               onDoubleClick={() => {
                 deleteGeneric(name);
                 setProposedName(name);
@@ -99,7 +99,7 @@ export function GenericEditor<T extends SupportedKeys>(
                 set={(d: Partial<AppState["document"][T][string]>) => setGeneric(name, d)}
               />
               <Center
-                className="hoverable hoverable-red"
+                className="alternis__hoverable alternis__hoverable-red"
                 title={`Delete this ${props.singularEntityName}`}
                 onClick={() => {
                   deleteGeneric(name);
@@ -132,7 +132,7 @@ export function GenericEditor<T extends SupportedKeys>(
       : <div
           data-tut-id="generic-proj-data-add-button"
           title={`Add a new ${props.singularEntityName}`}
-          {...classNames(styles.newButton, "hoverable", "")}
+          {...classNames(styles.newButton, "alternis__hoverable")}
           onClick={() => setProposedName("")}
         >
           <Center>+</Center>

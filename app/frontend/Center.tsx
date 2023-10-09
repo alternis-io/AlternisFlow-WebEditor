@@ -4,5 +4,5 @@ import React from "react";
 import "./shared.global.css";
 
 export const Center = React.forwardRef<HTMLDivElement, React.HTMLProps<HTMLDivElement>>((props, ref) =>
-  <div className="center" ref={ref} {...props} />
+  <div className="alternis__center" ref={ref} {...props} />
 );

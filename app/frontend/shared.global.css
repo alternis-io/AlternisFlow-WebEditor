@@ -1,4 +1,4 @@
-.center {
+.alternis__center {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -6,21 +6,21 @@
   width: 100%;
 }
 
-.split {
+.alternis__split {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.hoverable {
+.alternis__hoverable {
   cursor: pointer;
 }
 
-.draggable {
+.alternis__draggable {
   cursor: grab;
 }
 
-.hoverable:hover {
+.alternis__hoverable:hover {
   color: var(--fg-hover);
   fill: var(--fg-hover);
   stroke: var(--fg-hover);
@@ -28,7 +28,7 @@
   background-color: var(--bg-1-hover);
 }
 
-.hoverable-red:hover {
+.alternis__hoverable-red:hover {
   color: rgba(156, 0, 0, 0.6);
   fill: var(--fg-hover);
   stroke: var(--fg-hover);
@@ -36,40 +36,40 @@
   background-color: var(--bg-1-hover);
 }
 
-.invalidInput {
+.alternis__invalidInput {
   outline: 1px solid #ee2222;
   width: 6em;
 }
 
-.invalidInputMessage {
+.alternis__invalidInputMessage {
   color: #ee2222;
 }
 
-.inline-code {
+.alternis__inline-code {
   display: inline;
   font-family: monospace;
 }
 
-.tutorial-highlighted {
+.alternis__tutorial-highlighted {
   box-shadow: 0 0 4px 4px #ffff00 !important;
   z-index: 1;
 }
 
-.tutorial-highlighted[data-tut-inset] {
+.alternis__tutorial-highlighted[data-tut-inset] {
   box-shadow: inset 0 0 4px 4px #ffff00 !important;
 }
 
-.rel-anchor {
+.alternis__rel-anchor {
   position: relative;
 }
 
-.propagate-size {
+.alternis__propagate-size {
   height: 100%;
   width: 100%;
   position: relative;
 }
 
-.newButton {
+.alternis__newButton {
   padding: 0.7em;
   height: 1em;
   border: 1px solid var(--fg-1);

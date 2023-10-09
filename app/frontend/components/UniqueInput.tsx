@@ -38,11 +38,11 @@ export function UniqueInput(props: UniqueInput.Props) {
       <input
         value={input}
         onChange={(e) => setInput(e.currentTarget.value)}
-        {...classNames(status !== InputStatus.Success && "invalidInput")}
+        {...classNames(status !== InputStatus.Success && "alternis__invalidInput")}
         style={{ width: "100%" }}
       />
       <div
-        {...classNames(status !== InputStatus.Success && "invalidInputMessage")}
+        {...classNames(status !== InputStatus.Success && "alternis__invalidInputMessage")}
       >
         {message}
       </div>

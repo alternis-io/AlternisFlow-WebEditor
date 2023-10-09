@@ -43,7 +43,7 @@ export const BaseNode = (props: BaseNode.Props) => {
         {(showMoreContent || !noLabel) && 
           <Center
             title="Click to toggle details"
-            {...classNames(styles.entryNodeShowMoreIndicator, "hoverable")}
+            {...classNames(styles.entryNodeShowMoreIndicator, "alternis__hoverable")}
             onClick={() => setShowMore(prev => !prev)}
           >
             <strong style={{ /*transform: "scale(2, 0.8)",*/ display: "block", width: "100%", textAlign: "center" }}>
@@ -55,7 +55,7 @@ export const BaseNode = (props: BaseNode.Props) => {
                 style={{
                   transform: showMore ? "scale(1, -1)" : undefined, stroke: "white", fill: "none"
                 }}
-                className={"hoverable"}
+                className={"alternis__hoverable"}
               >
                 <path d="M0 0 l5 5 l5 -5" />
               </svg>

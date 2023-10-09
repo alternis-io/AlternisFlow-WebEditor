@@ -139,7 +139,7 @@ export function ContextMenuOptions(props: ContextMenuOptions.Props) {
               await option.onSelect(e);
               ctxMenuRef.current?.hide();
             }}
-            {...classNames(styles.contextMenuOption, "hoverable")}
+            {...classNames(styles.contextMenuOption, "alternis__hoverable")}
           >
             <a style={{ color: "inherit" }}>{option.label ?? option.id}</a>
           </div>

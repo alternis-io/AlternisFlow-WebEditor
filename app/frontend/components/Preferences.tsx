@@ -85,7 +85,7 @@ export function Preferences() {
 
   return (
     <div data-tut-id="preferences">
-      <label title="Which mouse button you can click and drag to move around the graph" className="split">
+      <label title="Which mouse button you can click and drag to move around the graph" className="alternis__split">
         <span>
           Pan graph method
         </span>
@@ -95,7 +95,7 @@ export function Preferences() {
       <label
         title={"If on, click and drag to start a box selection of graph elements.\n"
              + "We are working on supporting more than just left mouse"}
-        className="split"
+        className="alternis__split"
       >
         <span>
           Turn on box select on left mouse drag
@@ -106,14 +106,14 @@ export function Preferences() {
         />
       </label>
 
-      <label title="Which modifier key you can hold to add to selection instead of starting a new one " className="split">
+      <label title="Which modifier key you can hold to add to selection instead of starting a new one " className="alternis__split">
         <span>
           Append to selection modifier
         </span>
         <AppendToSelectModifierSetting />
       </label>
 
-      <label title="Which mouse button (with modifiers e.g. shift) allow to add a node after" className="split">
+      <label title="Which mouse button (with modifiers e.g. shift) allow to add a node after" className="alternis__split">
         <span>
           Add node key binding
         </span>

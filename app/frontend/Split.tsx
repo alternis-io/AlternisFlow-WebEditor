@@ -2,12 +2,13 @@ import React from "react";
 import { classNames } from "js-utils/lib/react-utils";
 
 export function Split(props: Split.Props) {
-  return <div {...props} {...classNames("split", ...props.className ?? [])}>
+  const { left, right, ...divProps } = props;
+  return <div {...divProps} {...classNames("alternis__split", divProps.className)}>
     <div>
-      {props.left}
+      {left}
     </div>
     <div>
-      {props.right}
+      {right}
     </div>
   </div>
 }

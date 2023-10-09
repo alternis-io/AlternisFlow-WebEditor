@@ -49,10 +49,9 @@ export function Ide(_props: Ide.Props) {
       width: "100vw",
     }}>
       <ProjectDataEditor />
-      <span {...classNames(styles.graphEditor, "propagate-size")}>
+      <span {...classNames(styles.graphEditor, "alternis__propagate-size")}>
         <TestGraphEditor />
       </span>
-      <DialogueViewer />
     </div>
   );
 }

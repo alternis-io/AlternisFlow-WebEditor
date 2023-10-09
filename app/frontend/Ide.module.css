@@ -2,13 +2,23 @@
 .split {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
+  grid-template-areas:
+    "projectDataEditor graphEditor";
   /* not doing the runtime yet */
   /* grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 2fr); */
 }
 
 .projectDataEditor {
   padding: 10px;
-  box-shadow: black 0 5px 5px;
-  z-index: 1;
+  box-shadow: rgba(0,0,0,0.5) 2px 0 0 0;
+  z-index: 2;
   overflow-y: scroll;
+  grid-area: projectDataEditor;
+  position: relative;
+}
+
+.graphEditor {
+  grid-area: graphEditor;
+  z-index: 0;
+  position: relative;
 }

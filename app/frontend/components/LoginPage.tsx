@@ -87,7 +87,7 @@ export function LoginState(_props: LoginPage.Props) {
                 Logout
               </button>
             </> : <>
-              <label className="split" style={{ minWidth: 300 }}>
+              <label className="alternis__split" style={{ minWidth: 300 }}>
                 Email:
                 <input
                   value={emailInput}
@@ -96,8 +96,8 @@ export function LoginState(_props: LoginPage.Props) {
                   onKeyDown={(e) => inputValid && e.key === 'Enter' && login()}
                 />
               </label>
-              {emailError && emailInput.length > 0 && <div className="invalidInputMessage">{emailError}</div>}
-              <label className="split" style={{ minWidth: 300 }}>
+              {emailError && emailInput.length > 0 && <div className="alternis__invalidInputMessage">{emailError}</div>}
+              <label className="alternis__split" style={{ minWidth: 300 }}>
                 Password:
                 <input
                   value={passwordInput}
@@ -107,7 +107,7 @@ export function LoginState(_props: LoginPage.Props) {
                   onKeyDown={(e) => inputValid && e.key === 'Enter' && login()}
                 />
               </label>
-              {passwordError && passwordInput.length > 0 && <div className="invalidInputMessage">{passwordError}</div>}
+              {passwordError && passwordInput.length > 0 && <div className="alternis__invalidInputMessage">{passwordError}</div>}
               <Center>
                 <button
                   onClick={login}

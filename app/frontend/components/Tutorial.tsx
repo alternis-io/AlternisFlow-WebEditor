@@ -81,7 +81,7 @@ export function Tutorial(props: Tutorial.Props) {
   const nextButton = useRef<HTMLButtonElement>(null);
 
   return (
-    <div {...classNames(styles.root, "center")}>
+    <div {...classNames(styles.root, "alternis__center")}>
       {/* FIXME: can reactflow Panel component */}
       <dialog className={styles.dialog} open={open}>
         {stepIndex === 0 && <Center><h3>{props.data.name}</h3></Center>}

@@ -17,8 +17,8 @@ export function Header() {
 
   return !noHeaderRequested && <Split
     style={{
-      boxShadow: "black 0 0 5px",
-      zIndex: 1,
+      boxShadow: "black 0 0 5px 2px",
+      zIndex: 5,
       position: "relative",
     }}
     left={
@@ -34,7 +34,7 @@ export function Header() {
           alignItems: "center",
           gap: "var(--gap)",
         }}>
-          <img src={logoPath} height={40} className="hoverable" />
+          <img src={logoPath} height={40} className="alternis__hoverable" />
           Alternis
         </a>
       </div>

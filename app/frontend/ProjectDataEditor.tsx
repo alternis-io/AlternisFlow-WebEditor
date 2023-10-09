@@ -88,7 +88,7 @@ export function ProjectDataEditor(_props: ProjectDataEditor.Props) {
           <span
             title={data.desc}
             key={name}
-            className="hoverable"
+            className="alternis__hoverable"
             onClick={() => setOpenDataPane(name)}
             style={{
               borderBottom: "1px solid var(--fg-1)",

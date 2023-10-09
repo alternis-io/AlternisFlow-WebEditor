@@ -21,6 +21,7 @@ import ReactFlow, {
   useUpdateNodeInternals,
   Position,
   BackgroundVariant,
+  Panel,
 } from 'reactflow'
 import 'reactflow/dist/base.css'
 import styles from './TestGraphEditor.module.css'
@@ -42,6 +43,7 @@ import { NodeHandle } from './nodes/handle';
 import { BaseNode } from './nodes/BaseNode';
 import { DialogueEntry, Emit, Lock, RandomSwitch, PlayerReplies, PlayerReply, defaultRandomSwitchProps, defaultPlayerRepliesProps } from './nodes/data';
 import { Tutorial1 } from './Tutorial1';
+import { DialogueViewer } from './DialogueViewer';
 
 // FIXME: rename
 const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
@@ -286,7 +288,7 @@ const RandomSwitchInput = (props: {
         ({percentFmter.format(proportion / totalProportion)})
       </span>
       <Center
-          className="hoverable hoverable-red"
+          className="alternis__hoverable alternis__hoverable-red"
           title="Delete this possibility"
           onClick={() => set(s => {
             const proportions = s.proportions.slice();
@@ -365,7 +367,7 @@ const RandomSwitchNode = (props: NodeProps<RandomSwitch>) => {
         ))}
         <div
           title="Add a possibility"
-          {...classNames("newButton", "hoverable")}
+          {...classNames("alternis__newButton", "alternis__hoverable")}
           onClick={() => {
             set((s) => ({
               proportions: s.proportions.concat(1),
@@ -410,7 +412,7 @@ const ReplyLock = (props: {
     <>
       <Center
         key={`${props.keyPrefix ?? ""}-lockicon`}
-        className="hoverable"
+        className="alternis__hoverable"
         {...props.reply.lockAction === "none"
           ? {
             title: bools.length > 0
@@ -561,7 +563,7 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
             />
             <Center
               key={`delete-${index}`}
-              className="hoverable hoverable-red"
+              className="alternis__hoverable alternis__hoverable-red"
               title="Delete this option"
               onClick={() => set(s => {
                 const replies = s.replies.slice();
@@ -591,7 +593,7 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
         ))}
         <div
           title="Add a reply option"
-          {...classNames("newButton", "hoverable")}
+          {...classNames("alternis__newButton", "alternis__hoverable")}
           onClick={() => {
             set((s) => ({
               replies: s.replies.concat({ text: "", lockAction: "none", lockVariable: undefined }),
@@ -807,7 +809,7 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
   const noHeaderRequested = location.search.includes("noHeader");
 
   return (
-    <div ref={editorRef} className="rel-anchor propagate-size">
+    <div ref={editorRef} className="alternis__rel-anchor alternis__propagate-size">
       <ContextMenuOptions
         forceEventKey={forceAddNodeEvent}
         mouseBinding={addNodeMouseBinding}
@@ -835,7 +837,7 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
         }
       />
       <div
-        {...classNames(styles.graph, "propagate-size")}
+        {...classNames(styles.graph, "alternis__propagate-size")}
         data-tut-id="graph"
         data-tut-inset
         ref={graphContainerElem}
@@ -960,6 +962,9 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
             }}
           />
           <Background />
+          <Panel position={"bottom-center"}>
+            <DialogueViewer className={styles.dialogueViewer} />
+          </Panel>
         </ReactFlow>
       </div>
       <Tutorial1 />
@@ -968,8 +973,7 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
 }
 
 namespace TestGraphEditor {
-  export interface Props {
-  }
+  export interface Props {}
 }
 
 export default TestGraphEditor

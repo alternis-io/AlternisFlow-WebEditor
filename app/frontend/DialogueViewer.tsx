@@ -10,6 +10,7 @@ import { useAsyncEffect } from "@bentley/react-hooks";
 import { useWithPrevDepsEffect } from "./hooks/usePrevValue";
 import debounce from "lodash.debounce";
 import { classNames } from "js-utils/lib/react-utils";
+import { assert } from "js-utils/lib/browser-utils";
 
 function useDialogueContext(json: string) {
   const [dialogueCtx, setDialogueCtx] = useState<WorkerDialogueContext>();
@@ -46,49 +47,74 @@ export function DialogueViewer(props: DialogueViewer.Props) {
 
   return (
     <div {...divProps} {...classNames(styles.dialogueViewer, divProps.className)}>
-      {currentStep && "options" in currentStep ? (
-        <div>
-          {currentStep.options.map((o, i) => (
-            <div className={styles.options}>
-              <button
-                key={i}
-                onClick={async () => {
-                  if (!dialogueCtx) return;
-                  await dialogueCtx.reply(i);
-                  setCurrentStep(await dialogueCtx.step());
-                }}
-                className={styles.dialogueButton}
-              >
-                {o.text}
-              </button>
-            </div>
-          ))}
+      {!currentStep ? (
+        <div title="Start dialogue"
+          onClick={async () => {
+            if (dialogueCtx)
+            setCurrentStep(await dialogueCtx.step());
+          }}
+        >
+          <svg height="30px" width="30px" viewBox="-3 -3 16 16">
+            <path {...classNames(styles.playButton, "alternis__hover")}
+              d="M0 0 l0 10 l10 -5 l-10 -5" />
+          </svg>
         </div>
-      ) : currentStep && "none" in currentStep  ? (
-        <div>dialogue ended</div>
       ) : (
-        <div className={styles.dialogueContainer}>
-          {currentStep && "line" in currentStep ? (
-            <div className={styles.line}>
-              <h4 className={styles.speaker}>{currentStep.line.speaker}</h4>
-              <div><span>{currentStep.line.text}</span></div>
+          <>
+            <div title="Stop dialogue"
+              onClick={async () => {
+                if (dialogueCtx)
+                await dialogueCtx.reset();
+                setCurrentStep(undefined)
+              }}
+            >
+              <svg height="30px" width="30px" viewBox="0 0 10 10">
+                <rect {...classNames(styles.stopButton)}
+                  x={0} y={0} width={10} height={10} rx={2} />
+              </svg>
             </div>
-          ) : (
-            <div className={styles.line}>
-              Dialogue not started
-            </div>
-          )}
-          <button
-            {...classNames(styles.dialogueButton, styles.nextButton)}
-            onClick={async () => {
-              if (dialogueCtx)
-                setCurrentStep(await dialogueCtx.step());
-            }}
-          >
-            next
-          </button>
-        </div>
-      )}
+            {"line" in currentStep ? (
+              <>
+                <div className={styles.line}>
+                  <h4 className={styles.speaker}>{currentStep.line.speaker}</h4>
+                  <div><span>{currentStep.line.text}</span></div>
+                </div>
+                <button
+                  {...classNames(styles.dialogueButton, styles.nextButton)}
+                  onClick={async () => {
+                    if (dialogueCtx)
+                    setCurrentStep(await dialogueCtx.step());
+                  }}
+                >
+                  next
+                </button>
+              </>
+            ) : "options" in currentStep ? (
+                <div className={styles.options}>
+                  {currentStep.options.map((o, i) => (
+                    <div className={styles.options}>
+                      <button
+                        key={i}
+                        onClick={async () => {
+                          if (!dialogueCtx) return;
+                          await dialogueCtx.reply(i);
+                          setCurrentStep(await dialogueCtx.step());
+                        }}
+                        className={styles.dialogueButton}
+                      >
+                        {o.text}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : "none" in currentStep ? (
+                  <svg height="50px" width="50px" viewBox="-3 -3 16 16">
+                    <path {...classNames(styles.playButton, "alternis__hover")} d="M0 0 l0 10 l10 -5 l-10 -5" />
+                    <circle rx={5} ry={5} cx={5} cy={5} />
+                  </svg>
+              ) : assert(false, "unreachable, unknown dialogue state") as never}
+            </>
+        )}
     </div>
   );
 }

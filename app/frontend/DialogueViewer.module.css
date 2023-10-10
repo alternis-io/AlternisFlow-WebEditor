@@ -1,14 +1,15 @@
 .dialogueViewer {
-  /*
-  border: 1px solid var(--fg-2);
+  border: 1px solid var(--fg-1);
   border-radius: 5px;
-  */
 
   padding: calc(2 * var(--gap));
-}
+  background-color: var(--bg-1);
 
-.dialogueViewer * {
-  font-size: 1.0em;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: calc(2 * var(--gap));
 }
 
 .speaker {
@@ -17,17 +18,9 @@
   margin-bottom: var(--gap);
 }
 
-.dialogueContainer {
-  display: grid;
-  grid-template-areas:
-    "line nextButton";
-  align-items: center;
-  justify-content: center;
-  gap: calc(2 * var(--gap));
-}
-
 .line {
   grid-area: line;
+  font-size: 1.0em;
 }
 
 .dialogueButton {
@@ -35,6 +28,7 @@
   max-width: 200px;
   text-overflow: ellipsis;
   overflow: hidden;
+  font-size: 1.0em;
 }
 
 .nextButton {
@@ -45,4 +39,33 @@
   display: flex;
   flex-direction: row;
   overflow-x: scroll;
+  gap: var(--gap);
+}
+
+.playButton {
+  fill: rgb(100, 255, 100);
+  stroke: rgb(100, 255, 100);
+  stroke-width: 1;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.playButton:hover {
+  fill: rgb(135, 255, 135);
+  stroke: rgb(135, 255, 135);
+  cursor: pointer;
+}
+
+.stopButton {
+  fill: rgb(255, 150, 0);
+  stroke: rgb(255, 150, 0);
+  stroke-width: 1;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.stopButton:hover {
+  fill: rgb(255, 185, 0);
+  stroke: rgb(255, 185, 0);
+  cursor: pointer;
 }

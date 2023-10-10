@@ -32,7 +32,7 @@ export namespace Tutorial {
 export function Tutorial(props: Tutorial.Props) {
   assert(props.data.steps.length >= 2, "tutorials must have at least two steps!");
 
-  const highlightClass = props.highlightClass ?? "tutorial-highlighted";
+  const highlightClass = props.highlightClass ?? "alternis__tutorial-highlighted";
 
   const [open, setOpen] = useState(true);
   const [stepIndex, setStepIndex] = useState(0);

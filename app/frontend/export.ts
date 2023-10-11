@@ -145,6 +145,10 @@ export function exportToJson(doc: AppState["document"]) {
               speaker: data.speaker !== undefined && doc.participants[data.speaker].name,
               metadata: undefined,
             })),
+            conditions: data.replies.map(r => ({
+              action: r.condition,
+              variable: r.lockVariable,
+            })),
           },
         };
         ctx.pushNode(exportedNode);
@@ -244,6 +248,16 @@ export function exportToJson(doc: AppState["document"]) {
     version: 1,
     entryId: 0,
     nodes,
+    participants: doc.participants.map(p => ({ name: p.name })),
+    functions: Object.entries(doc.functions).map(([name]) => ({ name })),
+    variables: {
+      boolean: Object.entries(doc.variables)
+        .filter(([, v]) => v.type === "boolean")
+        .map(([name]) => ({ name })),
+      string: Object.entries(doc.variables)
+        .filter(([, v]) => v.type === "string")
+        .map(([name]) => ({ name })),
+    },
   };
 }
 

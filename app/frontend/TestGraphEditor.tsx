@@ -415,9 +415,9 @@ const ReplyLock = (props: {
   const variables = useAppState(s => s.document.variables);
   const bools = useMemo(() => Object.entries(variables).filter(([, v]) => v.type === "boolean"), [variables]);
   const Icon
-    = props.reply.lockAction === "none"
+    = props.reply.condition === "none"
     ? AddLockIcon
-    : props.reply.lockAction === "unlock"
+    : props.reply.condition === "unlocked"
     ? UnlockIcon
     : LockIcon;
 
@@ -426,11 +426,12 @@ const ReplyLock = (props: {
       <Center
         key={`${props.keyPrefix ?? ""}-lockicon`}
         className="alternis__hoverable"
-        {...props.reply.lockAction === "none"
+        {...props.reply.condition === "none"
           ? {
             title: bools.length > 0
-              ? "Click to lock this reply on a locked boolean variable"
-              : "Add a boolean variable to be able to lock on one",
+              // FIXME: rewrite these tooltips
+              ? "Click to condition this reply on a boolean variable being locked (false)\n(cycles through conditions)"
+              : "Add a boolean variable to set a condition",
             onClick: () => {
               // FIXME: error toast on no available bool variables? Or just hide this entirely?
               // or even offer to create a new variable then and there...
@@ -438,22 +439,22 @@ const ReplyLock = (props: {
               const [firstBoolVarName] = bools[0];
               props.set({
                 lockVariable: firstBoolVarName,
-                lockAction: "lock",
+                condition: "locked",
               });
             },
-          } : props.reply.lockAction === "lock" ? {
-            title: "Click to lock this reply on an unlocked boolean variable",
+          } : props.reply.condition === "locked" ? {
+            title: "Click to condition this reply on a boolean variable being unlocked (true)",
             onClick: () => {
               props.set({
-                lockAction: "unlock",
+                condition: "unlocked",
               });
             },
           } : /* props.reply.lockAction === "unlock" */ {
-            title: "Click to remove locks from this reply",
+            title: "Click to remove conditions from this reply",
             onClick: () => {
               props.set({
                 lockVariable: undefined,
-                lockAction: "none",
+                condition: "none",
               });
             },
           }
@@ -467,7 +468,7 @@ const ReplyLock = (props: {
         onChange={(e) => props.set({ lockVariable: e.currentTarget.value })}
         style={{
           // can't use "display: none" or the grid is broken
-          ...props.reply.lockAction === "none"
+          ...props.reply.condition === "none"
             ? { opacity: 0, width: 0, padding: 0, margin: 0 }
             : { opacity: 1 },
         }}
@@ -616,7 +617,7 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
           {...classNames("alternis__newButton", "alternis__hoverable")}
           onClick={() => {
             set((s) => ({
-              replies: s.replies.concat({ text: "", lockAction: "none", lockVariable: undefined }),
+              replies: s.replies.concat({ text: "", condition: "none", lockVariable: undefined }),
             }));
             updateNodeInternals(props.id);
             doFocusLastInput.current = true;

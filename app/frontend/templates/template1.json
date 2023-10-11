@@ -106,15 +106,15 @@
         "replies": [
           {
             "text": "It's {name} and I like waffles",
-            "lockAction": "none"
+            "condition": "none"
           },
           {
             "text": "It's {name}",
-            "lockAction": "none"
+            "condition": "none"
           },
           {
             "lockVariable": "Aaron likes you",
-            "lockAction": "lock",
+            "condition": "locked",
             "text": "Wanna go eat waffles?"
           }
         ],

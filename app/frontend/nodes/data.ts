@@ -34,7 +34,7 @@ export interface PlayerReply {
   lockVariable: string | undefined;
   // FIXME: replace with "lock negation"... this is not an action, it's whether the gate must
   // be "locked" or "unlocked" for this reply to be locked or unlocked
-  lockAction: "none" | "lock" | "unlock";
+  condition: "none" | "locked" | "unlocked";
 }
 
 export interface PlayerReplies extends BaseNodeData {
@@ -50,7 +50,7 @@ export const defaultPlayerRepliesProps: PlayerReplies = {
       text: "",
       // FIXME: note, people may want compound boolean checks...
       lockVariable: undefined,
-      lockAction: "none",
+      condition: "none",
     },
   ],
 };

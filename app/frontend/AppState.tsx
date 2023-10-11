@@ -73,9 +73,10 @@ export const defaultAppState = {
 
     graph: {
       // temporary while custom drag start button is unimplemented
-      enableBoxSelectOnDrag: true,
+      enableBoxSelectOnDrag: false,
+      // NOTE: not used
       dragBoxSelectMouseBinding: { button: 0 } as MouseBinding,
-      dragPanMouseBinding: { button: 2 } as MouseBinding,
+      dragPanMouseBinding: { button: 0 } as MouseBinding,
       ...clientIsMac ? {
         addNodeMouseBinding: { button: 2, metaKey: true } as MouseBinding,
         appendToSelectModifier: KeyModifiers.Meta as KeyModifiers | null,

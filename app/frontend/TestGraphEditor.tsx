@@ -575,8 +575,8 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
               set={(s) => set((prevReplies) => {
                 const nextReplies = prevReplies.replies.slice();
                 nextReplies[index] = {
-                  ...prevReplies[index],
-                  ...typeof s === "function" ? s(prevReplies[index]) : s,
+                  ...prevReplies.replies[index],
+                  ...typeof s === "function" ? s(prevReplies.replies[index]) : s,
                 };
                 return { replies: nextReplies };
               })}

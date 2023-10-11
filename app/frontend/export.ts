@@ -131,7 +131,11 @@ export function exportToJson(doc: AppState["document"]) {
         ctx.pushNode({
           reply: {
             nexts,
-            texts: data.replies.map(r => r.text),
+            texts: data.replies.map(r => ({
+              text: r.text,
+              speaker: data.speaker !== undefined && doc.participants[data.speaker].name,
+              metadata: undefined,
+            })),
           },
         });
       },
@@ -149,7 +153,7 @@ export function exportToJson(doc: AppState["document"]) {
         const data = node.data as Lock;
         ctx.pushNode({
           [data.action]: {
-            booleanVariableName: data.variable,
+            boolean_var_name: data.variable,
             next,
           },
         });
@@ -166,7 +170,7 @@ export function exportToJson(doc: AppState["document"]) {
         const data = node.data as Emit;
         ctx.pushNode({
           call: {
-            functionName: data.function,
+            function_name: data.function,
             next,
           },
         });

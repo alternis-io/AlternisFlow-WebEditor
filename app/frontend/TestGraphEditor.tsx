@@ -130,7 +130,7 @@ const LockNode = (props: NodeProps<Lock>) => {
   const iconRef = React.useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (bools.length === 1 && data?.variable === undefined) {
+    if (bools.length >= 1 && data?.variable === undefined) {
       set({ variable: bools[0][0] })
     }
   }, [bools, data?.variable]);
@@ -209,7 +209,7 @@ const EmitNode = (props: NodeProps<Emit>) => {
 
   useEffect(() => {
     const functionNames = Object.keys(functions);
-    if (Object.entries(functionNames).length === 1 && data?.function === undefined) {
+    if (Object.entries(functionNames).length >= 1 && data?.function === undefined) {
       set({ function: functionNames[0] })
     }
   }, [functions, data?.function]);
@@ -494,6 +494,13 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
   );
 
   const nodeBodyRef = React.useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (participants.length >= 1 && data?.speaker === undefined) {
+      set({ speaker: 0 })
+    }
+  }, [participants, data?.speaker]);
+
 
   const doFocusLastInput = React.useRef(false);
 

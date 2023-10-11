@@ -47,7 +47,7 @@ export function exportToJson(doc: AppState["document"]) {
   const remapNodeId = (nodeId: string) => {
     let mapped = localToExportedIdMap.get(nodeId);
     if (mapped === undefined) {
-      mapped = localToExportedIdMap.size;
+      mapped = localToExportedIdMap.size + 1;
       localToExportedIdMap.set(nodeId, mapped);
     }
     return mapped;
@@ -69,57 +69,67 @@ export function exportToJson(doc: AppState["document"]) {
   }
 
   const nodeHandlers: {
-    [K in NodeTypes]?: {
-      data?(
+    [K in NodeTypes]: {
+      /** should return a reference to the exported node
+       * which "visit" my edit as children are visited */
+      data(
         node: Node<BaseNodeData>,
         ctx: { outputs: string[], pushNode: (patch: any) => void }
-      ): void,
-      visit?(ctx: { outputs: string[] }): void,
+      ): any,
+      visit?(exportedNode: any, ctx: { outputs: string[] }): void,
     }
   } = {
     entry: {
-      visit(ctx) {
-        const node = nodeByIdMap.get(ctx.outputs[0]);
-        if (node) visit(node);
+      data() {},
+      visit(_data, ctx) {
+        const nextNode = nodeByIdMap.get(ctx.outputs[0]);
+        if (nextNode) visit(nextNode.id);
       }
     },
 
     dialogueEntry: {
       data(node, ctx) {
         const data = node.data as DialogueEntry;
-        const next = getAndRemapNodeAsNext(ctx.outputs[0]);
-        ctx.pushNode({
+        const exportedNode = {
           line: {
             data: {
               speaker: doc.participants[data.speakerIndex].name,
               text: data.text,
               metadata: data.customData,
             },
-            next,
           },
-        });
+        }
+        ctx.pushNode(exportedNode);
+        return exportedNode;
       },
-      visit(ctx) {
+      visit(exportedNode, ctx) {
         const node = nodeByIdMap.get(ctx.outputs[0]);
-        if (node) visit(node);
+        if (node) {
+          exportedNode.line.next = getAndRemapNodeAsNext(node.id);
+          visit(node.id);
+        }
       },
     },
 
     randomSwitch: {
       data(node, ctx) {
         const data = node.data as RandomSwitch;
-        const nexts = ctx.outputs.map(getAndRemapNodeAsNext);
-        ctx.pushNode({
+        const exportedNode = {
           random_switch: {
-            nexts,
+            nexts: [],
             chances: data.proportions,
           },
-        });
+        };
+        ctx.pushNode(exportedNode);
+        return exportedNode;
       },
-      visit(ctx) {
+      visit(exportedNode, ctx) {
         for (const out of ctx.outputs) {
           const node = nodeByIdMap.get(out);
-          if (node) visit(node);
+          if (node) {
+            exportedNode.random_switch.nexts.push(getAndRemapNodeAsNext(node.id));
+            visit(node.id);
+          }
         }
       },
     },
@@ -127,91 +137,108 @@ export function exportToJson(doc: AppState["document"]) {
     playerReplies: {
       data(node, ctx) {
         const data = node.data as PlayerReplies;
-        const nexts = ctx.outputs.map(getAndRemapNodeAsNext);
-        ctx.pushNode({
+        const exportedNode = {
           reply: {
-            nexts,
+            nexts: [],
             texts: data.replies.map(r => ({
               text: r.text,
               speaker: data.speaker !== undefined && doc.participants[data.speaker].name,
               metadata: undefined,
             })),
           },
-        });
+        };
+        ctx.pushNode(exportedNode);
+        return exportedNode;
       },
-      visit(ctx) {
+      visit(exportedNode, ctx) {
         for (const out of ctx.outputs) {
           const node = nodeByIdMap.get(out);
-          if (node) visit(node);
+          if (node) {
+            exportedNode.reply.nexts.push(getAndRemapNodeAsNext(node.id));
+            visit(node.id);
+          }
         }
       },
     },
 
     lockNode: {
       data(node, ctx) {
-        const next = getAndRemapNodeAsNext(ctx.outputs[0]);
         const data = node.data as Lock;
-        ctx.pushNode({
+        const exportedNode = {
           [data.action]: {
             boolean_var_name: data.variable,
-            next,
           },
-        });
+        };
+        ctx.pushNode(exportedNode);
+        return exportedNode;
       },
-      visit(ctx) {
+      visit(exportedNode, ctx) {
         const node = nodeByIdMap.get(ctx.outputs[0]);
-        if (node) visit(node);
+        const dataAction = "lock" in exportedNode ? "lock" : "unlock";
+        if (node) {
+          exportedNode[dataAction].next = getAndRemapNodeAsNext(node.id);
+          visit(node.id);
+        }
       },
     },
 
     emitNode: {
       data(node, ctx) {
-        const next = getAndRemapNodeAsNext(ctx.outputs[0]);
         const data = node.data as Emit;
-        ctx.pushNode({
+        const exportedNode = {
           call: {
             function_name: data.function,
-            next,
           },
-        });
+        };
+        ctx.pushNode(exportedNode);
+        return exportedNode;
       },
-      visit(ctx) {
+      visit(exportedNode, ctx) {
         const node = nodeByIdMap.get(ctx.outputs[0]);
-        if (node) visit(node);
+        if (node) {
+          exportedNode.call.next = getAndRemapNodeAsNext(node.id);
+          visit(node.id);
+        }
       },
     },
 
     goto: {
       data() {},
-      visit() {}
+    },
+
+    default: {
+      data(node) {
+        assert(false, `unknown node: ${node.id}`);
+      },
     },
   };
 
-  const alreadyVisited = new Set();
-  function visit(node: Node<BaseNodeData>) {
-    if (alreadyVisited.has(node))
+  const alreadyVisited = new Set<string>();
+
+  function visit(nodeId: string) {
+    if (alreadyVisited.has(nodeId))
       return;
-    const id = remapNodeId(node.id);
 
-    const type = node.type as NodeTypes;
-    const outputs = nodeOutputsMap.get(node.id) ?? [];
-    const nexts = outputs.map(remapNodeId);
-    const next = nexts?.[0];
+    alreadyVisited.add(nodeId);
 
-    // FIXME: better types
-    const exportedNode: Record<string, any> = { id };
-    const pushNode = (patch: any) => nodes.push({ ...exportedNode, ...patch });
+    const node = nodeByIdMap.get(nodeId);
+    assert(node, "bad node id");
 
-    if (node.type !== undefined && ((node.type in nodeHandlers) || node.type === "entry")) {
-      const handler = nodeHandlers[node.type as NodeTypes];
-      handler?.data?.(node, { outputs, pushNode });
-      handler?.visit?.({ outputs });
+    const type = node.type as NodeTypes | undefined;
+    const outputs = nodeOutputsMap.get(nodeId) ?? [];
+
+    const pushNode = (node: any) => nodes.push(node);
+
+    if (type !== undefined && ((type in nodeHandlers) || node.type === "entry")) {
+      const handler = nodeHandlers[type];
+      const result = handler.data(node, { outputs, pushNode });
+      handler.visit?.(result, { outputs });
     } else {
       assert(false, `unknown node type: ${type}`);
     }
   }
 
-  visit(entry);
+  visit(entry.id);
 
   return {
     version: 1,

@@ -129,6 +129,12 @@ const LockNode = (props: NodeProps<Lock>) => {
 
   const iconRef = React.useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    if (bools.length === 1 && data?.variable === undefined) {
+      set({ variable: bools[0][0] })
+    }
+  }, [bools, data?.variable]);
+
   // need to use a DOM callback to intercept contextmenu
   React.useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -200,6 +206,13 @@ const EmitNode = (props: NodeProps<Emit>) => {
   // REPORTME: react-flow seems to sometimes render non-existing nodes briefly?
   const data = getNode<Emit>(props.id)?.data;
   const set = makeNodeDataSetter<Emit>(props.id);
+
+  useEffect(() => {
+    const functionNames = Object.keys(functions);
+    if (Object.entries(functionNames).length === 1 && data?.function === undefined) {
+      set({ function: functionNames[0] })
+    }
+  }, [functions, data?.function]);
 
   return !data ? null : (
     <BaseNode

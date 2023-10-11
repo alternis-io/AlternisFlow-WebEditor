@@ -149,8 +149,7 @@ export function exportToJson(doc: AppState["document"]) {
         const data = node.data as Lock;
         ctx.pushNode({
           [data.action]: {
-            // FIXME: not supported yet
-            booleanVariableIndex: 0,
+            booleanVariableName: data.variable,
             next,
           },
         });
@@ -167,8 +166,7 @@ export function exportToJson(doc: AppState["document"]) {
         const data = node.data as Emit;
         ctx.pushNode({
           call: {
-            // FIXME: not supported yet
-            functionIndex: 0,
+            functionName: data.function,
             next,
           },
         });

@@ -22,7 +22,7 @@ const Homepage = () => {
         <strong>
         Alternis is the intuitive dialogue editor
         and open source dialogue middleware that
-        fits on the web or in any game engine.
+        fits on the web or in any game engine portably.
         </strong>
       </p>
 
@@ -94,9 +94,6 @@ const Homepage = () => {
           <img alt="html5-logo" src={html5LogoUrl} />
         </div>
       </div>
-
-
-      {/* iframed feature show case? */}
 
       <p style={{ fontSize: "18pt", textAlign: "center", }}>
         <strong>

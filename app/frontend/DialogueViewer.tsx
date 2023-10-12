@@ -46,7 +46,11 @@ export function DialogueViewer(props: DialogueViewer.Props) {
   const divProps = props;
 
   return (
-    <div {...divProps} {...classNames(styles.dialogueViewer, divProps.className)}>
+    <div
+      data-tut-id="dialogue-playback"
+      {...divProps}
+      {...classNames(styles.dialogueViewer, divProps.className)}
+    >
       {!currentStep ? (
         <div title="Start dialogue"
           onClick={async () => {

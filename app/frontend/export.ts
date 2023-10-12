@@ -254,6 +254,7 @@ export function exportToJson(doc: AppState["document"]) {
       boolean: Object.entries(doc.variables)
         .filter(([, v]) => v.type === "boolean")
         .map(([name]) => ({ name })),
+      // FIXME: warn on variable references in a line that aren't in here, that is invalid!
       string: Object.entries(doc.variables)
         .filter(([, v]) => v.type === "string")
         .map(([name]) => ({ name })),

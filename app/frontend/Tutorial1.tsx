@@ -247,6 +247,20 @@ const tutorial1Data: TutorialData = {
       </div>,
       highlightedTutIds: ["node-goto", "node-more"],
     },
+    {
+      body: <div style={{ maxWidth: "400px" }}>
+        <p>
+          You can use the playback controls to run through your dialogue and test it out.
+        </p>
+        <p>
+          <strong>
+            FIXME:
+            There is not yet a way to set values for variables, but there will be
+          </strong>
+        </p>
+      </div>,
+      highlightedTutIds: ["dialogue-playback"],
+    },
     // FIXME: need a section on the debugger
     {
       body: <div style={{ maxWidth: "400px" }}>

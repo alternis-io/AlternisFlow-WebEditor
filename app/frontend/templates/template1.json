@@ -114,7 +114,7 @@
           },
           {
             "lockVariable": "Aaron likes you",
-            "condition": "locked",
+            "condition": "unlocked",
             "text": "Wanna go eat waffles?"
           }
         ],
@@ -388,6 +388,10 @@
   "variables": {
     "Aaron likes you": {
       "type": "boolean",
+      "default": "value"
+    },
+    "name": {
+      "type": "string",
       "default": "value"
     }
   },

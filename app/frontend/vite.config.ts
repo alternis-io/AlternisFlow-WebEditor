@@ -13,6 +13,9 @@ export default defineConfig(({ mode }) => {
       port: 3000,
       strictPort: true,
     },
+    worker: {
+      format: "es",
+    },
     plugins: [
       svgr({
         svgrOptions: {

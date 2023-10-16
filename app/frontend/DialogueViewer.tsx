@@ -111,7 +111,7 @@ export function DialogueViewer(props: DialogueViewer.Props) {
                     </div>
                   ))}
                 </div>
-              ) : "none" in currentStep ? (
+              ) : "done" in currentStep ? (
                   <svg height="50px" width="50px" viewBox="-3 -3 16 16">
                     <path {...classNames(styles.playButton, "alternis__hover")} d="M0 0 l0 10 l10 -5 l-10 -5" />
                     <circle rx={5} ry={5} cx={5} cy={5} />

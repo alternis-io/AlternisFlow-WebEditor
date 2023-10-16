@@ -10,7 +10,8 @@ echo "using staging directory '$STAGING_DIR'"
 rm -rf $STAGING_DIR
 pnpm -r build
 # copy over built goods but not caches or dependencies
-rsync -aP --exclude=.git --exclude=node_modules --exclude=.cache "$REPO_DIR" "$STAGING_DIR"
+# FIXME: generate excludes from .gitignore
+rsync -aP --exclude=.git --exclude=node_modules --exclude=zig-cache --exclude=.cache "$REPO_DIR" "$STAGING_DIR"
 pushd $STAGING_DIR
 # install prod dependencies only, we don't need the dev dependencies on the server
 pnpm --production install

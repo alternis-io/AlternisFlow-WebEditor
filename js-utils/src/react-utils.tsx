@@ -41,8 +41,11 @@ export function useOnNoLongerMouseInteracted({
 } = {}) {
   let timeout: NodeJS.Timeout | undefined;
 
+  const onUninterestedRef = React.useRef(onUninterested);
+  onUninterestedRef.current = onUninterested;
+
   const _onUninterested = () => {
-    timeout = setTimeout(onUninterested, delayMs);
+    timeout = setTimeout(() => onUninterestedRef.current(), delayMs);
   };
 
   // do on mount
@@ -61,7 +64,7 @@ export function useOnNoLongerMouseInteracted({
       },
       onMouseLeave: (e: React.MouseEvent) => {
         e.preventDefault();
-        onUninterested();
+        _onUninterested();
       },
     },
     forceInterest() {

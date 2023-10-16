@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 REPO_DIR="$(dirname "$(dirname "$0")")"
 REPO_NAME="$(basename "$(readlink --canonicalize "$REPO_DIR")")"
 STAGING_DIR="/tmp/alternis-v1-deploy-stage"

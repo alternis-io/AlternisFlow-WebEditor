@@ -1,5 +1,7 @@
 # ubuntu 22.04 x86_64
 
+set -e
+
 # these seem to be pre-installed with digital ocean's version
 sudo apt install git vim tmux
 # these aren't

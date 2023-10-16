@@ -26,11 +26,13 @@ const Header = () => {
     </nav>
   );
 
+  // FIXME: this isn't SSRable, so just do it all in CSS
   const isMobileLike = useIsMobileLike();
 
+  // FIXME: place the links differently on mobile, keep them!
   return (
     <header>
-      {isMobileLike ? (
+      {!isMobileLike ? (
         <div className={styles.separate}>
           {logo} {links}
         </div>

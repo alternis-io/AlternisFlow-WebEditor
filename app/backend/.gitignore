@@ -10,3 +10,6 @@ lib/
 
 # local dev token
 secret.token
+
+# env file
+.env.local

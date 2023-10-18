@@ -1,7 +1,7 @@
 import { Link } from 'gatsby';
 import React from 'react';
 import * as styles from './header.module.scss';
-import alternisLogoPath from '../../../resources/logo2.png';
+import alternisLogoPath from '../../../resources/logo2.svg';
 import { useIsMobileLike } from '../useIsMobileLike';
 
 const Header = () => {

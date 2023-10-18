@@ -7,6 +7,7 @@ module.exports = {
     description: `Alternis dialogue editor`,
     author: `Mike Belousov`,
     siteUrl: `https://alternis.io`,
+    image: "../resources/logo2.svg"
   },
   plugins: [
     `gatsby-plugin-react-helmet`,
@@ -28,7 +29,7 @@ module.exports = {
         background_color: `#663399`,
         theme_color: `#663399`,
         display: `minimal-ui`,
-        icon: `../resources/logo2.png`,
+        icon: `../resources/logo2.svg`,
       },
     },
     // this (optional) plugin enables Progressive Web App + Offline functionality

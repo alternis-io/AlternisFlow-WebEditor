@@ -5,7 +5,7 @@ import { Split } from "../Split";
 import { resetAllAppState, useAppState } from "../AppState";
 import downloadFile, { uploadFile } from "../localFileManip";
 import { baseUrl, useApi } from "../hooks/useApi";
-import logoPath from "../../../resources/logo2.png";
+import logoPath from "../../../resources/logo2.svg";
 import { exportToJson } from "../export";
 
 export function Header() {

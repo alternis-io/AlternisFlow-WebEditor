@@ -77,7 +77,7 @@ const Homepage = () => {
 
       <p>
         Give your programmers the flexibility they need
-        by <strong>declaring variables and functions</strong> for them to fill-in.
+        by <strong>declaring variables and functions</strong> for them to fill-in and edit.
       </p>
 
       <p>

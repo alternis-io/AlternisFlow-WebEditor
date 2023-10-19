@@ -15,6 +15,7 @@ if (process.env.NODE_ENV === "development") {
   app.use(cors());
 }
 
+// FIXME: add X-Frame-Options: SAMEORIGIN
 app
   .use(logRequests)
   .use(express.json())

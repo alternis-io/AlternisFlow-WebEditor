@@ -3,6 +3,7 @@ import { useApi } from "../hooks/useApi";
 import { useValidatedInput } from "@bentley/react-hooks";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Center } from "../Center";
+import { assert } from "js-utils/lib/browser-utils";
 
 
 // FIXME: move to common and use on backend
@@ -20,9 +21,34 @@ function isValidPassword(value: string) {
   return { valid: true };
 }
 
+function GoogleLogin() {
+  const buttonId = "googleLoginBtn";
+
+  useEffect(() => {
+    const handleGoogleCredResp = (resp) => {
+      console.log("google cred", resp.credential);
+    };
+
+    globalThis.google.accounts.id.initialize({
+      client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+      callback: handleGoogleCredResp,
+    });
+    globalThis.google.accounts.id.renderButton(
+      document.getElementById(buttonId),
+      { theme: "outline", size: "large" },
+    );
+  }, []);
+
+  return (
+    <div style={{ width: "200px" }} id={buttonId}/>
+  );
+}
+
+
+
 export function LoginState(_props: LoginPage.Props) {
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const encodedRedirectSource = searchParams.get("redirect");
   const isLoggedIn = useApi(s => s.computed.isLoggedIn);
   const api = useApi(s => s.api);
@@ -59,7 +85,9 @@ export function LoginState(_props: LoginPage.Props) {
     : "http://localhost:4222";
 
   const redirectUri = `${apiOrigin}/api/v1/users/me/login/github/callback`;
-  const url = `https://github.com/login/oauth/authorize?client_id=${import.meta.env.VITE_GITHUB_CLIENT_ID}&redirect_uri=${redirectUri}&login`;
+  const url = `https://github.com/login/oauth/authorize?client_id=${
+    import.meta.env.VITE_GITHUB_CLIENT_ID
+  }&redirect_uri=${redirectUri}&login`;
 
   const githubLogin = (
     <a href={url}>
@@ -75,6 +103,7 @@ export function LoginState(_props: LoginPage.Props) {
 
   return (
     <div>
+      <GoogleLogin />
       {githubLogin}
       {/* FIXME: use the form properly */}
       {/* FIXME: refactor styling */}

@@ -31,6 +31,7 @@ export function LoginState(_props: LoginPage.Props) {
     parse: (x) => ({ value: x }),
     pattern: /[^@]+@[a-zA-Z0-9-_]+\.[a-zA-Z0-9-_]+/,
   });
+
   const [password, passwordInput, setPasswordInput, _passwordStatus, passwordError] = useValidatedInput<string>("", {
     parse: (x) => ({ value: x }),
     validate: isValidPassword,
@@ -52,8 +53,29 @@ export function LoginState(_props: LoginPage.Props) {
     await api.logout();
   };
 
+  const apiOrigin
+    = import.meta.env.PROD
+    ? window.location.origin
+    : "http://localhost:4222";
+
+  const redirectUri = `${apiOrigin}/api/v1/users/me/login/github/callback`;
+  const url = `https://github.com/login/oauth/authorize?client_id=${import.meta.env.VITE_GITHUB_CLIENT_ID}&redirect_uri=${redirectUri}&login`;
+
+  const githubLogin = (
+    <a href={url}>
+      <button
+        onClick={() => {
+        }}
+      >
+        <img width="20px" src="http://github.com/favicon.ico" />
+        Sign in with GitHub
+      </button>
+    </a>
+  );
+
   return (
     <div>
+      {githubLogin}
       {/* FIXME: use the form properly */}
       {/* FIXME: refactor styling */}
       <Center style={{

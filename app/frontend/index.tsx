@@ -3,7 +3,7 @@ import ReactDOM from "react-dom";
 import Ide from "./Ide";
 import './userWorker';
 import { ReactFlowProvider } from "reactflow";
-import { createHashRouter, RouterProvider, useNavigate, useRouteError } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, useNavigate, useRouteError } from "react-router-dom";
 import { ProjectSelector } from "./components/ProjectSelector";
 import { resetAllAppState, useAppState } from "./AppState";
 import Header from "./components/Header";
@@ -48,9 +48,9 @@ function ResettingErrorBoundary(props: React.PropsWithChildren<{}>) {
 }
 
 // FIXME: try browser router?
-const router = createHashRouter([
+const router = createBrowserRouter([
   {
-    path: "/",
+    path: "app",
     element: <>
       <RedirectIfNotLoggedIn />
       <ReactFlowProvider>
@@ -61,7 +61,7 @@ const router = createHashRouter([
     ErrorBoundary: ResettingErrorBoundary,
   },
   {
-    path: "documents",
+    path: "app/documents",
     element: <>
       <RedirectIfNotLoggedIn />
       <Header />
@@ -72,7 +72,7 @@ const router = createHashRouter([
     ErrorBoundary: ResettingErrorBoundary,
   },
   {
-    path: "login",
+    path: "app/login",
     element: <>
       <Header />
       <LoginState />

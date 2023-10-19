@@ -12,7 +12,7 @@ export function useRedirectIfNotLoggedIn() {
 
   useEffect(() => {
     if (!isLoggedIn && !inLocalTrial)
-      navigate(`/login?redirect=${encodeURIComponent(location.pathname)}`, { replace: true })
+      navigate(`/app/login?redirect=${encodeURIComponent(location.pathname)}`, { replace: true })
   }, [isLoggedIn, navigate, location, inLocalTrial]);
 }
 

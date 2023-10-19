@@ -8,6 +8,7 @@ export default defineConfig(({ mode }) => {
   Object.assign(process.env, loadEnv(mode, process.cwd(), ""));
 
   return {
+    envDir: ".",
     base: "/app",
     server: {
       port: 3000,
@@ -67,6 +68,5 @@ export default defineConfig(({ mode }) => {
         ],
       },
     },
-    envPrefix: "MDXEDIT_",
   };
 });

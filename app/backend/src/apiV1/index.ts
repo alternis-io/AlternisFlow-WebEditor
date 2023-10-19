@@ -3,10 +3,11 @@ import { expressFixAsyncify } from "../util";
 import { PrismaClient, Document, User, WithId, DocumentList, WithToken } from '../prisma';
 import { generateAccessToken, requireAuthToken } from "./auth";
 import createHttpError from 'http-errors';
+import { apiV1Github } from './github';
 
 const prisma = new PrismaClient();
 
-const apiV1: express.Router = express.Router();
+export const apiV1: express.Router = express.Router();
 
 apiV1.get<{}, User | null>(
   '/users/me',
@@ -73,7 +74,6 @@ apiV1.post<{}, WithToken, { email: string, password: string }>(
     res.end();
   })
 );
-
 
 apiV1.post<{}, Partial<Document>, Partial<Document>>(
   '/users/me/documents',
@@ -211,4 +211,4 @@ apiV1.get<WithId, Document>(
   })
 );
 
-export { apiV1 };
+apiV1.use(apiV1Github);

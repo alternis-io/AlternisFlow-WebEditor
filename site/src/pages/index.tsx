@@ -98,6 +98,13 @@ const Homepage = () => {
       <p style={{ fontSize: "18pt", textAlign: "center", }}>
         <strong>
           Join our <a href="FIXME">newsletter</a> to receive product updates.
+          <form action="" >
+            <label>
+              Email:
+              <input name="email" type="email" />
+            </label>
+            <input type="submit" />
+          </form>
         </strong>
       </p>
 

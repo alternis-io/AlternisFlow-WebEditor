@@ -33,6 +33,7 @@ function GoogleLogin() {
       client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
       callback: handleGoogleCredResp,
     });
+
     globalThis.google.accounts.id.renderButton(
       document.getElementById(buttonId),
       { theme: "outline", size: "large" },

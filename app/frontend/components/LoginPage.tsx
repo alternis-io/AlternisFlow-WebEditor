@@ -23,10 +23,12 @@ function isValidPassword(value: string) {
 
 function GoogleLogin() {
   const buttonId = "googleLoginBtn";
+  const api = useApi(s => s.api);
 
   useEffect(() => {
+    // FIXME: what to do if they're not already logged in?
     const handleGoogleCredResp = (resp) => {
-      console.log("google cred", resp.credential);
+      api.completeGoogleLogin({ credential: resp.credential });
     };
 
     globalThis.google.accounts.id.initialize({
@@ -44,8 +46,6 @@ function GoogleLogin() {
     <div style={{ width: "200px" }} id={buttonId}/>
   );
 }
-
-
 
 export function LoginState(_props: LoginPage.Props) {
   const navigate = useNavigate();
@@ -90,7 +90,7 @@ export function LoginState(_props: LoginPage.Props) {
     import.meta.env.VITE_GITHUB_CLIENT_ID
   }&redirect_uri=${redirectUri}&login`;
 
-  const githubLogin = (
+  const _githubLogin = (
     <a href={url}>
       <button
         onClick={() => {
@@ -102,10 +102,83 @@ export function LoginState(_props: LoginPage.Props) {
     </a>
   );
 
+  const _customLogin = (
+    <div>
+      {encodedRedirectSource && (
+        <div>
+          You must be logged in to use Alternis.
+          Want to just <Link to="/?trial">try it</Link> out now?
+        </div>
+      )}
+      <div style={{
+        marginTop: 20,
+        display: "flex",
+        flexDirection: "column",
+        gap: 5,
+        alignItems: "center"
+      }}>
+        {isLoggedIn ? <>
+          <button
+            onClick={logout}
+            title={"unimplemented"}
+          >
+            Logout
+          </button>
+        </> : <>
+          <label className="alternis__split" style={{ minWidth: 300 }}>
+            Email:
+            <input
+              value={emailInput}
+              type="email"
+              onChange={(e) => setEmailInput(e.currentTarget.value)}
+              onKeyDown={(e) => inputValid && e.key === 'Enter' && login()}
+            />
+          </label>
+          {emailError && emailInput.length > 0 && <div className="alternis__invalidInputMessage">{emailError}</div>}
+          <label className="alternis__split" style={{ minWidth: 300 }}>
+            Password:
+            <input
+              value={passwordInput}
+              type="password"
+              onChange={(e) => setPasswordInput(e.currentTarget.value)}
+              onSubmit={login}
+              onKeyDown={(e) => inputValid && e.key === 'Enter' && login()}
+            />
+          </label>
+          {passwordError && passwordInput.length > 0 && <div className="alternis__invalidInputMessage">{passwordError}</div>}
+          <Center>
+            <button
+              onClick={login}
+              disabled={!inputValid}
+              title={inputValid ? "Click to login" : "Invalid inputs"}
+              style={{ width: "10em" }}
+            >
+              Login
+            </button>
+          </Center>
+          <Center>
+            <button
+              onClick={async () => {
+                if (!inputValid) return;
+                // FIXME: need forgot password link
+                // FIXME: test attempt to register existing email
+                await api.register({ email, password });
+              }}
+              disabled={!inputValid}
+              title={inputValid ? "Click to login" : "Invalid inputs"}
+              style={{ width: "10em" }}
+            >
+              Register
+            </button>
+          </Center>
+          </>
+        }
+      </div>
+    </div>
+  );
+
   return (
     <div>
-      <GoogleLogin />
-      {githubLogin}
       {/* FIXME: use the form properly */}
       {/* FIXME: refactor styling */}
       <Center style={{
@@ -117,78 +190,7 @@ export function LoginState(_props: LoginPage.Props) {
         }}
         ref={popupRef}
       >
-        <div>
-          {encodedRedirectSource && (
-            <div>
-              You must be logged in to use Alternis.
-              Want to just <Link to="/?trial">try it</Link> out now?
-            </div>
-          )}
-          <div style={{
-            marginTop: 20,
-            display: "flex",
-            flexDirection: "column",
-            gap: 5,
-            alignItems: "center"
-          }}>
-            {isLoggedIn ? <>
-              <button
-                onClick={logout}
-                title={"unimplemented"}
-              >
-                Logout
-              </button>
-            </> : <>
-              <label className="alternis__split" style={{ minWidth: 300 }}>
-                Email:
-                <input
-                  value={emailInput}
-                  type="email"
-                  onChange={(e) => setEmailInput(e.currentTarget.value)}
-                  onKeyDown={(e) => inputValid && e.key === 'Enter' && login()}
-                />
-              </label>
-              {emailError && emailInput.length > 0 && <div className="alternis__invalidInputMessage">{emailError}</div>}
-              <label className="alternis__split" style={{ minWidth: 300 }}>
-                Password:
-                <input
-                  value={passwordInput}
-                  type="password"
-                  onChange={(e) => setPasswordInput(e.currentTarget.value)}
-                  onSubmit={login}
-                  onKeyDown={(e) => inputValid && e.key === 'Enter' && login()}
-                />
-              </label>
-              {passwordError && passwordInput.length > 0 && <div className="alternis__invalidInputMessage">{passwordError}</div>}
-              <Center>
-                <button
-                  onClick={login}
-                  disabled={!inputValid}
-                  title={inputValid ? "Click to login" : "Invalid inputs"}
-                  style={{ width: "10em" }}
-                >
-                  Login
-                </button>
-              </Center>
-              <Center>
-                <button
-                  onClick={async () => {
-                    if (!inputValid) return;
-                    // FIXME: need forgot password link
-                    // FIXME: test attempt to register existing email
-                    await api.register({ email, password });
-                  }}
-                  disabled={!inputValid}
-                  title={inputValid ? "Click to login" : "Invalid inputs"}
-                  style={{ width: "10em" }}
-                >
-                  Register
-                </button>
-              </Center>
-              </>
-            }
-          </div>
-        </div>
+        <GoogleLogin />
       </Center>
     </div>
   );

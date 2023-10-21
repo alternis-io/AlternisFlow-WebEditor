@@ -1,6 +1,7 @@
 // FIXME: rename file to app.ts or something
 
 import express from 'express';
+import cookieParser from 'cookie-parser';
 import createHttpError from 'http-errors'
 import cors from 'cors';
 import assert from "node:assert";
@@ -19,6 +20,7 @@ if (process.env.NODE_ENV === "development") {
 app
   .use(logRequests)
   .use(express.json())
+  .use(cookieParser())
   .use(express.urlencoded({ extended: false }))
   // these are for development only, the real thing uses nginx aliases
   .use("/", express.static(path.join(__dirname, "../../../site/public")))

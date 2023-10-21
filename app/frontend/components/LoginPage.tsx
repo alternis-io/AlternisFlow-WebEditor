@@ -21,29 +21,31 @@ function isValidPassword(value: string) {
   return { valid: true };
 }
 
+// FIXME: move to useApi
+const apiOrigin
+= import.meta.env.PROD
+? window.location.origin
+: "http://localhost:4222";
+
 function GoogleLogin() {
-  const buttonId = "googleLoginBtn";
   const api = useApi(s => s.api);
 
-  useEffect(() => {
-    // FIXME: what to do if they're not already logged in?
-    const handleGoogleCredResp = (resp) => {
-      api.completeGoogleLogin({ credential: resp.credential });
-    };
-
-    globalThis.google.accounts.id.initialize({
-      client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-      callback: handleGoogleCredResp,
-    });
-
-    globalThis.google.accounts.id.renderButton(
-      document.getElementById(buttonId),
-      { theme: "outline", size: "large" },
-    );
-  }, []);
-
   return (
-    <div style={{ width: "200px" }} id={buttonId}/>
+    <div>
+      <div id="g_id_onload"
+          data-client_id={import.meta.env.VITE_GOOGLE_CLIENT_ID}
+          data-login_uri={`${apiOrigin}/api/v1/users/me/login/google/callback`}
+          data-auto_prompt="false">
+      </div>
+      <div className="g_id_signin"
+          data-type="standard"
+          data-size="large"
+          data-theme="filled_black"
+          data-text="sign_in_with"
+          data-shape="rectangular"
+          data-logo_alignment="left">
+      </div>
+    </div>
   );
 }
 
@@ -79,11 +81,6 @@ export function LoginState(_props: LoginPage.Props) {
   const logout = async () => {
     await api.logout();
   };
-
-  const apiOrigin
-    = import.meta.env.PROD
-    ? window.location.origin
-    : "http://localhost:4222";
 
   const redirectUri = `${apiOrigin}/api/v1/users/me/login/github/callback`;
   const url = `https://github.com/login/oauth/authorize?client_id=${

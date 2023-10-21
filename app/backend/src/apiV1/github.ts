@@ -44,8 +44,7 @@ apiV1Github.get<{}, {}, {}, { code: string }>(
       body: form,
     });
 
-    const accessTokenText = await accessTokenResp
-      .text()
+    const accessTokenText = await accessTokenResp.text()
 
     const accessTokenJson = await Promise.resolve(accessTokenText)
       .then(t => JSON.parse(t))

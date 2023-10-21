@@ -4,6 +4,7 @@ import { PrismaClient, Document, User, WithId, DocumentList, WithToken } from '.
 import { generateAccessToken, requireAuthToken } from "./auth";
 import createHttpError from 'http-errors';
 import { apiV1Github } from './github';
+import { apiV1Google } from './google';
 
 const prisma = new PrismaClient();
 
@@ -212,3 +213,4 @@ apiV1.get<WithId, Document>(
 );
 
 apiV1.use(apiV1Github);
+apiV1.use(apiV1Google);

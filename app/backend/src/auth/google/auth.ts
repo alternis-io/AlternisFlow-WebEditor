@@ -1,42 +1,23 @@
 import type express from "express";
 import * as jose from "jose";
-import fs from "node:fs";
-import path from "node:path";
-import crypto from "node:crypto";
 import assert from "node:assert";
 import createHttpError from "http-errors";
-import type { AuthUserInfo } from "../auth";
+import type { AuthUserInfo } from "..";
 
-// FIXME: use some kind of config dir
-const tokenSecretPath = path.join(__dirname, "secret.token");
-let tokenSecret = Buffer.allocUnsafe(64);
+const googleJwksCertUrl = new URL("https://www.googleapis.com/oauth2/v3/certs");
+const getGoogleJwks = jose.createRemoteJWKSet(googleJwksCertUrl);
 
-// WARNING premature optimization
-try {
-  const tokenFd = fs.openSync(tokenSecretPath, 'r');
-  fs.readSync(tokenFd, tokenSecret, 0, 64, null);
-} catch (err: any) {
-  if (err.code !== "ENOENT")
-    throw err;
-  tokenSecret = crypto.randomBytes(64);
-  fs.writeFileSync(tokenSecretPath, tokenSecret);
-}
+async function verifyGoogleJwt(jwt: string) {
+  const verifyResult = await jose.jwtVerify(jwt, getGoogleJwks, {
+    issuer: ["accounts.google.com", "https://accounts.google.com"],
+    audience: process.env.GOOGLE_CLIENT_ID,
+  });
 
-export async function generateAccessToken(userInfo: AuthUserInfo) {
-  return await new jose.SignJWT({ user: userInfo })
-    .setProtectedHeader({ alg: 'HS256' })
-    .setIssuedAt()
-    .setIssuer('alternis.io')
-    .setAudience(userInfo.email)
-    // FIXME: have a separate refresh token
-    // (or just refresh the main token every 15 minutes on the client, so long as it's not
-    // past 7 days without logging in for the user)
-    .setExpirationTime('7d')
-    .sign(tokenSecret);
+  return verifyResult;
 }
 
 // FIXME: add typing
-export async function requireAuthToken<
+export async function requireGoogleAuthToken<
   P = any, // express.ParamsDictionary,
   ResBody = any,
   ReqBody = any,
@@ -58,9 +39,7 @@ export async function requireAuthToken<
     return next(createHttpError(400, "Invalid authorization format"));
 
   try {
-    const verifyResult = await jose.jwtVerify(token, tokenSecret, {
-      issuer: 'alternis.io',
-    });
+    const verifyResult = await verifyGoogleJwt(token);
     assert(validPayload(verifyResult.payload), "no audience in token");
     req.user = verifyResult.payload.user;
     req.token = token;
@@ -76,5 +55,4 @@ const validPayload = (u: any): u is { user: AuthUserInfo } =>
   && typeof u === "object"
   && u.user !== null
   && typeof u.user === "object"
-  && typeof u.user.id === "number"
   && typeof u.user.email === "string";

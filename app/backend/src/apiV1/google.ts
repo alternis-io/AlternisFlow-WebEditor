@@ -10,17 +10,6 @@ const prisma = new PrismaClient();
 
 export const apiV1Google: express.Router = express.Router();
 
-const logAndThrowOnRespErr = (msg: string, respBody: any) => {
-  const timestamp = new Date().toISOString();
-  log.error({
-    level: "error",
-    message: msg,
-    body: respBody,
-    time: timestamp,
-  });
-  throw createHttpError(500, msg);
-}
-
 const googleJwksCertUrl = new URL("https://www.googleapis.com/oauth2/v3/certs");
 const getGoogleJwks = jose.createRemoteJWKSet(googleJwksCertUrl);
 

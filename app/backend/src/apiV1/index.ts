@@ -1,10 +1,11 @@
 import express from 'express';
 import { expressFixAsyncify } from "../util";
 import { PrismaClient, Document, User, WithId, DocumentList, WithToken } from '../prisma';
-import { generateAccessToken, requireAuthToken } from "./auth";
+import { generateAccessToken } from "./auth";
+import { requireAuthToken } from "../auth";
 import createHttpError from 'http-errors';
-import { apiV1Github } from './github';
-import { apiV1Google } from './google';
+// import { apiV1Github } from './github';
+// import { apiV1Google } from './google';
 
 const prisma = new PrismaClient();
 
@@ -137,7 +138,7 @@ apiV1.patch<{ id: number }, unknown, Partial<Document>>(
     });
 
     res.end();
-  })
+  }),
 );
 
 apiV1.get<{}, DocumentList>(
@@ -212,5 +213,6 @@ apiV1.get<WithId, Document>(
   })
 );
 
-apiV1.use(apiV1Github);
-apiV1.use(apiV1Google);
+// might as well disable unused routes
+// apiV1.use(apiV1Github);
+// apiV1.use(apiV1Google);

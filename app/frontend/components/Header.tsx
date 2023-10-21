@@ -49,7 +49,7 @@ export function Header() {
         <button>Newsletter</button>
         <button>Feedback</button>
         <button>Search</button>
-        <Link to="/documents">
+        <Link to="/app/projects">
           <button>Projects</button>
         </Link>
         <button

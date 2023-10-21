@@ -21,8 +21,11 @@ export interface UseApiResult {
   baseUrl: string;
 
   // state
-  me: Pick<User, "id" | "email"> | undefined;
+  me: Pick<User, "email"> | undefined;
   documents: DocumentList | undefined;
+
+  // private (for now) state
+  _token: string | undefined;
 
   /** computed values must be in a subobject, also they can't be persisted */
   computed: {
@@ -236,8 +239,7 @@ const useLocalApiState = create<ApiState>()((set, get) => ({
 
       // FIXME: use real id from parsed token
       const ownerId = get().me?.id;
-      if (!ownerId)
-        return;
+      assert(ownerId !== undefined, "no owner id!");
 
       const tempDocId = getNextInvalidId();
 

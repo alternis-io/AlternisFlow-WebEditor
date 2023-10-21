@@ -41,18 +41,21 @@ export async function requireGoogleAuthToken<
   try {
     const verifyResult = await verifyGoogleJwt(token);
     assert(validPayload(verifyResult.payload), "no audience in token");
-    req.user = verifyResult.payload.user;
+    req.user = { email: verifyResult.payload.email };
     req.token = token;
     next();
   } catch (err: any) {
+    res.locals.log.error({
+      message: "error validating google auth",
+      err,
+    });
+    // FIXME: do I need to send this status?
     res.sendStatus(403);
-    next(createHttpError(403));
+    next(err);
   }
 }
 
-const validPayload = (u: any): u is { user: AuthUserInfo } =>
+const validPayload = (u: any): u is AuthUserInfo =>
   u !== null
   && typeof u === "object"
-  && u.user !== null
-  && typeof u.user === "object"
-  && typeof u.user.email === "string";
+  && typeof u.email === "string";

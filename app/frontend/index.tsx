@@ -61,7 +61,7 @@ const router = createBrowserRouter([
     ErrorBoundary: ResettingErrorBoundary,
   },
   {
-    path: "app/documents",
+    path: "app/projects",
     element: <>
       <RedirectIfNotLoggedIn />
       <Header />

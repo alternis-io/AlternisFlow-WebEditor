@@ -86,6 +86,9 @@ export function ProjectSelector(props: ProjectSelector.Props) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   useOnExternalClick(dialogRef, () => setCreateDocDialogShown(false));
 
+  const ifEmptyDefault = <T,>(arr: T[] | undefined, _default: T): T[] =>
+    !arr || arr.length === 0 ? [_default] : arr;
+
   return (
     <div style={{ padding: 11 }}>
       <h1>Projects</h1>
@@ -93,32 +96,39 @@ export function ProjectSelector(props: ProjectSelector.Props) {
         <h2> Create a project </h2>
         <h5> Use a template </h5>
         <div style={{ overflow: "scroll", maxHeight: "50vh" }}>
-          {Object.values(templates)?.map(t => (
-            <div
-              onClick={() => {
-                void createDocument(t);
-                setCreateDocDialogShown(false);
-              }}
-              className="alternis__hoverable"
-            >
-              <span>{t.name}</span>
-            </div>
-          )) ?? <span><em>You have no templates to clone</em></span>}
+          {ifEmptyDefault(
+            Object.values(templates)?.map(t => (
+              <div
+                key={t.name}
+                onClick={() => {
+                  void createDocument(t);
+                  setCreateDocDialogShown(false);
+                }}
+                className="alternis__hoverable"
+              >
+                <span>{t.name}</span>
+              </div>
+            )),
+            <span><em>You have no templates to clone</em></span>
+          )}
         </div>
         <h5> Or clone from an existing one </h5>
         <div style={{ overflow: "scroll", maxHeight: "50vh" }}>
-          {documents?.map(d => (
-            // FIXME: this should use a special backend call
-            <div
-              onClick={() => {
-                void createDocument();
-                setCreateDocDialogShown(false);
-              }}
-              className="alternis__hoverable"
-            >
-              <span>{d.name}</span>
-            </div>
-          )) ?? <span><em>You have no documents to clone</em></span>}
+          {ifEmptyDefault(
+            documents?.map(d => (
+              // FIXME: this should use a special backend call
+              <div
+                onClick={() => {
+                  void createDocument();
+                  setCreateDocDialogShown(false);
+                }}
+                className="alternis__hoverable"
+              >
+                <span>{d.name}</span>
+              </div>
+            )),
+            <span><em>You have no documents to clone</em></span>
+          )}
         </div>
       </dialog>
       <div className={styles.projectGrid}>

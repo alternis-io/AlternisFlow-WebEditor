@@ -23,30 +23,39 @@ function isValidPassword(value: string) {
 
 // FIXME: move to useApi
 const apiOrigin
-= import.meta.env.PROD
-? window.location.origin
-: "http://localhost:4222";
+  = import.meta.env.PROD
+  ? window.location.origin
+  : "http://localhost:4222";
 
-function GoogleLogin() {
-  const api = useApi(s => s.api);
+function GoogleLogin(props: { onLogin?: () => void }) {
+  // FIXME: this doesn't seem to rerender correctly?
+  const isLoggedIn = useApi(s => s.computed.isLoggedIn);
 
-  return (
-    <div>
-      <div id="g_id_onload"
-          data-client_id={import.meta.env.VITE_GOOGLE_CLIENT_ID}
-          data-login_uri={`${apiOrigin}/api/v1/users/me/login/google/callback`}
-          data-auto_prompt="false">
-      </div>
-      <div className="g_id_signin"
-          data-type="standard"
-          data-size="large"
-          data-theme="filled_black"
-          data-text="sign_in_with"
-          data-shape="rectangular"
-          data-logo_alignment="left">
-      </div>
-    </div>
-  );
+  const googleLoginBtn = useRef<HTMLDivElement>(null);
+  const loginFunc = useRef(props.onLogin);
+  loginFunc.current = props.onLogin;
+
+  useEffect(() => {
+    function handleCredentialResponse(resp: { credential: string }) {
+      useApi.setState(({ _token: resp.credential }));
+      props.onLogin?.();
+    }
+
+    globalThis.google.accounts.id.initialize({
+      client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+      callback: handleCredentialResponse
+    });
+
+    globalThis.google.accounts.id.renderButton(
+      googleLoginBtn.current,
+      { theme: "filled_black", size: "large" }  // customization attributes
+    );
+
+    // display the One Tap dialog
+    //globalThis.google.accounts.id.prompt();
+  }, []);
+
+  return isLoggedIn ? null : <div ref={googleLoginBtn} />;
 }
 
 export function LoginState(_props: LoginPage.Props) {
@@ -71,11 +80,15 @@ export function LoginState(_props: LoginPage.Props) {
 
   const popupRef = useRef<HTMLDivElement>(null);
 
+  const onAfterLogin = () => {
+    if (encodedRedirectSource)
+      navigate(decodeURIComponent(encodedRedirectSource), { replace: true });
+  };
+
   const login = async () => {
     if (!inputValid) return;
     await api.login({ email, password });
-    if (encodedRedirectSource)
-      navigate(decodeURIComponent(encodedRedirectSource), { replace: true });
+    onAfterLogin();
   };
 
   const logout = async () => {
@@ -104,7 +117,7 @@ export function LoginState(_props: LoginPage.Props) {
       {encodedRedirectSource && (
         <div>
           You must be logged in to use Alternis.
-          Want to just <Link to="/?trial">try it</Link> out now?
+          Want to just <Link to="/app?trial">try it</Link> out now?
         </div>
       )}
       <div style={{
@@ -187,7 +200,7 @@ export function LoginState(_props: LoginPage.Props) {
         }}
         ref={popupRef}
       >
-        <GoogleLogin />
+        <GoogleLogin onLogin={onAfterLogin} />
       </Center>
     </div>
   );

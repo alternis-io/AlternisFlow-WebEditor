@@ -16,7 +16,7 @@ apiV1.get<{}, User | null>(
   requireAuthToken,
   expressFixAsyncify(async function getMyUser(req, res) {
     const me = await prisma.user.findUniqueOrThrow({
-      where: { id: req.user!.id },
+      where: { email: req.user!.email },
     });
 
     delete (me as any).passwordHash;
@@ -88,7 +88,7 @@ apiV1.post<{}, Partial<Document>, Partial<Document>>(
         jsonContents: req.body.jsonContents ?? "{}",
         owner: {
           connect: {
-            id: req.user!.id,
+            email: req.user!.email,
           },
         },
       },
@@ -152,7 +152,7 @@ apiV1.get<{}, DocumentList>(
         ownerId: true,
         updatedAt: true,
       },
-      where: { owner: { id: req.user!.id } },
+      where: { owner: { email: req.user!.email } },
       // FIXME: do proper paging, this is just for safety
       take: 500,
     });
@@ -175,7 +175,7 @@ apiV1.get<{}, DocumentList>(
       },
       where: {
         // FIXME: why doesn't token work?
-        owner: { id: req.user!.id },
+        owner: { email: req.user!.email },
       },
       take: 50,
       orderBy: {

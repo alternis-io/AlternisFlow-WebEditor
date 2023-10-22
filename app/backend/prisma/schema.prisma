@@ -8,10 +8,11 @@ datasource db {
 }
 
 model User {
+  // note: email is used for foreign keys because it is more flexible for jwt issuers
   id Int @id @default(autoincrement())
   email String @unique
-  passwordHash String
-  // we can remove this
+  // can be a password hash for some accounts, should contain a $prefix$ indicating
+  // the contained type
   token String? @unique
   documents Document[]
 }
@@ -22,8 +23,8 @@ model Document {
   created DateTime @default(now())
   updatedAt DateTime @updatedAt
   jsonContents String
-  owner User @relation(fields: [ownerId], references: [id])
-  ownerId Int
+  owner User @relation(fields: [ownerEmail], references: [email])
+  ownerEmail String
 }
 
 model ClientError{
@@ -31,6 +32,7 @@ model ClientError{
   lastOccurrence DateTime @updatedAt
   message String
   stack String
+  userAgent String?
   context String
   clientVersion String
   serverVersion String

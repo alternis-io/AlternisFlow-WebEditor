@@ -11,13 +11,18 @@ import { logRequests, logErrors } from "./logRequests";
 
 const app = express()
 
+/*
 if (process.env.NODE_ENV === "development") {
   console.log("adding cors for development");
   app.use(cors());
 }
+*/
 
 // FIXME: add X-Frame-Options: SAMEORIGIN
 app
+  .use(cors({
+    origin: "https://accounts.google.com/gsi/*",
+  }))
   .use(logRequests)
   .use(express.json())
   .use(cookieParser())

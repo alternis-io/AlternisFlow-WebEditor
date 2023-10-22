@@ -13,3 +13,4 @@ secret.token
 
 # env file
 .env.local
+.env.development

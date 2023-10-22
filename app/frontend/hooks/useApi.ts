@@ -238,8 +238,8 @@ const useLocalApiState = create<ApiState>()((set, get) => ({
       //
 
       // FIXME: use real id from parsed token
-      const ownerId = get().me?.id;
-      assert(ownerId !== undefined, "no owner id!");
+      const ownerEmail = get().me?.email;
+      assert(ownerEmail !== undefined, "no owner id!");
 
       const tempDocId = getNextInvalidId();
 
@@ -249,7 +249,7 @@ const useLocalApiState = create<ApiState>()((set, get) => ({
           id: tempDocId,
           name: "New Document",
           updatedAt: new Date(),
-          ownerId,
+          ownerEmail,
         }),
       }));
 

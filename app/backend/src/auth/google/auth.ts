@@ -7,11 +7,14 @@ import type { AuthUserInfo } from "..";
 const googleJwksCertUrl = new URL("https://www.googleapis.com/oauth2/v3/certs");
 const getGoogleJwks = jose.createRemoteJWKSet(googleJwksCertUrl);
 
-async function verifyGoogleJwt(jwt: string) {
+export async function verifyGoogleJwt(jwt: string) {
   const verifyResult = await jose.jwtVerify(jwt, getGoogleJwks, {
     issuer: ["accounts.google.com", "https://accounts.google.com"],
     audience: process.env.GOOGLE_CLIENT_ID,
   });
+
+  if (!verifyResult.payload.email_verified)
+    throw Error(`google account's email '${verifyResult.payload.email}' is unverified`);
 
   return verifyResult;
 }

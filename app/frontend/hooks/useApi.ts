@@ -36,6 +36,7 @@ export interface UseApiResult {
   api: {
     register: (user: RegisterUserData) => Promise<void>;
     login: (user: RegisterUserData) => Promise<void>;
+    googleLogin: () => Promise<void>;
     logout: () => Promise<void>;
     syncMe(): Promise<void>;
     syncMyRecentDocuments(): Promise<void>;
@@ -83,10 +84,28 @@ try {
   }
 } catch {}
 
+function extractUserFromGoogleToken(token: string | jose.JWTPayload) {
+  if (typeof token === "string")
+    token = jose.decodeJwt(token);
+  return {
+    email: token.email as string,
+    givenName: token.given_name as string | undefined,
+    familyName: token.family_name as string | undefined,
+    fullName: token.full_name as string | undefined,
+    pictureUrl: token.picture as string | undefined,
+  };
+}
+
 const initialLocalApiState = Object.freeze({
   ...defaultLocalApiState,
   _token: initialToken,
-  me: initialTokenPayload?.user as Pick<User, "id" | "email">,
+  me: initialTokenPayload && {
+    email: initialTokenPayload.email as string,
+    givenName: initialTokenPayload.given_name as string | undefined,
+    familyName: initialTokenPayload.family_name as string | undefined,
+    fullName: initialTokenPayload.full_name as string | undefined,
+    pictureUrl: initialTokenPayload.picture as string | undefined,
+  }
 });
 
 // FIXME: use sequence
@@ -145,6 +164,20 @@ const useLocalApiState = create<ApiState>()((set, get) => ({
   api: {
     register: (user: RegisterUserData) => get()._likeLogin("register", user),
     login: (user: RegisterUserData) => get()._likeLogin("login", user),
+
+    async googleLogin() {
+      const token = get()._token;
+      assert(token, "token not set before implicit login");
+      const resp = await get()._apiFetch(`/users/me/login/google`, {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      assert(resp.ok, "google login resp not ok");
+      // FIXME: note not verifying the token on client
+      set({ me: extractUserFromGoogleToken(token) });
+    },
 
     async logout() {
       set({ _token: undefined });
@@ -237,9 +270,8 @@ const useLocalApiState = create<ApiState>()((set, get) => ({
       // );
       //
 
-      // FIXME: use real id from parsed token
       const ownerEmail = get().me?.email;
-      assert(ownerEmail !== undefined, "no owner id!");
+      assert(ownerEmail !== undefined, "no owner email!");
 
       const tempDocId = getNextInvalidId();
 

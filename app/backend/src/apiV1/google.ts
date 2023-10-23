@@ -1,22 +1,30 @@
 import express from 'express';
 import { expressFixAsyncify } from "../util";
-import * as jose from "jose";
-import { PrismaClient, Document, User, WithId, DocumentList, WithToken } from '../prisma';
+import { PrismaClient } from '../prisma';
 import createHttpError from 'http-errors';
 import assert from "node:assert";
-import { log } from "../logRequests";
+import { verifyGoogleJwt } from '../auth/google/auth';
 
 const prisma = new PrismaClient();
 
 export const apiV1Google: express.Router = express.Router();
 
-const googleJwksCertUrl = new URL("https://www.googleapis.com/oauth2/v3/certs");
-const getGoogleJwks = jose.createRemoteJWKSet(googleJwksCertUrl);
+async function verifyAndUpsertGoogleJwt(token: string) {
+  const verifyResult = await verifyGoogleJwt(token);
 
-async function verifyGoogleJwt(jwt: string) {
-  const verifyResult = await jose.jwtVerify(jwt, getGoogleJwks, {
-    issuer: ["accounts.google.com", "https://accounts.google.com"],
-    audience: process.env.GOOGLE_CLIENT_ID,
+  const email = verifyResult.payload.email;
+  assert(typeof email === "string", "invalid email in jwt payload");
+
+  await prisma.user.upsert({
+    where: { email },
+    update: {
+      // FIXME: don't store this
+      // token,
+    },
+    create: {
+      email,
+      // token,
+    },
   });
 
   return verifyResult;
@@ -41,24 +49,7 @@ apiV1Google.post<
     if (req.cookies.g_csrf_token !== req.body.g_csrf_token)
       throw createHttpError(400, "cookies missing g_csrf_token");
 
-    const verifyResult = await verifyGoogleJwt(req.body.credential);
-
-    const email = verifyResult.payload.email;
-    assert(typeof email === "string", "invalid email in jwt payload");
-
-    const token = `$google-jwt-v1$${req.body.credential}`;
-
-    await prisma.user.upsert({
-      where: { email },
-      update: {
-        // FIXME: rename passwordHash
-        passwordHash: token,
-      },
-      create: {
-        email,
-        passwordHash: token,
-      },
-    });
+    await verifyAndUpsertGoogleJwt(req.body.credential);
 
     const loginPathName = "/app/login"
 
@@ -71,3 +62,21 @@ apiV1Google.post<
   }),
 );
 
+// FIXME: expressFixAsyncify requires the typed overload
+apiV1Google.post<any>(
+  '/users/me/login/google',
+  expressFixAsyncify(async function login(req, res) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader)
+      throw createHttpError(401);
+
+    const [type, token] = authHeader.split(' ');
+
+    if (type !== 'Bearer' || !token)
+      throw createHttpError(400, "Invalid authorization format");
+
+    await verifyAndUpsertGoogleJwt(token);
+    res.status(200);
+    res.end();
+  }),
+);

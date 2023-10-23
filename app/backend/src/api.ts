@@ -38,6 +38,7 @@ app
   })
   .use(logErrors)
   .use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+    // FIXME: block stack traces here
     res.status(err.status || 500);
     res.send({
       message: err.message,

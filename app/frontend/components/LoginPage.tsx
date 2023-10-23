@@ -30,6 +30,7 @@ const apiOrigin
 function GoogleLogin(props: { onLogin?: () => void }) {
   // FIXME: this doesn't seem to rerender correctly?
   const isLoggedIn = useApi(s => s.computed.isLoggedIn);
+  const googleLogin = useApi(s => s.api.googleLogin);
 
   const googleLoginBtn = useRef<HTMLDivElement>(null);
   const loginFunc = useRef(props.onLogin);
@@ -37,7 +38,9 @@ function GoogleLogin(props: { onLogin?: () => void }) {
 
   useEffect(() => {
     function handleCredentialResponse(resp: { credential: string }) {
+      // must set token before login
       useApi.setState(({ _token: resp.credential }));
+      googleLogin("/users/me/login/google/callback");
       props.onLogin?.();
     }
 

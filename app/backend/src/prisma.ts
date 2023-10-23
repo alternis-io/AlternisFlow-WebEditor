@@ -18,4 +18,4 @@ export interface WithToken {
 
 export type CreateDocument = Pick<Document, "name" | "jsonContents">;
 
-export type DocumentList = Pick<Document, "id" | "name" | "ownerId" | "updatedAt">[];
+export type DocumentList = Pick<Document, "id" | "name" | "ownerEmail" | "updatedAt">[];

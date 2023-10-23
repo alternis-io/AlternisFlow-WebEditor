@@ -133,7 +133,7 @@ apiV1.patch<{ id: number }, unknown, Partial<Document>>(
         // middleware... although perhaps the orm already does a good enough job...
         ...req.body,
         id: undefined,
-        ownerId: undefined, // FIXME: note that owner change is not allowed
+        ownerEmail: undefined, // FIXME: note that owner change is not allowed
       },
     });
 
@@ -149,7 +149,7 @@ apiV1.get<{}, DocumentList>(
       select: {
         id: true,
         name: true,
-        ownerId: true,
+        ownerEmail: true,
         updatedAt: true,
       },
       where: { owner: { email: req.user!.email } },
@@ -170,7 +170,7 @@ apiV1.get<{}, DocumentList>(
       select: {
         id: true,
         name: true,
-        ownerId: true,
+        ownerEmail: true,
         updatedAt: true,
       },
       where: {

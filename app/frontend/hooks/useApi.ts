@@ -44,6 +44,7 @@ export interface UseApiResult {
     updateDocument(id: number, patch: Partial<Document>): Promise<void>;
     deleteDocument(id: number): Promise<void>;
     createDocument(doc?: { name?: string }): Promise<void>;
+    duplicateDocument(doc: { id: number }): Promise<void>;
   };
 }
 
@@ -275,21 +276,69 @@ const useLocalApiState = create<ApiState>()((set, get) => ({
 
       const tempDocId = getNextInvalidId();
 
+      // FIXME: all these sets screw up the undo history! need a system to mitigate that
+      // without desyncing everything...
       set((s) => ({
-        documents: (s.documents ?? []).concat({
-          ...doc,
-          id: tempDocId,
-          name: "New Document",
-          updatedAt: new Date(),
-          ownerEmail,
-        }),
+        documents: [
+          {
+            ...doc,
+            id: tempDocId,
+            name: "New Document",
+            updatedAt: new Date(),
+            ownerEmail,
+          },
+          ...s.documents ?? [],
+        ],
       }));
 
       try {
         const newDoc = await get()._apiFetch(`/users/me/documents`, {
           method: "POST",
           body: JSON.stringify(doc),
+          headers: { 'Content-Type': 'application/json' },
           //headers: { 'Content-Type': 'application/octet-stream' },
+        }).then((r) => r.json());
+
+        set((s) => ({
+          documents: (s.documents ?? []).map(d => d.id !== tempDocId ? d : {
+            ...d,
+            ...newDoc,
+          })
+        }));
+      } catch (err) {
+        // FIXME: use immer for less manual rollback logic or something
+        set((s) => ({
+          documents: (s.documents ?? []).filter(d => d.id !== tempDocId),
+        }));
+      }
+    },
+
+    async duplicateDocument(doc: { id: number }) {
+      console.log(doc);
+
+      const tempDocId = getNextInvalidId();
+
+      set((s) => {
+        const srcDoc = s.documents?.find(d => d.id === doc.id);
+        if (srcDoc === undefined) return s;
+        return {
+          documents: [
+            {
+              ...srcDoc,
+              id: tempDocId,
+              name: `${srcDoc.name} copy`, // FIXME: share with backend logic
+              updatedAt: new Date(),
+            },
+            ...s.documents ?? [],
+          ],
+        };
+      });
+
+      try {
+        const newDoc = await get()._apiFetch(`/users/me/documents/${doc.id}/duplicate`, {
+          method: "POST",
+          body: JSON.stringify({ id: doc.id }),
+          headers: { 'Content-Type': 'application/json' },
         }).then((r) => r.json());
 
         set((s) => ({

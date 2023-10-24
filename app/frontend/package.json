@@ -46,6 +46,7 @@
     "everything is bundled, no prod deps"
   ],
   "dependencies": {
+    "@floating-ui/react": "^0.26.1",
     "alternis-js": "workspace:^",
     "jose": "^4.14.6"
   }

@@ -141,6 +141,47 @@ apiV1.patch<{ id: number }, unknown, Partial<Document>>(
   }),
 );
 
+apiV1.post<{ id: number }, Pick<Document, "id">, Partial<Document>>(
+  '/users/me/documents/:id/duplicate',
+  requireAuthToken,
+  expressFixAsyncify(async function createDocument(req, res) {
+    const id = Number(req.params.id);
+    if (Number.isNaN(id))
+      throw createHttpError(400, "invalid id in path");
+
+    if (typeof req.body.id !== "number")
+      throw createHttpError(400, "body is missing numeric id field");
+
+    const srcDoc = await prisma.document.findUniqueOrThrow({
+      where: { id: req.body.id },
+      select: {
+        name: true,
+        jsonContents: true,
+      },
+    });
+
+    // FIXME: this can throw
+    const doc = await prisma.document.create({
+      data: {
+        ...srcDoc,
+        name: `${srcDoc.name} copy`,
+        owner: {
+          connect: {
+            email: req.user!.email,
+          },
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+
+    res.json(doc);
+    res.end();
+  }),
+);
+
 apiV1.get<{}, DocumentList>(
   '/users/me/documents',
   requireAuthToken,

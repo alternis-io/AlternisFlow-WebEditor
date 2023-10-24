@@ -4,3 +4,19 @@
   grid-auto-rows: fit-content;
   gap: 22px;
 }
+
+.newProjectDialog {
+  background-color: var(--bg-1);
+  position: absolute;
+  top: 30%;
+  box-shadow: var(--fg-1) 0 0 3px 1px;
+  border-radius: 10px;
+}
+
+.projectTile { 
+  padding: 22px;
+  min-height: 25vh;
+  border-radius: 10px;
+  border: 1px solid var(--fg-1);
+  position: relative;
+}

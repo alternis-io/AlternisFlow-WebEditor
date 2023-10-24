@@ -5,6 +5,7 @@ import { classNames, useOnNoLongerMouseInteracted } from "js-utils/lib/react-uti
 import { useOnExternalClick } from "@bentley/react-hooks";
 import { MouseBinding, eventMatchesMouseBinding } from "./KeyBindingInput";
 import { assert } from "js-utils/lib/browser-utils";
+import { autoUpdate, useClick, useDismiss, useFloating, useInteractions } from "@floating-ui/react";
 
 const contextMenuRoot = document.getElementById("context-menu-root");
 assert(contextMenuRoot, "context menu root didn't exist");
@@ -124,6 +125,37 @@ export namespace ContextMenu {
   }
 }
 
+const Options = React.forwardRef<
+  HTMLDivElement,
+  {
+    options: ContextMenuOptions.Option[],
+    onAfterSelect: () => void,
+  } & React.HTMLProps<HTMLDivElement>>(
+  (props, ref) => {
+    const { options, onAfterSelect, ...divProps } = props;
+    return (
+      <div
+        {...divProps}
+        {...classNames(styles.contextMenuOptions, divProps.className)}
+        ref={ref}
+      >
+        {props.options.map(option => (
+          <div
+            key={option.id}
+            onClick={async (e) => {
+              await option.onSelect(e);
+              props.onAfterSelect();
+            }}
+            {...classNames(styles.contextMenuOption, "alternis__hoverable")}
+          >
+            <a style={{ color: "inherit" }}>{option.label ?? option.id}</a>
+          </div>
+        ))}
+      </div>
+    );
+  }
+);
+
 
 export function ContextMenuOptions(props: ContextMenuOptions.Props) {
   const { options, autoCloseDelay, mouseBinding,  onHide, forceEventKey, ...divProps } = props;
@@ -158,5 +190,67 @@ export namespace ContextMenuOptions {
 
   export interface Props extends React.HTMLProps<HTMLDivElement>, ContextMenu.BaseProps {
     options: Option[];
+    button?: React.ReactNode;
+  }
+}
+
+export const threeDots = (
+  <div style={{ display: "flex", flexDirection: "row", gap: 4, padding: 8 }}>
+    <span className="alternis__hoverable" style={{borderRadius: "50%", width: 4, height: 4, backgroundColor: "var(--fg-1)" }} />
+    <span className="alternis__hoverable" style={{borderRadius: "50%", width: 4, height: 4, backgroundColor: "var(--fg-1)" }} />
+    <span className="alternis__hoverable" style={{borderRadius: "50%", width: 4, height: 4, backgroundColor: "var(--fg-1)" }} />
+  </div>
+);
+
+export function MoreMenu(props: ContextMenuOptions.Props) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const { context, floatingStyles, refs } = useFloating({
+    open: isOpen,
+    onOpenChange: setIsOpen,
+    placement: "bottom-start",
+    whileElementsMounted: autoUpdate,
+  });
+
+  const click = useClick(context);
+  const dismiss = useDismiss(context);
+
+  const { getReferenceProps, getFloatingProps } = useInteractions([click, dismiss]);
+
+  const { options, ...divProps } = props;
+
+  return (
+    <div
+      {...divProps}
+      style={{ position: "absolute", ...divProps.style }}
+    >
+      <div ref={refs.setReference} {...getReferenceProps()}>
+        {props.button ?? threeDots}
+      </div>
+      {isOpen && (
+        <Options
+          options={props.options}
+          onAfterSelect={() => {
+            setIsOpen(false);
+          }}
+          {...classNames(styles.contextMenuOptions, props.className)}
+          style={{
+            width: "max-content",
+            height: "fit-content",
+            zIndex: 1,
+            ...props.style,
+            ...floatingStyles
+          }}
+          ref={refs.setFloating}
+          {...getFloatingProps()}
+        />
+      )}
+    </div>
+  );
+}
+
+export namespace MoreMenu {
+  export interface Props extends React.HTMLProps<HTMLDivElement> {
+    options: ContextMenuOptions.Option[];
   };
 }

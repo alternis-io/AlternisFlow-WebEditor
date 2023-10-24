@@ -37,7 +37,7 @@ apiV1.post<{}, Omit<User, "passwordHash">, { email: string; password: string }>(
     const me = await prisma.user.create({
       data: {
         email: req.body.email,
-        passwordHash,
+        token: passwordHash,
       },
     });
 
@@ -57,17 +57,18 @@ apiV1.post<{}, WithToken, { email: string, password: string }>(
     if (!req.body.password) throw createHttpError(400, "password field is missing");
 
     const me = await prisma.user.findUnique({
-      select: { id: true, passwordHash: true },
+      select: { id: true, token: true },
       where: { email: req.body.email },
     });
 
     // FIXME: confirm this status
     const noSuchUserError = createHttpError(400, "The username or password is not correct");
 
-    if (me === null)
+    // NOTE: me.token === null is contrived since this routine doesn't make sense anymore
+    if (me === null || me.token === null)
       throw noSuchUserError;
 
-    if (!await Bun.password.verify(req.body.password, me.passwordHash))
+    if (!await Bun.password.verify(req.body.password, me.token))
       throw noSuchUserError;
 
     const token = await generateAccessToken({ email: req.body.email, id: me.id });

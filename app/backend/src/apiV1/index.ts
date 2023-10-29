@@ -6,6 +6,7 @@ import { requireAuthToken } from "../auth";
 import createHttpError from 'http-errors';
 // import { apiV1Github } from './github';
 import { apiV1Google } from './google';
+import * as jsonpatch from "fast-json-patch";
 
 const prisma = new PrismaClient();
 
@@ -135,6 +136,36 @@ apiV1.patch<{ id: number }, unknown, Partial<Document>>(
         ...req.body,
         id: undefined,
         ownerEmail: undefined, // FIXME: note that owner change is not allowed
+      },
+    });
+
+    res.end();
+  }),
+);
+
+apiV1.patch<{ id: number }, unknown, any>(
+  '/users/me/documents/:id/patch',
+  requireAuthToken,
+  expressFixAsyncify(async function createDocument(req, res) {
+    const id = Number(req.params.id);
+    if (Number.isNaN(id))
+      throw createHttpError(400, "invalid id");
+
+    const doc = await prisma.document.findUniqueOrThrow({
+      where: { id },
+      select: { jsonContents: true, },
+    });
+
+    /** NOTE: this is mutated in-place */
+    const jsonContents = doc.jsonContents;
+    const patch = req.body;
+
+    jsonpatch.applyPatch(jsonContents, patch, true);
+
+    await prisma.document.update({
+      where: { id },
+      data: {
+        jsonContents: JSON.stringify(jsonContents),
       },
     });
 

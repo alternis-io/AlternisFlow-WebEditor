@@ -4,6 +4,7 @@ import { assert } from "js-utils/lib/browser-utils";
 import type { Document, DocumentList, RegisterUserData, User } from "dialogue-middleware-app-backend/lib/prisma";
 import { StoreApi, UseBoundStore, create } from "zustand";
 import * as jose from "jose";
+import * as jsonpatch from "fast-json-patch";
 
 const authv1key = "authv1_tok";
 
@@ -41,7 +42,8 @@ export interface UseApiResult {
     syncMe(): Promise<void>;
     syncMyRecentDocuments(): Promise<void>;
     getDocument(id: string): Promise<AppState["document"]>;
-    updateDocument(id: number, patch: Partial<Document>): Promise<void>;
+    updateDocumentMeta(id: number, patch: Partial<Document>): Promise<void>;
+    patchDocument(id: number, prev: AppState, next: AppState): Promise<void>;
     deleteDocument(id: number): Promise<void>;
     createDocument(doc?: { name?: string }): Promise<void>;
     duplicateDocument(doc: { id: number }): Promise<void>;
@@ -199,7 +201,22 @@ const useLocalApiState = create<ApiState>()((set, get) => ({
       return get()._apiFetch(`/users/me/documents/${id}`).then((r) => r.json());
     },
 
-    async updateDocument(id: number, patch: Partial<Document>): Promise<void> {
+    async patchDocument(id: number, prev: AppState, next: AppState): Promise<void> {
+      const patch = jsonpatch.compare(prev, next);
+
+      // nothing to update since local api cache only contains document metadata
+      try {
+        await get()._apiFetch(`/users/me/documents/${prev.id}`, {
+          method: "PATCH",
+          body: JSON.stringify(patch),
+          headers: { 'Content-Type': 'application/json' },
+        });
+      } catch (err) {
+        throw err;
+      }
+    },
+
+    async updateDocumentMeta(id: number, patch: Partial<Document>): Promise<void> {
       let prev: DocumentList[number] | undefined;
 
       set((s) => ({

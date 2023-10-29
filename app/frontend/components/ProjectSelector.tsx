@@ -5,12 +5,10 @@ import type { DocumentList } from "dialogue-middleware-app-backend/lib/prisma";
 import { Center } from "../Center";
 import { classNames } from "js-utils/lib/react-utils";
 import * as styles from "./ProjectSelector.module.css";
-import { ContextMenuOptions, MoreMenu, threeDots } from "./ContextMenu";
+import { MoreMenu } from "./ContextMenu";
 import { AppState } from "../AppState";
 
 import template1 from "../templates/template1.json";
-import { MouseBinding, MouseBindingInput } from "./KeyBindingInput";
-import { autoUpdate, useFloating } from "@floating-ui/react";
 
 const templates: Record<string, AppState["document"]> = {
   template1,
@@ -21,7 +19,7 @@ function ProjectTile(props: {
   doc: DocumentList[number],
   onSelectProject: ProjectSelector.Props["onSelectProject"],
 }) {
-  const updateDocument = useApi(s => s.api.updateDocument);
+  const updateDocumentMeta = useApi(s => s.api.updateDocument);
   const deleteDocument = useApi(s => s.api.deleteDocument);
   const duplicateDocument = useApi(s => s.api.duplicateDocument);
 
@@ -44,7 +42,11 @@ function ProjectTile(props: {
                 e.currentTarget.innerText = "invalid name"
             }
           }}
-          onBlur={(e) => updateDocument(props.doc.id, { name: e.currentTarget.innerText.trim() || "invalid name"})}
+          onBlur={(e) =>
+            updateDocumentMeta(props.doc.id, {
+              name: e.currentTarget.innerText.trim() || "invalid name"
+            })
+          }
         >
           {props.doc.name}
         </span>

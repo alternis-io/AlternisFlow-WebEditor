@@ -38,14 +38,15 @@ function GoogleLogin(props: { onLogin?: () => void }) {
 
   useEffect(() => {
     function handleCredentialResponse(resp: { credential: string }) {
-      // must set token before login
+      // must set token before running login
       useApi.setState(({ _token: resp.credential }));
-      googleLogin("/users/me/login/google/callback");
+      googleLogin();
       props.onLogin?.();
     }
 
     globalThis.google.accounts.id.initialize({
       client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+      auto_select: true,
       callback: handleCredentialResponse
     });
 
@@ -58,7 +59,14 @@ function GoogleLogin(props: { onLogin?: () => void }) {
     //globalThis.google.accounts.id.prompt();
   }, []);
 
-  return isLoggedIn ? null : <div ref={googleLoginBtn} />;
+  return isLoggedIn
+    ? null
+    : (
+      <div ref={googleLoginBtn} style={{
+        width: 193,
+        height: 44
+      }}/>
+    );
 }
 
 export function LoginState(_props: LoginPage.Props) {
@@ -203,7 +211,18 @@ export function LoginState(_props: LoginPage.Props) {
         }}
         ref={popupRef}
       >
-        <GoogleLogin onLogin={onAfterLogin} />
+        <div style={{display: "flex", flexDirection: "column", maxWidth: "30em", textAlign: "center" }}>
+          <p>
+            We use Google as our identity provider, to prevent storing a password.
+          </p>
+          <Center>
+            <GoogleLogin onLogin={onAfterLogin} />
+          </Center>
+          <p>
+            If you would be interested in another identity provider mechanism,
+            please <a href="mailto:support@alternis.io">reach out to us</a>
+          </p>
+        </div>
       </Center>
     </div>
   );

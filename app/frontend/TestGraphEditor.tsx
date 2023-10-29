@@ -26,10 +26,10 @@ import ReactFlow, {
 import 'reactflow/dist/base.css'
 import styles from './TestGraphEditor.module.css'
 import { Link, useLocation } from "react-router-dom";
-import { baseUrl } from "./hooks/useApi";
+import { baseUrl, useApi } from "./hooks/useApi";
 import { classNames, deepCloneJson } from 'js-utils/lib/react-utils'
 import { Center } from "./Center";
-import { getNode, makeNodeDataSetter, useAppState } from "./AppState";
+import { getNode, makeNodeDataSetter, useAppState, AppState } from "./AppState";
 import { ReactComponent as LockIcon } from "./images/inkscape-lock.svg";
 import { ReactComponent as UnlockIcon } from "./images/inkscape-unlock.svg";
 import { ContextMenuOptions } from './components/ContextMenu'
@@ -37,6 +37,8 @@ import { assert } from 'js-utils/lib/browser-utils'
 import { useValidatedInput } from '@bentley/react-hooks'
 import { InputStatus } from './hooks/useValidatedInput'
 import { useReactFlowClipboard } from './hooks/useReactFlowClipboard'
+import debounce from "lodash.debounce";
+import * as jsonpatch from "fast-json-patch";
 
 import { GotoNode } from './nodes';
 import { NodeHandle } from './nodes/handle';
@@ -794,12 +796,32 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
   const permsVersion = useAppState(s => s.permissions.version);
 
   const [trialMessageShown, setTrialMessageShown] = useState(false);
+
   useEffect(() => {
     if (permsVersion === "trial" && nodes.length > 50)
       setTrialMessageShown(true);
   }, [nodes, permsVersion]);
 
-  const dragBoxSelectMouseBinding = useAppState(s => s.preferences.graph.dragBoxSelectMouseBinding);
+  const docId = useAppState(s => s.document.id);
+  const patchDocument = useApi(s => s.api.patchDocument);
+
+  // FIXME: replace with middleware
+  useEffect(() => {
+    const syncRemote = (curr: AppState, prev: AppState) => {
+      patchDocument(docId, prev, curr);
+    };
+
+    const debouncedSyncRemote = debounce(syncRemote, 3_000, { maxWait: 20_000 });
+
+    const unsub = useAppState.subscribe((state, prevState) => {
+      debouncedSyncRemote(state, prevState)
+    });
+
+    return unsub;
+  }, [useAppState, docId, patchDocument]);
+
+
+  // const dragBoxSelectMouseBinding = useAppState(s => s.preferences.graph.dragBoxSelectMouseBinding);
   const appendToSelectModifier = useAppState(s => s.preferences.graph.appendToSelectModifier);
   const dragPanMouseBinding = useAppState(s => s.preferences.graph.dragPanMouseBinding);
   const addNodeMouseBinding = useAppState(s => s.preferences.graph.addNodeMouseBinding);

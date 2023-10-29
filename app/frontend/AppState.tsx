@@ -155,6 +155,7 @@ export const useAppState = create<SettableState<AppState>>()(
   }),
 ));
 
+// FIXME: this needs to ignore API based changes!
 export const useTemporalAppState = <T extends any>(
   selector: (state: TemporalState<SettableState<AppState>>) => T,
   equality?: (a: T, b: T) => boolean,

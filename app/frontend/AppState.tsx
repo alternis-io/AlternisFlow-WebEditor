@@ -95,6 +95,7 @@ export const defaultAppState = {
 
   // TODO: document should be optional...
   document: {
+    id: 0,
     name: "New project",
     nodes: [{
       id: '1',

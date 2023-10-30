@@ -9,13 +9,7 @@ const Homepage = () => {
   return (
     <Layout pageTitle="Pricing">
       <p>
-        Here is a look at our goals through the next 12 months.
-      </p>
-
-      <p>
-        Think your feature or platform request should be here?
-        <br/>
-        Reach out to us at <MailLink email="support@alternis.io" />
+        We have the following plans
       </p>
 
       <div className="center">

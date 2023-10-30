@@ -30,6 +30,7 @@ const Layout = ({
       <div className={styles.pageWrapper}>
         <main>{children}</main>
       </div>
+      {/* FIXME: should be copyrighted by alternis company */}
       <footer className="center">
         &copy; Michael Belousov 2023
       </footer>

@@ -219,7 +219,7 @@ export function LoginState(_props: LoginPage.Props) {
             <GoogleLogin onLogin={onAfterLogin} />
           </Center>
           <p>
-            If you would be interested in another identity provider mechanism,
+            If you would be interested in another identity provider
             please <a href="mailto:support@alternis.io">reach out to us</a>
           </p>
         </div>

@@ -29,7 +29,7 @@ import { Link, useLocation } from "react-router-dom";
 import { baseUrl, useApi } from "./hooks/useApi";
 import { classNames, deepCloneJson } from 'js-utils/lib/react-utils'
 import { Center } from "./Center";
-import { getNode, makeNodeDataSetter, useAppState, AppState } from "./AppState";
+import { getNode, makeNodeDataSetter, useAppState, AppState, resetAllAppState } from "./AppState";
 import { ReactComponent as LockIcon } from "./images/inkscape-lock.svg";
 import { ReactComponent as UnlockIcon } from "./images/inkscape-unlock.svg";
 import { ContextMenuOptions } from './components/ContextMenu'
@@ -46,6 +46,8 @@ import { BaseNode } from './nodes/BaseNode';
 import { DialogueEntry, Emit, Lock, RandomSwitch, PlayerReplies, PlayerReply, defaultRandomSwitchProps, defaultPlayerRepliesProps } from './nodes/data';
 import { Tutorial1 } from './Tutorial1';
 import { DialogueViewer } from './DialogueViewer';
+import downloadFile, { uploadFile } from './localFileManip';
+import { exportToJson } from './export';
 
 // FIXME: rename
 const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
@@ -788,6 +790,59 @@ const addNode = (
   });
 }
 
+const TopRightPanel = () => {
+  return (
+    <Panel position="top-right">
+      {!import.meta.env.PROD && (
+        <>
+          <button
+            data-tut-id="export-dev-state-button"
+            onClick={() => {
+              downloadFile({
+                fileName: 'doc.name.json',
+                content: JSON.stringify(useAppState.getState().document, undefined, "  "),
+              });
+            }}
+          >
+            Dev State
+          </button>
+          <button
+            data-tut-id="export-button"
+            onClick={() => {
+              downloadFile({
+                fileName: 'doc.alternis.json',
+                content: JSON.stringify(exportToJson(useAppState.getState().document), undefined, "  "),
+              });
+            }}
+          >
+            Export
+          </button>
+          <button
+            onClick={async () => {
+              const file = await uploadFile({ type: 'text' })
+              const json = JSON.parse(file.content)
+              // FIXME: validate state!
+              useAppState.setState(json);
+            }}
+          >
+            Import
+          </button>
+          <button
+            onClick={async () => {
+              resetAllAppState();
+            }}
+          >
+            Reset
+          </button>
+        </>
+      )}
+      <button>
+        Find
+      </button>
+    </Panel>
+  );
+};
+
 export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
   // FIXME: use correct types
   const graph = useReactFlow<{}, {}>();
@@ -798,7 +853,8 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
   const [trialMessageShown, setTrialMessageShown] = useState(false);
 
   useEffect(() => {
-    if (permsVersion === "trial" && nodes.length > 50)
+    // FIXME: source this number from a common json file
+    if (permsVersion === "trial" && nodes.length > 100)
       setTrialMessageShown(true);
   }, [nodes, permsVersion]);
 
@@ -807,8 +863,11 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
 
   // FIXME: replace with middleware
   useEffect(() => {
-    const syncRemote = (curr: AppState, prev: AppState) => {
-      patchDocument(docId, prev, curr);
+    if (permsVersion === "trial")
+      return;
+
+    const syncRemote = async (curr: AppState, prev: AppState) => {
+      await patchDocument(docId, prev, curr);
     };
 
     const debouncedSyncRemote = debounce(syncRemote, 3_000, { maxWait: 20_000 });
@@ -1005,9 +1064,12 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
             }}
           />
           <Background />
+
           <Panel position={"bottom-center"}>
             <DialogueViewer className={styles.dialogueViewer} />
           </Panel>
+
+          <TopRightPanel />
         </ReactFlow>
       </div>
       <Tutorial1 />

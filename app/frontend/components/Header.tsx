@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import styles from "./Header.module.css";
 import { Split } from "../Split";
 import { resetAllAppState, useAppState } from "../AppState";
@@ -15,6 +15,8 @@ export function Header() {
   // FIXME: do real query param parsing!
   const noHeaderRequested = location.search.includes("noHeaderLogo");
 
+  const navigate = useNavigate();
+
   return !noHeaderRequested && <Split
     style={{
       boxShadow: "black 0 0 5px 2px",
@@ -26,6 +28,9 @@ export function Header() {
         paddingLeft: 10,
         paddingTop: 2,
         paddingBottom: 2,
+        display: "flex",
+        gap: 11,
+        alignItems: "center",
       }}>
         <a href={baseUrl} className={styles.logoLink} style={{
           // FIXME: really need a standard
@@ -33,10 +38,14 @@ export function Header() {
           flexDirection: "row",
           alignItems: "center",
           gap: "var(--gap)",
+          marginRight: 16,
         }}>
           <img src={logoPath} height={40} className="alternis__hoverable" />
           Alternis
         </a>
+        <nav className="alternis__hoverable" onClick={() => navigate("/app/projects")}>
+          Projects
+        </nav>
       </div>
     }
     right={
@@ -46,54 +55,21 @@ export function Header() {
         paddingRight: 5,
       }}
       >
-        <button>Newsletter</button>
-        <button>Feedback</button>
-        <button>Search</button>
-        <Link to="/app/projects">
-          <button>Projects</button>
-        </Link>
-        <button
-          data-tut-id="export-dev-state-button"
-          onClick={() => {
-            downloadFile({
-              fileName: 'doc.name.json',
-              content: JSON.stringify(useAppState.getState().document, undefined, "  "),
-            });
-          }}
-        >
-          Dev State
-        </button>
-        <button
-          data-tut-id="export-button"
-          onClick={() => {
-            downloadFile({
-              fileName: 'doc.alternis.json',
-              content: JSON.stringify(exportToJson(useAppState.getState().document), undefined, "  "),
-            });
-          }}
-        >
-          Export
-        </button>
-        <button
-          onClick={async () => {
-            const file = await uploadFile({ type: 'text' })
-            const json = JSON.parse(file.content)
-            // FIXME: validate state!
-            useAppState.setState(json);
-          }}
-        >
-          Import
-        </button>
-        <button
-          onClick={async () => {
-            resetAllAppState();
-          }}
-        >
-          Reset
-        </button>
-        <button onClick={logout}>
+        <nav className="alternis__hoverable" onClick={() => window.open(
+          "https://e0a075ca.sibforms.com/serve/MUIFANC3EaFwNn2Lb330eR8CUoK52Kqq3Iw805_JEf19NtNbXgz8blNJHfE7RaKNJADeNfGAkMOKu86zmyUy_B8V1ivmiigESd_rQkaChA0dM3eST4ictTcvmsCZXQ2ec4b_xS9nXdaF4S1fOmDeDInPn7hFEVTEiHlExtWpPGNEiPcJXdBTlt7MRtajeVcdJGC3u3dBacXZcMsz",
+          "_blank"
+        )}>
+          Newsletter
+        </nav>
+        <nav className="alternis__hoverable" onClick={() => window.open(
+          "https://docs.google.com/forms/d/e/1FAIpQLSdeEraQ_YVaYn01LhIQT0951B3UJ_wyroKxpP1qZoQ1zPWnjg/viewform?usp=sf_link",
+          "_blank"
+        )}>
+          Feedback
+        </nav>
+        <nav className="alternis__hoverable" onClick={logout}>
           Logout
-        </button>
+        </nav>
       </div>
     }
   />;

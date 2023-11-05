@@ -793,52 +793,55 @@ const addNode = (
 const TopRightPanel = () => {
   return (
     <Panel position="top-right">
-      {!import.meta.env.PROD && (
-        <>
-          <button
-            data-tut-id="export-dev-state-button"
-            onClick={() => {
-              downloadFile({
-                fileName: 'doc.name.json',
-                content: JSON.stringify(useAppState.getState().document, undefined, "  "),
-              });
-            }}
-          >
-            Dev State
-          </button>
-          <button
-            data-tut-id="export-button"
-            onClick={() => {
-              downloadFile({
-                fileName: 'doc.alternis.json',
-                content: JSON.stringify(exportToJson(useAppState.getState().document), undefined, "  "),
-              });
-            }}
-          >
-            Export
-          </button>
-          <button
-            onClick={async () => {
-              const file = await uploadFile({ type: 'text' })
-              const json = JSON.parse(file.content)
-              // FIXME: validate state!
-              useAppState.setState(json);
-            }}
-          >
-            Import
-          </button>
-          <button
-            onClick={async () => {
-              resetAllAppState();
-            }}
-          >
-            Reset
-          </button>
-        </>
-      )}
-      <button>
-        Find
-      </button>
+      <div>
+        {!import.meta.env.PROD && (
+          <>
+            <button
+              data-tut-id="export-dev-state-button"
+              onClick={() => {
+                downloadFile({
+                  fileName: 'doc.name.json',
+                  content: JSON.stringify(useAppState.getState().document, undefined, "  "),
+                });
+              }}
+            >
+              Dev State
+            </button>
+            <button
+              onClick={async () => {
+                const file = await uploadFile({ type: 'text' })
+                const json = JSON.parse(file.content)
+                // FIXME: validate state!
+                useAppState.setState(json);
+              }}
+            >
+              Import
+            </button>
+            <button
+              onClick={async () => {
+                resetAllAppState();
+              }}
+            >
+              Reset
+            </button>
+            <br/>
+          </>
+        )}
+        <button>
+          Find
+        </button>
+        <button
+          data-tut-id="export-button"
+          onClick={() => {
+            downloadFile({
+              fileName: 'doc.alternis.json',
+              content: JSON.stringify(exportToJson(useAppState.getState().document), undefined, "  "),
+            });
+          }}
+        >
+          Export
+        </button>
+      </div>
     </Panel>
   );
 };

@@ -40,7 +40,7 @@ const Homepage = () => {
         <iframe
           src={process.env.NODE_ENV === "development"
             ? "http://localhost:3001/app?trial&noTutorial&noHeaderLogo"
-            : "/app/#?trial&noTutorial&noHeaderLogo"}
+            : "/app/?trial&noTutorial&noHeaderLogo"}
           style={{
             width: "100%",
             height: "100%",

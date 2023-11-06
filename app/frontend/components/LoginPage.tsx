@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useApi } from "../hooks/useApi";
-import { useValidatedInput } from "@bentley/react-hooks";
+import { useAsyncEffect, useValidatedInput } from "@bentley/react-hooks";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Center } from "../Center";
 import { assert } from "js-utils/lib/browser-utils";
@@ -36,13 +36,20 @@ function GoogleLogin(props: { onLogin?: () => void }) {
   const loginFunc = useRef(props.onLogin);
   loginFunc.current = props.onLogin;
 
-  useEffect(() => {
+  useAsyncEffect(async () => {
     function handleCredentialResponse(resp: { credential: string }) {
       // must set token before running login
       useApi.setState(({ _token: resp.credential }));
       googleLogin();
       props.onLogin?.();
     }
+
+    await new Promise((resolve, reject) => {
+      const googleClientScript = document.getElementById("google-client-script") as HTMLScriptElement;
+      assert(googleClientScript);
+      googleClientScript.addEventListener("load", resolve);
+      googleClientScript.addEventListener("error", reject);
+    });
 
     globalThis.google.accounts.id.initialize({
       client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,

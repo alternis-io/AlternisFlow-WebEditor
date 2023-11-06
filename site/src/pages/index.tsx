@@ -100,13 +100,6 @@ const Homepage = () => {
           Join our <a target="_blank" href="https://e0a075ca.sibforms.com/serve/MUIFANC3EaFwNn2Lb330eR8CUoK52Kqq3Iw805_JEf19NtNbXgz8blNJHfE7RaKNJADeNfGAkMOKu86zmyUy_B8V1ivmiigESd_rQkaChA0dM3eST4ictTcvmsCZXQ2ec4b_xS9nXdaF4S1fOmDeDInPn7hFEVTEiHlExtWpPGNEiPcJXdBTlt7MRtajeVcdJGC3u3dBacXZcMsz">
             newsletter
           </a> to receive product updates.
-          <form action="" >
-            <label>
-              Email:
-              <input name="email" type="email" />
-            </label>
-            <input type="submit" />
-          </form>
         </strong>
       </p>
 

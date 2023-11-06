@@ -22,7 +22,7 @@ main > * {
 
 :global(.full-size) {
   position: relative;
-  width: 100vw;
+  width: calc(100vw - var(--scrollbar-width, 0px));
   margin: 0.25in 0;
   padding: 20px 0;
 }
@@ -40,7 +40,7 @@ html, body {
 }
 
 footer {
-  width: 100vw;
+  width: calc(100vw - var(--scrollbar-width, 0px));
   position: static;
   bottom: 0;
   margin-top: 1in;

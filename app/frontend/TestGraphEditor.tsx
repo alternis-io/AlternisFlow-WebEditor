@@ -942,9 +942,12 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
             }),
             connectingNodeId,
           });
+          ctxMenuRef.current?.hide();
         },
       }))
   ], [graph, graphContainerElem, connectingNodeId]);
+
+  const ctxMenuRef = React.useRef<ContextMenu.Ref>(null);
 
   const contextMenu = (
     <ContextMenu
@@ -954,6 +957,7 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
         connectingNodeId.current = undefined;
         setContextMenuState(["select-type", undefined]);
       }}
+      ref={ctxMenuRef}
     >
       {contextMenuState === "select-type"
         ? (

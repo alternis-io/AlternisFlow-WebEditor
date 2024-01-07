@@ -32,7 +32,8 @@ import { Center } from "./Center";
 import { getNode, makeNodeDataSetter, useAppState, AppState, resetAllAppState } from "./AppState";
 import { ReactComponent as LockIcon } from "./images/inkscape-lock.svg";
 import { ReactComponent as UnlockIcon } from "./images/inkscape-unlock.svg";
-import { ContextMenuOptions } from './components/ContextMenu'
+import { ContextMenu, ContextMenuOptions, Options } from './components/ContextMenu'
+import { SelectParticipantWidget } from './components/SelectParticipantWidget'
 import { assert } from 'js-utils/lib/browser-utils'
 import { useValidatedInput } from '@bentley/react-hooks'
 import { InputStatus } from './hooks/useValidatedInput'
@@ -49,7 +50,9 @@ import { DialogueViewer } from './DialogueViewer';
 import downloadFile, { uploadFile } from './localFileManip';
 import { exportToJson } from './export';
 
-// FIXME: rename
+const forceAddNodeEvent = "force-addnode";
+
+// FIXME: rename?
 const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
   const node = getNode<DialogueEntry>(props.id);
 
@@ -304,10 +307,11 @@ const RandomSwitchInput = (props: {
       <span>
         ({percentFmter.format(proportion / totalProportion)})
       </span>
+      {/* FIXME align the close button to the right */}
       <Center
           className="alternis__hoverable alternis__hoverable-red"
           title="Delete this possibility"
-          onClick={() => set(s => {
+          onClick={() => index !== 0 && set(s => {
             const proportions = s.proportions.slice();
             proportions.splice(index, 1); // remove
             return { proportions };
@@ -591,7 +595,7 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
               key={`delete-${index}`}
               className="alternis__hoverable alternis__hoverable-red"
               title="Delete this option"
-              onClick={() => set(s => {
+              onClick={() => index !== 0 && set(s => {
                 const replies = s.replies.slice();
                 replies.splice(index, 1);
                 return { replies };
@@ -897,8 +901,6 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
 
   const editorRef = React.useRef<HTMLDivElement>(null);
 
-  const forceAddNodeEvent = "force-addnode";
-
   const trialMessage = (
     <dialog open={trialMessageShown}>
       <p>Thank you for trying <Link to={baseUrl}>Alternis</Link>!</p>
@@ -914,34 +916,63 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
   const location = useLocation();
   const noHeaderRequested = location.search.includes("noHeader");
 
+  // FIXME: useReducer?
+  type ContextMenuState = "select-type" | "select-participant";
+  const [[contextMenuState, contextMenuPayload], setContextMenuState] = React.useState<[ContextMenuState, any]>(["select-type", undefined])
+
+  const contextMenuOptions = React.useMemo<ContextMenuOptions.Option[]>(() => [
+    {
+      id: "entry",
+      label: "Add script line",
+      onSelect(e) {
+        setContextMenuState(["select-participant", undefined]);
+      },
+    },
+    ...(Object.keys(nodeTypes) as (keyof typeof nodeTypes)[])
+      .filter(key => key !== "entry" && key !== "default" && key !== "dialogueEntry")
+      .map((nodeType) => ({
+        id: nodeType,
+        label: nodeTypeNames[nodeType],
+        onSelect(e: React.MouseEvent<HTMLDivElement>) {
+          const { top, left } = graphContainerElem.current!.getBoundingClientRect();
+          addNode(nodeType, {
+            position: graph.project({
+              x: e.clientX - left - 150/2,
+              y: e.clientY - top,
+            }),
+            connectingNodeId,
+          });
+        },
+      }))
+  ], [graph, graphContainerElem, connectingNodeId]);
+
+  const contextMenu = (
+    <ContextMenu
+      forceEventKey={forceAddNodeEvent}
+      mouseBinding={addNodeMouseBinding}
+      onHide={() => {
+        connectingNodeId.current = undefined;
+        setContextMenuState(["select-type", undefined]);
+      }}
+    >
+      {contextMenuState === "select-type"
+        ? (
+          <Options
+            className={styles.addNodeMenu}
+            options={contextMenuOptions}
+          />
+        ) : (
+          <SelectParticipantWidget
+            onSelect={() => {}}
+          />
+        )
+      }
+    </ContextMenu>
+  );
+
   return (
     <div ref={editorRef} className="alternis__rel-anchor alternis__propagate-size">
-      <ContextMenuOptions
-        forceEventKey={forceAddNodeEvent}
-        mouseBinding={addNodeMouseBinding}
-        className={styles.addNodeMenu}
-        onHide={() => {
-          connectingNodeId.current = undefined;
-        }}
-        options={Object.keys(nodeTypes)
-          .filter(key => key !== "entry" && key !== "default" && key !== "dialogueEntry")
-          .map((nodeType) => ({
-              id: nodeType,
-              label: nodeTypeNames[nodeType],
-              onSelect(e) {
-                const { top, left } = graphContainerElem.current!.getBoundingClientRect();
-                addNode(nodeType, {
-                  position: graph.project({
-                    x: e.clientX - left - 150/2,
-                    y: e.clientY - top,
-                  }),
-                  connectingNodeId,
-                });
-              },
-            })
-          )
-        }
-      />
+      {contextMenu}
       <div
         {...classNames(styles.graph, "alternis__propagate-size")}
         data-tut-id="graph"

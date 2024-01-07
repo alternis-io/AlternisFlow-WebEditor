@@ -125,11 +125,11 @@ export namespace ContextMenu {
   }
 }
 
-const Options = React.forwardRef<
+export const Options = React.forwardRef<
   HTMLDivElement,
   {
     options: ContextMenuOptions.Option[],
-    onAfterSelect: () => void,
+    onAfterSelect?: () => void,
   } & React.HTMLProps<HTMLDivElement>>(
   (props, ref) => {
     const { options, onAfterSelect, ...divProps } = props;
@@ -144,7 +144,7 @@ const Options = React.forwardRef<
             key={option.id}
             onClick={async (e) => {
               await option.onSelect(e);
-              props.onAfterSelect();
+              props.onAfterSelect?.();
             }}
             {...classNames(styles.contextMenuOption, "alternis__hoverable")}
           >
@@ -156,27 +156,13 @@ const Options = React.forwardRef<
   }
 );
 
-
 export function ContextMenuOptions(props: ContextMenuOptions.Props) {
   const { options, autoCloseDelay, mouseBinding,  onHide, forceEventKey, ...divProps } = props;
   const baseProps: ContextMenu.BaseProps = { autoCloseDelay, mouseBinding, onHide, forceEventKey };
   const ctxMenuRef = useRef<ContextMenu.Ref>(null);
   return (
     <ContextMenu ref={ctxMenuRef} {...baseProps}>
-      <div {...divProps} {...classNames(styles.contextMenuOptions, props.className)}>
-        {props.options.map(option => (
-          <div
-            key={option.id}
-            onClick={async (e) => {
-              await option.onSelect(e);
-              ctxMenuRef.current?.hide();
-            }}
-            {...classNames(styles.contextMenuOption, "alternis__hoverable")}
-          >
-            <a style={{ color: "inherit" }}>{option.label ?? option.id}</a>
-          </div>
-        ))}
-      </div>
+      <Options onAfterSelect={() => ctxMenuRef.current?.hide()} options={options} {...divProps} />
     </ContextMenu>
   );
 }
@@ -185,7 +171,7 @@ export namespace ContextMenuOptions {
   export interface Option {
     id: string;
     label?: string;
-    onSelect: React.MouseEventHandler<HTMLDivElement>;
+    onSelect: (e: React.MouseEvent<HTMLDivElement>) => void | Promise<void>;
   }
 
   export interface Props extends React.HTMLProps<HTMLDivElement>, ContextMenu.BaseProps {

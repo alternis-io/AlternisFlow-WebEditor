@@ -136,7 +136,7 @@ export const Options = React.forwardRef<
     return (
       <div
         {...divProps}
-        {...classNames(styles.contextMenuOptions, divProps.className)}
+        {...classNames("alternis__floatingbox", styles.contextMenuOptions, divProps.className)}
         ref={ref}
       >
         {props.options.map(option => (

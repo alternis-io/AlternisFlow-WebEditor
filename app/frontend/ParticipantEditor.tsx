@@ -37,7 +37,7 @@ export function ParticipantEditor() {
     },
   }));
 
-  // FIXME: consolidate
+  // FIXME: consolidate state
   const selectedName = editorPrefs.lastSelected;
   const selectedIndex = selectedName !== undefined ? participants.findIndex(p => p?.name === selectedName) : -1;
   const selected = selectedIndex !== -1 ? participants[selectedIndex] : undefined;
@@ -176,6 +176,7 @@ export function ParticipantEditor() {
 
   return (
     <div>
+      {/* FIXME: consolidate with RespGrid */}
       <div
         className={styles.selectionGrid}
         style={{

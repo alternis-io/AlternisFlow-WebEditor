@@ -12,5 +12,6 @@ declare module "*.wasm?init" {
 
 declare module "*.svg" {
   export const ReactComponent: import("react").DetailedHTMLProps<SVGElement>;
-  export default function(): Promise<WebAssembly.Instance>;
+  const path: string;
+  export default path;
 }

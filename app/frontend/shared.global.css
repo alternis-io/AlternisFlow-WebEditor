@@ -1,3 +1,8 @@
+/*
+ * FIXME: can remove these prefixes if can confirm/alter vite config so that
+ * CSS hashes are per CSS file (I think this is already the case)
+ */
+
 .alternis__center {
   display: flex;
   justify-content: center;
@@ -98,6 +103,18 @@ img.alternis__hoverable:hover {
   background-color: var(--bg-1);
   border: var(--bg-1);
 }
+
+.alternis__draggable {
+  cursor: grab;
+}
+
+.alternis__toolBtn {
+  cursor: grab;
+  background-color: var(--bg-1);
+  border-radius: var(--border-radius);
+}
+
+/* FIXME: move to scrollbar.global.css */
 
 ::-webkit-scrollbar {
   width: 4px;

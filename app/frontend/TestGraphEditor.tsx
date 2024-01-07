@@ -32,10 +32,12 @@ import { Center } from "./Center";
 import { getNode, makeNodeDataSetter, useAppState, AppState, resetAllAppState } from "./AppState";
 import { ReactComponent as LockIcon } from "./images/inkscape-lock.svg";
 import { ReactComponent as UnlockIcon } from "./images/inkscape-unlock.svg";
+import defaultParticipantIconUrl from "./images/participant-icon.svg";
 import { ContextMenu, ContextMenuOptions, Options } from './components/ContextMenu'
 import { SelectParticipantWidget } from './components/SelectParticipantWidget'
+import { SelectFunctionWidget } from './components/SelectFunctionWidget'
 import { assert } from 'js-utils/lib/browser-utils'
-import { useValidatedInput } from '@bentley/react-hooks'
+import { useOnExternalClick, useValidatedInput } from '@bentley/react-hooks'
 import { InputStatus } from './hooks/useValidatedInput'
 import { useReactFlowClipboard } from './hooks/useReactFlowClipboard'
 import debounce from "lodash.debounce";
@@ -655,6 +657,7 @@ const UnknownNode = (props: NodeProps<{}>) => {
   );
 };
 
+// FIXME: can be deleted
 const EntryNode = (props: NodeProps<{}>) => {
   return (
     <div
@@ -795,6 +798,61 @@ const addNode = (
     };
   });
 }
+
+const ToolsPanel = () => {
+  const [showParticipSelect, setShowParticipSelect] = React.useState(false);
+  const [showFunctionSelect, setShowFunctionSelect] = React.useState(false);
+  return (
+    <div style={{ display: "flex", flexDirection: "row" }}>
+      <button
+        style={{ width: 30, height: 30 }}
+        title={"Select a participant to drag and drop a new line from"}
+        className={"alternis__toolBtn alternis__center"}
+        onClick={() => setShowParticipSelect(prev => !prev)}
+      >
+        <img width={20} style={{ objectFit: "contain" }} src={defaultParticipantIconUrl} />
+      </button>
+      {/* FIXME: need external clicks to close this */}
+      {showParticipSelect && (
+        <div style={{position: "absolute", top: "100%"}}>
+          <SelectParticipantWidget
+            getTitle={(p) => (p.name + `\nDrag into the editor to place a new line from this participant`)}
+            onDragParticipantEnd={() => setShowParticipSelect(false)}
+          />
+        </div>
+      )}
+
+      <button
+        style={{ width: 30, height: 30, color: "var(--fg-1)" }}
+        // FIXME: not implemented!
+        title={"Add a variable expansion to the text of the selected node or drag to any node"}
+        className={"alternis__toolBtn"}
+      >
+        <em><var style={{ fontSize: "20px", left: "-0.05em", bottom: "0.05em", position: "relative" }}>x</var></em>
+      </button>
+
+      <button
+        style={{ width: 30, height: 30, color: "var(--fg-1)" }}
+        // FIXME: not implemented!
+        title={"Select a function node to drag and drop"}
+        className={"alternis__toolBtn"}
+        onClick={() => setShowFunctionSelect(prev => !prev)}
+      >
+        <em><var style={{ fontSize: "20px", left: "-0.1em", position: "relative" }}>F</var></em>
+      </button>
+      {/* TODO: better floating div implementation */}
+      {showFunctionSelect && (
+        <div style={{position: "absolute", top: "100%"}}>
+          <SelectFunctionWidget
+            getTitle={(name) => (name + `\nDrag into the editor to add a call node`)}
+            onDragFunctionEnd={() => setShowFunctionSelect(false)}
+          />
+        </div>
+      )}
+
+    </div>
+  );
+};
 
 const TopRightPanel = () => {
   return (
@@ -970,7 +1028,8 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
           />
         ) : (
           <SelectParticipantWidget
-            onSelect={(_name, index) => {
+            //onDragStartDone={() => ctxMenuRef.current?.hide()}
+            onSelectParticipant={(_p, index) => {
               const e = contextMenuPayload;
               assert(e !== undefined);
               const { top, left } = graphContainerElem.current!.getBoundingClientRect();
@@ -1008,6 +1067,7 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
           nodes={nodes}
           edges={edges}
           deleteKeyCode={["Backspace", "Delete"]}
+          // FIXME: need to filter illegal deletion changes here (e.g. no delete entry node)
           onNodesChange={(changes) => useAppState.setState(s => ({
             document: {
               ...s.document,
@@ -1125,6 +1185,10 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
 
           <Panel position={"bottom-center"}>
             <DialogueViewer className={styles.dialogueViewer} />
+          </Panel>
+
+          <Panel position="top-left">
+            <ToolsPanel />
           </Panel>
 
           <TopRightPanel />

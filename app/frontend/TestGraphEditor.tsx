@@ -747,7 +747,8 @@ function getNewId(nodes: { id: string }[]) {
 }
 
 const addNode = (
-  nodeType: string, {
+  nodeType: keyof typeof nodeTypes,
+  {
     initData = undefined,
     position = { x: 0, y: 0},
     connectingNodeId,
@@ -917,15 +918,17 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
   const noHeaderRequested = location.search.includes("noHeader");
 
   // FIXME: useReducer?
-  type ContextMenuState = "select-type" | "select-participant";
-  const [[contextMenuState, _contextMenuPayload], setContextMenuState] = React.useState<[ContextMenuState, any]>(["select-type", undefined])
+  type ContextMenuState =
+    | ["select-type", undefined]
+    | ["select-participant", React.MouseEvent<HTMLDivElement> | undefined];
+  const [[contextMenuState, contextMenuPayload], setContextMenuState] = React.useState<ContextMenuState>(["select-type", undefined])
 
   const contextMenuOptions = React.useMemo<ContextMenuOptions.Option[]>(() => [
     {
       id: "entry",
       label: "Add script line",
-      onSelect() {
-        setContextMenuState(["select-participant", undefined]);
+      onSelect(e) {
+        setContextMenuState(["select-participant", e]);
       },
     },
     ...(Object.keys(nodeTypes) as (keyof typeof nodeTypes)[])
@@ -967,7 +970,23 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
           />
         ) : (
           <SelectParticipantWidget
-            onSelect={() => {}}
+            onSelect={(_name, index) => {
+              const e = contextMenuPayload;
+              assert(e !== undefined);
+              const { top, left } = graphContainerElem.current!.getBoundingClientRect();
+              addNode("dialogueEntry", {
+                position: graph.project({
+                  x: e.clientX - left - 150/2,
+                  y: e.clientY - top,
+                }),
+                initData: {
+                  speakerIndex: index,
+                  text: "",
+                },
+                connectingNodeId: { current: undefined },
+              });
+              ctxMenuRef.current?.hide();
+            }}
           />
         )
       }
@@ -1046,7 +1065,7 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
                 ? ["dialogueEntry", {
                     speakerIndex: +id,
                     text: "",
-                  } as DialogueEntry]
+                  }] as const
                 // : type === "variables"
                 // ? ["dialogueEntry", {
                 //     speakerIndex: +id,
@@ -1056,11 +1075,11 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
                 ? ["lockNode", {
                     variable: id,
                     action: "unlock",
-                  } as Lock]
+                  }] as const
                 : type === "functions"
                 ? ["emitNode", {
                     function: id,
-                  } as Emit]
+                  }] as const
                 : assert(false) as never;
 
               const { top, left } = graphContainerElem.current!.getBoundingClientRect();

@@ -20,7 +20,7 @@ export function SelectParticipantWidget(props: SelectParticipantWidget.Props) {
                 key={p.name}
                 // FIXME: note that center's display:flex breaks text-overflow
                 {...classNames(styles.portraitImage, "alternis__hoverable", "alternis__draggable", "alternis__center")}
-                onClick={props.onSelect}
+                onClick={() => props.onSelect?.(p.name, i)}
                 title={p.name + `\nClick (or drag) to place a new line said by this participant`}
               >
                 <img
@@ -46,6 +46,6 @@ export function SelectParticipantWidget(props: SelectParticipantWidget.Props) {
 
 export namespace SelectParticipantWidget {
   export interface Props {
-    onSelect?(): void;
+    onSelect?(participantName: string, participantIndex: number): void;
   }
 }

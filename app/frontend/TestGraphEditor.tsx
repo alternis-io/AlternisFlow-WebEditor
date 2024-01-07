@@ -918,13 +918,13 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
 
   // FIXME: useReducer?
   type ContextMenuState = "select-type" | "select-participant";
-  const [[contextMenuState, contextMenuPayload], setContextMenuState] = React.useState<[ContextMenuState, any]>(["select-type", undefined])
+  const [[contextMenuState, _contextMenuPayload], setContextMenuState] = React.useState<[ContextMenuState, any]>(["select-type", undefined])
 
   const contextMenuOptions = React.useMemo<ContextMenuOptions.Option[]>(() => [
     {
       id: "entry",
       label: "Add script line",
-      onSelect(e) {
+      onSelect() {
         setContextMenuState(["select-participant", undefined]);
       },
     },

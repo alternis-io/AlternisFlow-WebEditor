@@ -181,7 +181,11 @@ export const makeNodeDataSetter = <T extends object>(nodeId: string) => (value: 
   useAppState.setState((s) => {
     const nodes = s.document.nodes.slice();
     const thisNodeIndex = s.document.nodes.findIndex(n => n.id === nodeId);
-    const thisNode = s.document.nodes[thisNodeIndex] as Node<T>;
+    const thisNode = s.document.nodes[thisNodeIndex] as Node<T> | undefined;
+
+    if (thisNode === undefined)
+      return s;
+
     nodes[thisNodeIndex] = {
       ...thisNode,
       data: {

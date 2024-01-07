@@ -16,6 +16,14 @@
   cursor: pointer;
 }
 
+img.alternis__hoverable {
+  filter: brightness(0.9);
+}
+
+.alternis__hoverable > img {
+  filter: brightness(0.9);
+}
+
 .alternis__draggable {
   cursor: grab;
 }
@@ -26,6 +34,14 @@
   stroke: var(--fg-hover);
   border-color: var(--fg-hover);
   background-color: var(--bg-1-hover);
+}
+
+img.alternis__hoverable:hover {
+  filter: none;
+}
+
+.alternis__hoverable > img:hover {
+  filter: none;
 }
 
 .alternis__hoverable-red:hover {
@@ -74,6 +90,13 @@
   height: 1em;
   border: 1px solid var(--fg-1);
   border-radius: 5px;
+}
+
+.alternis__floatingbox {
+  padding: var(--gap);
+  box-shadow: 0 0 5px 5px rgba(0,0,0,0.3);
+  background-color: var(--bg-1);
+  border: var(--bg-1);
 }
 
 ::-webkit-scrollbar {

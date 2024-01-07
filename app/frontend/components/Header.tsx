@@ -19,7 +19,7 @@ export function Header() {
 
   return !noHeaderRequested && <Split
     style={{
-      boxShadow: "black 0 0 5px 2px",
+      boxShadow: "rgba(0,0,0,0.3) 0 0 5px 2px",
       zIndex: 5,
       position: "relative",
     }}

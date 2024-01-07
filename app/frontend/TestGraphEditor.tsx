@@ -313,7 +313,7 @@ const RandomSwitchInput = (props: {
             return { proportions };
           })}
         >
-          <em>&times;</em>
+          <strong>&times;</strong>
         </Center>
       <NodeHandle
         nodeId={nodeId}
@@ -376,6 +376,7 @@ const RandomSwitchNode = (props: NodeProps<RandomSwitch>) => {
         </Center>
         {data.proportions.map((proportion, index) => (
           <RandomSwitchInput
+            key={index}
             nodeId={props.id}
             proportion={proportion}
             totalProportion={totalProportion}

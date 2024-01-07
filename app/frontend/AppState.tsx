@@ -81,7 +81,8 @@ export const defaultAppState = {
         addNodeMouseBinding: { button: 2, metaKey: true } as MouseBinding,
         appendToSelectModifier: KeyModifiers.Meta as KeyModifiers | null,
       } : {
-        addNodeMouseBinding: { button: 2, ctrlKey: true } as MouseBinding,
+        // FIXME: document why we can't just use right mouse click
+        addNodeMouseBinding: { button: 2 } as MouseBinding,
         appendToSelectModifier: KeyModifiers.Control as KeyModifiers | null,
       }
     }

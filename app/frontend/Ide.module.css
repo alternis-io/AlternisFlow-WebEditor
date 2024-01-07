@@ -10,7 +10,7 @@
 
 .projectDataEditor {
   padding: 10px;
-  box-shadow: rgba(0,0,0,0.5) 2px 0 0 0;
+  box-shadow: 3px 0 6px 0 rgba(0,0,0,0.3) ;
   z-index: 2;
   overflow-y: scroll;
   grid-area: projectDataEditor;

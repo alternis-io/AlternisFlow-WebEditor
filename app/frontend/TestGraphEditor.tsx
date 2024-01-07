@@ -556,7 +556,7 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
       </label>
       <div className={styles.playerRepliesBody} ref={nodeBodyRef}>
         {data.replies.map((reply, index) => (
-          <>
+          <React.Fragment key={index}>
             <input
               key={`input-${index}`}
               value={reply.text}
@@ -615,7 +615,7 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
               className={styles.inlineHandle}
               isConnectable
             />
-          </>
+          </React.Fragment>
         ))}
         <div
           title="Add a reply option"

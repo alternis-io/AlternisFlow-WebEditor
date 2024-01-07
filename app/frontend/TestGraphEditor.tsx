@@ -604,7 +604,7 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
                   : { opacity: 1, width: undefined },
               }}
             >
-              <em>&times;</em>
+              <strong>&times;</strong>
             </Center>
             <NodeHandle
               key={`handle-${index}`}

@@ -800,6 +800,7 @@ const addNode = (
 }
 
 const ToolsPanel = () => {
+  // FIXME: only one of these should show at a time ever...
   const [showParticipSelect, setShowParticipSelect] = React.useState(false);
   const [showFunctionSelect, setShowFunctionSelect] = React.useState(false);
   return (
@@ -823,7 +824,7 @@ const ToolsPanel = () => {
       )}
 
       <button
-        style={{ width: 30, height: 30, color: "var(--fg-1)" }}
+        style={{ width: 30, height: 30, color: "var(--fg-1)", fontFamily: "serif" }}
         // FIXME: not implemented!
         title={"Add a variable expansion to the text of the selected node or drag to any node"}
         className={"alternis__toolBtn"}
@@ -832,13 +833,13 @@ const ToolsPanel = () => {
       </button>
 
       <button
-        style={{ width: 30, height: 30, color: "var(--fg-1)" }}
+        style={{ width: 30, height: 30, color: "var(--fg-1)", fontFamily: "serif" }}
         // FIXME: not implemented!
         title={"Select a function node to drag and drop"}
         className={"alternis__toolBtn"}
         onClick={() => setShowFunctionSelect(prev => !prev)}
       >
-        <em><var style={{ fontSize: "20px", left: "-0.1em", position: "relative" }}>F</var></em>
+        <em><var style={{ fontSize: "20px", left: "-0.1em", position: "relative" }}>f</var></em>
       </button>
       {/* TODO: better floating div implementation */}
       {showFunctionSelect && (

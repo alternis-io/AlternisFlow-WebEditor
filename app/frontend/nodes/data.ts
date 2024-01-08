@@ -1,5 +1,7 @@
 export interface BaseNodeData {
+  // FIXME: make this a required, auto-generated id
   label?: string;
+  customData?: [string, string][];
 }
 
 // FIXME: move to common/
@@ -8,7 +10,6 @@ export interface DialogueEntry extends BaseNodeData {
   specificPortraitUrl?: string;
   title?: string;
   text: string;
-  customData?: any;
 }
 
 export interface Lock extends BaseNodeData {

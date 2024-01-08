@@ -14,7 +14,7 @@ export const BaseNode = (props: BaseNode.Props) => {
   const otherLabeledNodes = useMemo(() => nodes.filter((n) => n.data?.label && n.id !== props.id), [nodes]);
   const takenLabels = useMemo(() => otherLabeledNodes.map(n => n.data.label as string), [otherLabeledNodes]);
 
-  const { id, children, showMoreContent, noLabel, ...divProps } = props;
+  const { id, children, showMoreContent, noLabel, noMetadata: noCustomData, ...divProps } = props;
 
   const [showMore, setShowMore] = React.useState(false);
 
@@ -63,6 +63,51 @@ export const BaseNode = (props: BaseNode.Props) => {
           </Center>
         }
         {showMore && showMoreContent}
+        {showMore && !noCustomData &&
+          <div>
+            <div>
+              <label className="alternis__split">
+                <span>Custom properties</span>
+                {/* FIXME: remove */}
+                <button
+                  title="Add custom properties"
+                  {...classNames("alternis__hoverable", "alternis__toolBtn", "alternis__newButton" )}
+                  onClick={() => {
+                    set((prev) => ({
+                      // FIXME: get unique key
+                      customData: (prev.customData ?? [])
+                        .concat([[`property${(prev.customData?.length ?? 0) + 1}`, "value"]])
+                    }));
+                    // FIXME: imperatively focus the last input
+                  }}
+                >
+                  <Center>+</Center>
+                </button>
+              </label>
+            </div>
+            {data.customData?.map(([key, value], i) =>
+              // FIXME grid + gap
+              <div className="alternis__split">
+                <UniqueInput
+                  initialValue={key}
+                  takenSet={takenLabels}
+                  style={{ maxWidth: 100 }}
+                  className="nodrag"
+                  onChange={(s) => set(prev => ({
+                    customData: prev.customData?.map(([k,v], j) => [j === i ? s : k,v])
+                  }))}
+                />
+                <input
+                  value={value}
+                  onChange={(e) => set(prev => ({
+                    customData: prev.customData?.map(([k,v], j) => [k, j === i ? e.currentTarget.value : v])
+                  }))}
+                />
+              </div>
+            )}
+          </div>
+        }
+
         {showMore && !noLabel &&
           <label title="The label that can be used by jump nodes">
             label
@@ -84,6 +129,7 @@ export namespace BaseNode {
   export interface Props extends React.PropsWithChildren<{}>, React.HTMLProps<HTMLDivElement> {
     id: string;
     showMoreContent?: React.ReactNode;
+    noMetadata?: boolean;
     noLabel?: boolean;
   }
 }

@@ -104,6 +104,16 @@ img.alternis__hoverable:hover {
   border: var(--bg-1);
 }
 
+.alternis__float {
+  position: absolute;
+  top: -1em;
+}
+
+input.alternis__transparent {
+  position: absolute;
+  top: -1em;
+}
+
 .alternis__draggable {
   cursor: grab;
 }

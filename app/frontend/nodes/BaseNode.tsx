@@ -7,12 +7,32 @@ import { Center } from "../Center";
 import { classNames } from "js-utils/lib/react-utils";
 import { BaseNodeData } from "./data";
 
-export const BaseNode = (props: BaseNode.Props) => {
-  const data = getNode<BaseNodeData>(props.id)?.data;
-  const set = makeNodeDataSetter<BaseNodeData>(props.id);
+const FloatingLabel = (props: {
+  id: string;
+  data: BaseNodeData;
+  set: ReturnType<typeof makeNodeDataSetter<BaseNodeData>>
+}) => {
   const nodes = useAppState(s => s.document.nodes);
   const otherLabeledNodes = useMemo(() => nodes.filter((n) => n.data?.label && n.id !== props.id), [nodes]);
   const takenLabels = useMemo(() => otherLabeledNodes.map(n => n.data.label as string), [otherLabeledNodes]);
+
+  return (
+    <div className="alternis__float">
+      <UniqueInput
+        initialValue={props.data.label}
+        takenSet={takenLabels}
+        style={{ maxWidth: 100 }}
+        className="nodrag"
+        onChange={(s) => props.set({ label: s || undefined })}
+      />
+    </div>
+  );
+};
+
+export const BaseNode = (props: BaseNode.Props) => {
+  const data = getNode<BaseNodeData>(props.id)?.data;
+  const set = makeNodeDataSetter<BaseNodeData>(props.id);
+  const takenCustomDataKeys = useMemo(() => Object.keys(data?.customData ?? {}), [data?.customData]);
 
   const { id, children, showMoreContent, noLabel, noMetadata: noCustomData, ...divProps } = props;
 
@@ -39,6 +59,7 @@ export const BaseNode = (props: BaseNode.Props) => {
         style={{ width: "max-content" }}
         data-tut-id={data.label && `node-${data.label}`}
       >
+        <FloatingLabel id={props.id} data={data} set={set} />
         {children}
         {(showMoreContent || !noLabel) && 
           <Center
@@ -90,7 +111,7 @@ export const BaseNode = (props: BaseNode.Props) => {
               <div className="alternis__split">
                 <UniqueInput
                   initialValue={key}
-                  takenSet={takenLabels}
+                  takenSet={takenCustomDataKeys}
                   style={{ maxWidth: 100 }}
                   className="nodrag"
                   onChange={(s) => set(prev => ({
@@ -106,19 +127,6 @@ export const BaseNode = (props: BaseNode.Props) => {
               </div>
             )}
           </div>
-        }
-
-        {showMore && !noLabel &&
-          <label title="The label that can be used by jump nodes">
-            label
-            <UniqueInput
-              initialValue={data.label}
-              takenSet={takenLabels}
-              style={{ maxWidth: 100 }}
-              className="nodrag"
-              onChange={(s) => set({ label: s || undefined })}
-            />
-          </label>
         }
       </div>
     </div>

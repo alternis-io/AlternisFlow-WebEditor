@@ -8,6 +8,7 @@ export namespace UniqueInput {
     valueLabel?: string;
     takenSet: string[];
     onChange?: (s: string) => void;
+    useContentEditable?: boolean;
   }
 }
 
@@ -16,7 +17,7 @@ export namespace UniqueInput {
  * upon attempts to insert conflicts into the set
  */
 export function UniqueInput(props: UniqueInput.Props) {
-  const { initialValue, valueLabel, takenSet, onChange, ...divProps } = props;
+  const { initialValue, valueLabel, takenSet, onChange, useContentEditable, ...divProps } = props;
 
   const [name, input, setInput, status, message] = useValidatedInput<string>(initialValue ?? "", {
     parse: (x) => ({ value: x }),
@@ -35,12 +36,26 @@ export function UniqueInput(props: UniqueInput.Props) {
 
   return (
     <div {...divProps}>
-      <input
-        value={input}
-        onChange={(e) => setInput(e.currentTarget.value)}
-        {...classNames(status !== InputStatus.Success && "alternis__invalidInput")}
-        style={{ width: "100%" }}
-      />
+      {props.useContentEditable
+      ? (
+        <span
+          contentEditable
+          onKeyDown={(e) => {
+            setInput(e.currentTarget.textContent ?? "");
+          }}
+          {...classNames(status !== InputStatus.Success && "alternis__invalidInput")}
+          style={{ width: "100%" }}
+        >
+          {input}
+        </span>
+      ) : (
+        <input
+          value={input}
+          onChange={(e) => setInput(e.currentTarget.value)}
+          {...classNames(status !== InputStatus.Success && "alternis__invalidInput")}
+          style={{ width: "100%" }}
+        />
+      )}
       <div
         {...classNames(status !== InputStatus.Success && "alternis__invalidInputMessage")}
       >

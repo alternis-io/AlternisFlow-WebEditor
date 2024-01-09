@@ -126,7 +126,8 @@ export const BaseNode = (props: BaseNode.Props) => {
               <div className="alternis__split">
                 <UniqueInput
                   initialValue={key}
-                  takenSet={takenCustomDataKeys}
+                  // FIXME: probably very inefficient... might consider memoizing this
+                  takenSet={takenCustomDataKeys.filter(k => k !== key)}
                   style={{ maxWidth: 100 }}
                   className="nodrag"
                   onChange={(s) => set(prev => ({

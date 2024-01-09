@@ -3,11 +3,12 @@ import { ContextMenuOptions } from "../components/ContextMenu";
 import { UniqueInput } from "../components/UniqueInput";
 import { getNode, makeNodeDataSetter, useAppState } from "../AppState";
 import styles from "../TestGraphEditor.module.css"
+import playbackStyles from "../DialogueViewer.module.css"
 import { Center } from "../Center";
 import { classNames } from "js-utils/lib/react-utils";
 import { BaseNodeData } from "./data";
 
-const FloatingLabel = (props: {
+const FloatingTools = (props: {
   id: string;
   data: BaseNodeData;
   set: ReturnType<typeof makeNodeDataSetter<BaseNodeData>>
@@ -18,7 +19,19 @@ const FloatingLabel = (props: {
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   return (
-    <div>
+    <div style={{ display: "flex" }}>
+      <button
+        // FIXME: should only work on line nodes
+        // FIXME: not implemented
+        title={"Click to test playback starting from this node"}
+        onClick={() => {}}
+        className={styles.nodeLabelFocusButton}
+      >
+        <svg height="15px" width="15px" viewBox="-3 -3 16 16">
+          <path {...classNames(playbackStyles.playButton, "alternis__hover")}
+            d="M0 0 l0 10 l10 -5 l-10 -5" />
+        </svg>
+      </button>
       <div className="alternis__floatup">
         <UniqueInput
           initialValue={props.data.label}
@@ -74,7 +87,7 @@ export const BaseNode = (props: BaseNode.Props) => {
         style={{ width: "max-content" }}
         data-tut-id={data.label && `node-${data.label}`}
       >
-        <FloatingLabel id={props.id} data={data} set={set} />
+        <FloatingTools id={props.id} data={data} set={set} />
         {children}
         {(showMoreContent || !noLabel) && 
           <Center

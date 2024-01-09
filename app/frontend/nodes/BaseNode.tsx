@@ -47,7 +47,7 @@ const FloatingLabel = (props: {
 export const BaseNode = (props: BaseNode.Props) => {
   const data = getNode<BaseNodeData>(props.id)?.data;
   const set = makeNodeDataSetter<BaseNodeData>(props.id);
-  const takenCustomDataKeys = useMemo(() => Object.keys(data?.customData ?? {}), [data?.customData]);
+  const takenCustomDataKeys = useMemo(() => data?.customData?.map(([k]) => k) ?? [], [data?.customData]);
 
   const { id, children, showMoreContent, noLabel, noMetadata: noCustomData, ...divProps } = props;
 
@@ -103,10 +103,10 @@ export const BaseNode = (props: BaseNode.Props) => {
           <div>
             <div>
               <label className="alternis__split">
-                <span>Custom properties</span>
+                <span title="Set custom key/value pairs for this node">custom properties</span>
                 {/* FIXME: remove */}
                 <button
-                  title="Add custom properties"
+                  title="Add a new custom property to this node"
                   {...classNames("alternis__hoverable", "alternis__toolBtn", "alternis__newButton" )}
                   onClick={() => {
                     set((prev) => ({
@@ -132,6 +132,7 @@ export const BaseNode = (props: BaseNode.Props) => {
                   onChange={(s) => set(prev => ({
                     customData: prev.customData?.map(([k,v], j) => [j === i ? s : k,v])
                   }))}
+                  valueLabel="property"
                 />
                 <input
                   value={value}

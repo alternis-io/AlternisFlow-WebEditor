@@ -14,6 +14,7 @@ export function SelectFunctionWidget(props: SelectFunctionWidget.Props) {
     getTitle: _3,
     onExternalClick: _4,
     onDragFunctionEnd: _5,
+    header: _6,
     ...divProps
   } = props;
   
@@ -25,9 +26,11 @@ export function SelectFunctionWidget(props: SelectFunctionWidget.Props) {
 
   useOnExternalClick(rootElem, props.onExternalClick ?? (() => {}));
 
+  const functionEntries = Object.entries(functions);
+
   return (
     <div className="alternis__floatingbox" ref={rootElem} {...divProps}>
-      <strong>Pick a function</strong>
+      <strong>{props.header ?? "Pick a function"}</strong>
       <div
         style={{
           height: "max-content",
@@ -37,7 +40,7 @@ export function SelectFunctionWidget(props: SelectFunctionWidget.Props) {
           marginTop: "var(--gap)"
         }}
       >
-        {Object.entries(functions).map(([eventName, _data]) => (
+        {functionEntries.map(([eventName, _data]) => (
           <div
             key={eventName}
             // FIXME: note that center's display:flex breaks text-overflow
@@ -62,6 +65,7 @@ export function SelectFunctionWidget(props: SelectFunctionWidget.Props) {
             </div>
           </div>
         ))}
+        {functionEntries.length === 0 && <span>You haven't added a function yet</span>}
       </div>
     </div>
   );
@@ -73,5 +77,6 @@ export namespace SelectFunctionWidget {
     getTitle?(eventName: string): string;
     onExternalClick?(): void;
     onDragFunctionEnd?(eventName: string, evt: React.DragEvent<HTMLDivElement>): void;
+    header?: string;
   }
 }

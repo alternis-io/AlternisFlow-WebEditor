@@ -11,13 +11,14 @@ export function SelectParticipantWidget(props: SelectParticipantWidget.Props) {
 
   const {
     onSelectParticipant: _1,
-    getTitle: _3,
-    onExternalClick: _4,
-    onDragParticipantEnd: _5,
+    getParticipantTitle: _2,
+    onExternalClick: _3,
+    onDragParticipantEnd: _4,
+    header: _5,
     ...divProps
   } = props;
   
-  const getTitle = props.getTitle
+  const getTitle = props.getParticipantTitle
     ?? ((p: Participant, _i: number) => p.name + `\nClick (or drag) to place a new line from this participant`);
 
   const rootElem = React.useRef<HTMLDivElement>(null);
@@ -26,7 +27,7 @@ export function SelectParticipantWidget(props: SelectParticipantWidget.Props) {
 
   return (
     <div className="alternis__floatingbox" ref={rootElem} {...divProps}>
-      <strong>Pick a participant</strong>
+      <strong>{props.header ?? "Pick a participant"}</strong>
       <div style={{ height: "max-content", width: 300, overflow: "scroll", marginTop: "var(--gap)" }}>
         <RespGrid
           size={"small"}
@@ -57,6 +58,7 @@ export function SelectParticipantWidget(props: SelectParticipantWidget.Props) {
             }))
           }
         />
+        {participants.length === 0 && <span>You haven't added a participant yet</span>}
       </div>
     </div>
   );
@@ -65,8 +67,9 @@ export function SelectParticipantWidget(props: SelectParticipantWidget.Props) {
 export namespace SelectParticipantWidget {
   export interface Props extends React.HTMLProps<HTMLDivElement> {
     onSelectParticipant?(p: Participant, index: number): void;
-    getTitle?(p: Participant): string;
+    getParticipantTitle?(p: Participant): string;
     onExternalClick?(): void;
     onDragParticipantEnd?(p: Participant, index: number, evt: React.DragEvent<HTMLImageElement>): void;
+    header?: string;
   }
 }

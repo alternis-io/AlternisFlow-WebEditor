@@ -105,7 +105,7 @@ export function GenericEditor<T extends SupportedKeys>(
                   deleteGeneric(name);
                 }}
               >
-                <em>&times;</em>
+                <strong>&times;</strong>
               </Center>
             </div>
           }

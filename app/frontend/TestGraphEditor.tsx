@@ -820,14 +820,15 @@ const ToolsPanel = () => {
       {showParticipSelect && (
         <div style={{position: "absolute", top: "100%"}}>
           <SelectParticipantWidget
-            getTitle={(p) => (p.name + `\nDrag into the editor to place a new line from this participant`)}
+            getParticipantTitle={(p) => (p.name + `\nDrag into the editor to place a new line from this participant`)}
             onDragParticipantEnd={() => setShowParticipSelect(false)}
+            header="Drag a participant"
           />
         </div>
       )}
 
       <button
-        style={{ width: 30, height: 30, color: "var(--fg-1)", fontFamily: "serif" }}
+        style={{ width: 30, height: 30, fontFamily: "serif" }}
         // FIXME: not implemented!
         title={"Add a variable expansion to the text of the selected node or drag to any node"}
         className={"alternis__toolBtn"}
@@ -836,7 +837,7 @@ const ToolsPanel = () => {
       </button>
 
       <button
-        style={{ width: 30, height: 30, color: "var(--fg-1)", fontFamily: "serif" }}
+        style={{ width: 30, height: 30, fontFamily: "serif" }}
         // FIXME: not implemented!
         title={"Select a function node to drag and drop"}
         className={"alternis__toolBtn"}
@@ -850,6 +851,7 @@ const ToolsPanel = () => {
           <SelectFunctionWidget
             getTitle={(name) => (name + `\nDrag into the editor to add a call node`)}
             onDragFunctionEnd={() => setShowFunctionSelect(false)}
+            header="Drag a function"
           />
         </div>
       )}

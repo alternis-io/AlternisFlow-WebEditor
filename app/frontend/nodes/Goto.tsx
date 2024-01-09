@@ -37,6 +37,7 @@ export function GotoNode(props: GotoNode.Props) {
         <select
           value={data?.target}
           onChange={e => set(() => ({ target: e.currentTarget.value }))}
+          style={{ maxWidth: 150 }}
         >
           {targets
             .map((jumpTarget) => (

@@ -8,7 +8,7 @@ export namespace UniqueInput {
     valueLabel?: string;
     takenSet: string[];
     onChange?: (s: string) => void;
-    useContentEditable?: boolean;
+    inputClassName?: string;
   }
 }
 
@@ -16,8 +16,8 @@ export namespace UniqueInput {
  * owns an input component, and given a set of taken inputs, handles warning users
  * upon attempts to insert conflicts into the set
  */
-export function UniqueInput(props: UniqueInput.Props) {
-  const { initialValue, valueLabel, takenSet, onChange, useContentEditable, ...divProps } = props;
+export const UniqueInput = React.forwardRef<HTMLInputElement, UniqueInput.Props>((props, ref) => {
+  const { initialValue, valueLabel, takenSet, onChange, inputClassName, ...divProps } = props;
 
   const [name, input, setInput, status, message] = useValidatedInput<string>(initialValue ?? "", {
     parse: (x) => ({ value: x }),
@@ -36,33 +36,20 @@ export function UniqueInput(props: UniqueInput.Props) {
 
   return (
     <div {...divProps}>
-      {props.useContentEditable
-      ? (
-        <span
-          contentEditable
-          onKeyDown={(e) => {
-            setInput(e.currentTarget.textContent ?? "");
-          }}
-          {...classNames(status !== InputStatus.Success && "alternis__invalidInput")}
-          style={{ width: "100%" }}
-        >
-          {input}
-        </span>
-      ) : (
-        <input
-          value={input}
-          onChange={(e) => setInput(e.currentTarget.value)}
-          {...classNames(status !== InputStatus.Success && "alternis__invalidInput")}
-          style={{ width: "100%" }}
-        />
-      )}
       <div
         {...classNames(status !== InputStatus.Success && "alternis__invalidInputMessage")}
       >
         {message}
       </div>
+      <input
+        value={input}
+        onChange={(e) => setInput(e.currentTarget.value)}
+        {...classNames(status !== InputStatus.Success && "alternis__invalidInput", inputClassName)}
+        style={{ width: "100%" }}
+        ref={ref}
+      />
     </div>
   );
-}
+});
 
 export default UniqueInput;

@@ -39,6 +39,23 @@
   flex-grow: 2;
 }
 
+.nodeLabelInput {
+  background-color: transparent;
+  color: var(--fg-1);
+  border: none;
+  width: fit-content;
+}
+
+.nodeLabelFocusButton {
+  background-color: transparent;
+  color: var(--fg-1);
+  border: none;
+  width: fit-content;
+  position: absolute;
+  top: var(--gap);
+  left: var(--gap);
+}
+
 
 .nodeHeader {
   width: 100%;

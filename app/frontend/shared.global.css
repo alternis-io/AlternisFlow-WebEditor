@@ -104,9 +104,10 @@ img.alternis__hoverable:hover {
   border: var(--bg-1);
 }
 
-.alternis__float {
+.alternis__floatup {
   position: absolute;
-  top: -1em;
+  bottom: calc(100% + var(--gap));
+  height: auto;
 }
 
 input.alternis__transparent {

@@ -247,6 +247,7 @@ const EmitNode = (props: NodeProps<Emit>) => {
         <select
           value={data.function}
           onChange={e => set(() => ({ function: e.currentTarget.value }))}
+          style={{ maxWidth: 150 }}
         >
           {Object.entries(functions)
             .map(([functionName]) => (
@@ -478,6 +479,7 @@ const ReplyLock = (props: {
         value={props.reply.lockVariable}
         onChange={(e) => props.set({ lockVariable: e.currentTarget.value })}
         style={{
+          maxWidth: 150,
           // can't use "display: none" or the grid is broken
           ...props.reply.condition === "none"
             ? { opacity: 0, width: 0, padding: 0, margin: 0 }
@@ -554,6 +556,7 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
           title={participants.length === 0 ? "You must add at least one participant to use them as in a reply" : undefined}
           value={speaker?.name}
           onChange={e => set(() => ({ speaker: +e.currentTarget.value }))}
+          style={{ maxWidth: 150 }}
         >
           {participants.map((p, i) => (
               <option key={i} value={i}>{p.name}</option>

@@ -15,16 +15,31 @@ const FloatingLabel = (props: {
   const nodes = useAppState(s => s.document.nodes);
   const otherLabeledNodes = useMemo(() => nodes.filter((n) => n.data?.label && n.id !== props.id), [nodes]);
   const takenLabels = useMemo(() => otherLabeledNodes.map(n => n.data.label as string), [otherLabeledNodes]);
+  const inputRef = React.useRef<HTMLInputElement>(null);
 
   return (
-    <div className="alternis__float">
-      <UniqueInput
-        initialValue={props.data.label}
-        takenSet={takenLabels}
-        style={{ maxWidth: 100 }}
-        className="nodrag"
-        onChange={(s) => props.set({ label: s || undefined })}
-      />
+    <div>
+      <div className="alternis__floatup">
+        <UniqueInput
+          initialValue={props.data.label}
+          takenSet={takenLabels}
+          style={{ width: props.data.label ? "fit-content" : 5 }}
+          className="nodrag"
+          onChange={(s) => props.set({ label: s || undefined })}
+          inputClassName={styles.nodeLabelInput}
+          ref={inputRef}
+        />
+      </div>
+      <button
+        title={"Click to edit this node's label"}
+        onClick={() => {
+          inputRef.current?.focus();
+        }}
+        className={styles.nodeLabelFocusButton}
+        style={{ display: props.data.label ? "none" : undefined}}
+      >
+        {"•••"}
+      </button>
     </div>
   );
 };

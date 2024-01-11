@@ -44,12 +44,15 @@ function GoogleLogin(props: { onLogin?: () => void }) {
       props.onLogin?.();
     }
 
-    await new Promise((resolve, reject) => {
-      const googleClientScript = document.getElementById("google-client-script") as HTMLScriptElement;
-      assert(googleClientScript);
-      googleClientScript.addEventListener("load", resolve);
-      googleClientScript.addEventListener("error", reject);
-    });
+    // TODO: is there a better way to do this?
+    if (!("_alt_gclient_loaded" in window)) {
+      await new Promise((resolve, reject) => {
+        const googleClientScript = document.getElementById("google-client-script") as HTMLScriptElement;
+        assert(googleClientScript);
+        googleClientScript.addEventListener("load", resolve);
+        googleClientScript.addEventListener("error", reject);
+      });
+    }
 
     globalThis.google.accounts.id.initialize({
       client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,

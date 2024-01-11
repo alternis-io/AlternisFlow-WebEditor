@@ -25,7 +25,7 @@ const FloatingTools = (props: {
         // FIXME: not implemented
         title={"Click to test playback starting from this node"}
         onClick={() => {}}
-        className={styles.nodeLabelFocusButton}
+        {...classNames(styles.nodeLabelFocusButton, "alternis__hoverable")}
       >
         <svg height="15px" width="15px" viewBox="-3 -3 16 16">
           <path {...classNames(playbackStyles.playButton, "alternis__hover")}
@@ -48,7 +48,7 @@ const FloatingTools = (props: {
         onClick={() => {
           inputRef.current?.focus();
         }}
-        className={styles.nodeLabelFocusButton}
+        {...classNames(styles.nodeLabelFocusButton, "alternis__hoverable")}
         style={{ display: props.data.label ? "none" : undefined}}
       >
         {"•••"}
@@ -136,7 +136,7 @@ export const BaseNode = (props: BaseNode.Props) => {
             </div>
             {data.customData?.map(([key, value], i) =>
               // FIXME grid + gap
-              <div className="alternis__split">
+              <div className="alternis__split" key={key}>
                 <UniqueInput
                   initialValue={key}
                   // FIXME: probably very inefficient... might consider memoizing this

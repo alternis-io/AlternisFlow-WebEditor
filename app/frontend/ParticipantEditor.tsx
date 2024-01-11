@@ -159,9 +159,8 @@ export function ParticipantEditor() {
             }}>
               Upload new portrait
             </button>
-            &nbsp;
-            <img className={styles.bigPortrait} src={selected.portraitUrl} alt={selected.name} />
           </label>
+          <img className={styles.bigPortrait} src={selected.portraitUrl} alt={selected.name} />
           <div style={{ color: "#f00" }}>{nameStatus !== "success" && nameStatusMessage}</div>
         </>
       ) : (

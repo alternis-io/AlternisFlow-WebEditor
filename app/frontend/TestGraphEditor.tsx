@@ -36,6 +36,7 @@ import defaultParticipantIconUrl from "./images/participant-icon.svg";
 import { ContextMenu, ContextMenuOptions, Options } from './components/ContextMenu'
 import { SelectParticipantWidget } from './components/SelectParticipantWidget'
 import { SelectFunctionWidget } from './components/SelectFunctionWidget'
+import { TransparentSelect } from './components/TransparentSelect'
 import { assert } from 'js-utils/lib/browser-utils'
 import { useOnExternalClick, useValidatedInput } from '@bentley/react-hooks'
 import { InputStatus } from './hooks/useValidatedInput'
@@ -54,11 +55,12 @@ import { exportToJson } from './export';
 
 const forceAddNodeEvent = "force-addnode";
 
-// FIXME: rename?
+// FIXME: rename to Line node
 const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
   const node = getNode<DialogueEntry>(props.id);
 
   const data = node?.data;
+  const participants = useAppState((s) => s.document.participants);
   const participant = useAppState((s) =>
     data?.speakerIndex !== undefined
     ? s.document.participants[data.speakerIndex]
@@ -78,7 +80,7 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
       id={props.id}
       showMoreContent={<>
         <label>
-          title
+          subtitle
           <input
             className="nodrag"
             onChange={(e) => set({ title: e.currentTarget.value })}
@@ -98,7 +100,14 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
       {participant
         ? <>
           <div className={styles.nodeHeader}>
-            <div>{participant.name}</div>
+            <TransparentSelect
+              style={{ maxWidth: 150, fontSize: "1em" }}
+              value={data?.speakerIndex}
+              title={"Click to change the speaker"}
+              onChange={(e) => set({ speakerIndex: +e.currentTarget.value })}
+            >
+              {participants.map((p, i) => <option key={p.name} value={i}>{p.name}</option>)}
+            </TransparentSelect>
             <img height="80px" style={{ width: "auto" }} src={participant.portraitUrl} />
           </div>
           <label>

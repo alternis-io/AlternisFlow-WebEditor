@@ -5,7 +5,7 @@ import { useAppState } from "./AppState";
 import { DialogueContext } from "alternis-js";
 import { WorkerDialogueContext, makeDialogueContext } from "alternis-js/dist/worker-api";
 //import { WorkerDialogueContext, makeDialogueContext } from "alternis-js/worker";
-import { exportToJson } from "./export";
+import { exportDialogueToJson } from "./export";
 import { useAsyncEffect } from "@bentley/react-hooks";
 import { useWithPrevDepsEffect } from "./hooks/usePrevValue";
 import debounce from "lodash.debounce";
@@ -17,7 +17,7 @@ function useDialogueContext(json: string) {
 
   // FIXME: debounce this because of typing
   useAsyncEffect(async ({ isStale }) => {
-    // FIXME: useAsyncEffect has not effective cleanup!
+    // FIXME: useAsyncEffect has no effective cleanup!
     const ctx = await makeDialogueContext(json);
     if (!isStale())
       setDialogueCtx(ctx);
@@ -33,11 +33,13 @@ function useDialogueContext(json: string) {
 }
 
 export function DialogueViewer(props: DialogueViewer.Props) {
-  const doc = useAppState(s => s.document);
+  const currentDialogueName = useAppState(s => s.currentDialogue);
+  const dialogues = useAppState(s => s.document.dialogues);
+  const currentDialogue = dialogues[currentDialogueName];
 
   // FIXME: it would be much more efficient to expose an API for dynamically modifying stuff...
   // FIXME: avoid running this expensive calculation on simple state changes like node movement
-  const json = useMemo(() => JSON.stringify(exportToJson(doc)), [doc]);
+  const json = useMemo(() => currentDialogue && JSON.stringify(exportDialogueToJson(currentDialogue)), [dialogue]);
 
   const dialogueCtx = useDialogueContext(json);
 

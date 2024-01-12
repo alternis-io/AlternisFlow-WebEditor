@@ -58,7 +58,16 @@ const dataPanes = {
       return <Preferences />;
     },
     desc: "Editor preferences",
-  }
+  },
+  dialogues: {
+    label: "Dialogues",
+    component: () => <GenericEditor
+      newInitialVal={{}}
+      singularEntityName="dialogue"
+      docPropKey="dialogues"
+    />,
+    desc: "Choose dialogues from this project to edit."
+  },
 } as const;
 
 type DataPanes = keyof typeof dataPanes;
@@ -82,7 +91,7 @@ export function ProjectDataEditor(_props: ProjectDataEditor.Props) {
       <div style={{
         display: "flex",
         flexWrap: "wrap",
-        gap: 11,
+        gap: "calc(2 * var(--gap))",
       }}>
         {(Object.entries(dataPanes) as [DataPanes, DataPane][]).map(([name, data]) => (
           <span

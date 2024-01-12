@@ -68,6 +68,15 @@ export const clientIsLinux = /Linux/.test(navigator.userAgent);
 type _Node = Node<BaseNodeData, NodeTypes>;
 export { _Node as Node };
 
+export const defaultDialogue = {
+  nodes: [{
+    id: '1',
+    type: 'entry',
+    position: { x: 540, y: 100 },
+  }] as _Node[],
+  edges: [] as Edge<any>[],
+};
+
 export const defaultAppState = {
   preferences: {
     participantEditor: {
@@ -96,18 +105,18 @@ export const defaultAppState = {
     version: "trial" as "trial" | "standard" | "pro",
   },
 
+  // FIXME: this should always be defined
   projectId: undefined as string | undefined,
+
+  currentDialogue: undefined as string | undefined,
 
   // TODO: document should be optional...
   document: {
     id: 0,
     name: "New project",
-    nodes: [{
-      id: '1',
-      type: 'entry',
-      position: { x: 540, y: 100 },
-    }] as _Node[],
-    edges: [] as Edge<any>[],
+    dialogues: {} as {
+      [name: string]: typeof defaultDialogue;
+    },
     participants: [] as Participant[],
     variables: {} as {
       [name: string]: {
@@ -139,10 +148,11 @@ const initialState: AppState = (() => {
   } catch {}
 
   return {
+    // FIXME: use structuredClone instead
     ...deepCloneJson(defaultAppState),
     ...maybeLocallyStoredState,
     ...window.location.hash.includes("?trial") && {
-      document: template1 as AppState["document"]
+      document: template1 as AppState["document"],
     },
   };
 })();

@@ -1,11 +1,18 @@
 import { assert } from "js-utils/lib/browser-utils";
-import { AppState } from "./AppState";
+import { AppState, useAppState } from "./AppState";
 import type { NodeTypes } from "./TestGraphEditor";
 import { DialogueEntry, PlayerReplies, RandomSwitch, Lock, Emit, Goto, BaseNodeData } from "./nodes/data";
 import { Node } from "reactflow";
 
+export function exportCurrentDialogueToJson() {
+  const appState = useAppState.getState();
+  if (!appState.currentDialogue)
+    throw Error("no current dialogue");
+  return exportDialogueToJson(appState.document.dialogues[appState.currentDialogue]);
+}
+
 /** export to the external format */
-export function exportToJson(doc: AppState["document"]) {
+export function exportDialogueToJson(doc: AppState["document"]["dialogues"][string]) {
   const nodes: any[] = [];
 
   const nodeByIdMap = new Map(doc.nodes.map(n => [n.id, n]));

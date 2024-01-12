@@ -52,7 +52,7 @@ import { DialogueEntry, Emit, Lock, RandomSwitch, PlayerReplies, PlayerReply, de
 import { Tutorial1 } from './Tutorial1';
 import { DialogueViewer } from './DialogueViewer';
 import downloadFile, { uploadFile } from './localFileManip';
-import { exportToJson } from './export';
+import { exportDialogueToJson } from './export';
 
 const forceAddNodeEvent = "force-addnode";
 
@@ -106,6 +106,7 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
               style={{ maxWidth: 150, fontSize: "1em" }}
               value={data?.speakerIndex}
               title={"Click to change the speaker"}
+              className="nodrag"
               onChange={(e) => set({ speakerIndex: +e.currentTarget.value })}
             >
               {participants.map((p, i) => <option key={p.name} value={i}>{p.name}</option>)}
@@ -914,7 +915,7 @@ const TopRightPanel = () => {
           onClick={() => {
             downloadFile({
               fileName: 'doc.alternis.json',
-              content: JSON.stringify(exportToJson(useAppState.getState().document), undefined, "  "),
+              content: JSON.stringify(exportDialogueToJson(useAppState.getState().document), undefined, "  "),
             });
           }}
         >

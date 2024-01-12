@@ -1,11 +1,12 @@
-import type { Node, Edge } from 'reactflow'
+import type { Node, Edge } from "reactflow";
+import type { NodeTypes } from "./TestGraphEditor.tsx";
 import { Participant } from "../common/data-types/participant";
 import { deepCloneJson } from "js-utils/lib/react-utils";
 import { create, useStore } from "zustand";
 import { TemporalState, temporal } from "zundo";
 import { DeepPartial } from "ts-essentials/dist/deep-partial";
 import { MouseBinding } from "./components/KeyBindingInput" ;
-import { BaseNodeData } from './nodes/data';
+import { BaseNodeData } from "./nodes/data";
 
 // FIXME: move out icon data and get type from that list
 export type IconSizes = "small" | "medium" | "large";
@@ -64,6 +65,9 @@ export enum KeyModifiers {
 export const clientIsMac = /Mac/.test(navigator.userAgent);
 export const clientIsLinux = /Linux/.test(navigator.userAgent);
 
+type _Node = Node<BaseNodeData, NodeTypes>;
+export { _Node as Node };
+
 export const defaultAppState = {
   preferences: {
     participantEditor: {
@@ -102,7 +106,7 @@ export const defaultAppState = {
       id: '1',
       type: 'entry',
       position: { x: 540, y: 100 },
-    }] as Node<BaseNodeData>[],
+    }] as _Node[],
     edges: [] as Edge<any>[],
     participants: [] as Participant[],
     variables: {} as {

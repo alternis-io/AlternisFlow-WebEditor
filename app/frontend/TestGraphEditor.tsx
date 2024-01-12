@@ -37,6 +37,7 @@ import { ContextMenu, ContextMenuOptions, Options } from './components/ContextMe
 import { SelectParticipantWidget } from './components/SelectParticipantWidget'
 import { SelectFunctionWidget } from './components/SelectFunctionWidget'
 import { TransparentSelect } from './components/TransparentSelect'
+import { NodeSearchBar } from "./components/NodeSearchBar";
 import { assert } from 'js-utils/lib/browser-utils'
 import { useOnExternalClick, useValidatedInput } from '@bentley/react-hooks'
 import { InputStatus } from './hooks/useValidatedInput'
@@ -100,6 +101,7 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
       {participant
         ? <>
           <div className={styles.nodeHeader}>
+            {/* FIXME: pretty sure the select becomes invalid when the participant is deleted... */}
             <TransparentSelect
               style={{ maxWidth: 150, fontSize: "1em" }}
               value={data?.speakerIndex}
@@ -906,9 +908,7 @@ const TopRightPanel = () => {
             <br/>
           </>
         )}
-        <button>
-          Find
-        </button>
+        <NodeSearchBar />
         <button
           data-tut-id="export-button"
           onClick={() => {

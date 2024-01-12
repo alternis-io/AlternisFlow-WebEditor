@@ -53,11 +53,9 @@
   color: var(--fg-1);
   border: none;
   width: fit-content;
-  /*
-  position: absolute;
-  top: var(--gap);
-  left: var(--gap);
-  */
+  display: flex;
+  align-content: center;
+  justify-content: center;
 }
 
 

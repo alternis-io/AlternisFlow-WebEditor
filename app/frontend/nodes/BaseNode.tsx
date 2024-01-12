@@ -19,7 +19,7 @@ const FloatingTools = (props: {
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   return (
-    <div style={{ display: "flex" }}>
+    <div style={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
       <button
         // FIXME: should only work on line nodes
         // FIXME: not implemented
@@ -44,14 +44,14 @@ const FloatingTools = (props: {
         />
       </div>
       <button
-        title={"Click to edit this node's label"}
+        title={`Click to set this node's label (#${props.id})`}
         onClick={() => {
           inputRef.current?.focus();
         }}
         {...classNames(styles.nodeLabelFocusButton, "alternis__hoverable")}
         style={{ display: props.data.label ? "none" : undefined}}
       >
-        {"•••"}
+        #
       </button>
     </div>
   );

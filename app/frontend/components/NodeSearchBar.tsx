@@ -50,6 +50,13 @@ export function NodeSearchBar(props: {}) {
 
   const [matchIndex, setMatchIndex] = React.useState<number>();
 
+  const currentNode = React.useMemo(() =>
+    matchIndex !== undefined
+      ? matches[matchIndex]
+      : undefined,
+    [matches, matchIndex],
+  );
+
   useWithPrevDepsEffect(([prevMatches]) => {
     const hadMatches = prevMatches !== undefined && prevMatches.length > 0;
     const hasMatches = matches.length > 0;
@@ -59,12 +66,11 @@ export function NodeSearchBar(props: {}) {
       setMatchIndex(undefined);
   }, [matches]);
 
-  useWithPrevDepsEffect(([prevMatchIndex]) => {
-    if (prevMatchIndex !== matchIndex && matchIndex !== undefined && matches.length > 0) {
-      const match = matches[matchIndex];
-      graph.setCenter(match.position.x, match.position.y, { zoom: 1, duration: 0.7 });
+  useWithPrevDepsEffect(([prevCurrentNode]) => {
+    if (prevCurrentNode !== currentNode && currentNode) {
+      graph.setCenter(currentNode.position.x, currentNode.position.y, { duration: 0.7 });
     }
-  }, [matchIndex]);
+  }, [currentNode]);
 
   return (
     <div>

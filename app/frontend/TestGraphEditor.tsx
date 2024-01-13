@@ -776,53 +776,49 @@ const addNode = (
     connectingNodeId?: { current?: string },
   } = {}
 ) => {
-  useAppState.setState((s) => {
-    const currentDialogue = getCurrentDialogue(s);
-    if (currentDialogue === undefined)
-      return s;
+  useCurrentDialogue.setState((s) => {
+    const { document } = useAppState.getState();
     const maybeSourceNode = connectingNodeId?.current;
-    const newNodeId = getNewId(currentDialogue.nodes);
+    const newNodeId = getNewId(s.nodes);
     return {
-      document: {
-        ...s.document,
-        nodes: currentDialogue.nodes.concat({
-          id: newNodeId,
-          type: nodeType,
-          data: {
-            ...nodeType === "lockNode"
-              ? {
-                variable: Object.entries(s.document.variables).filter(([,v]) => v.type === "boolean")?.[0]?.[0],
-                action: "lock",
-              }
-              : nodeType === "randomSwitch"
-              ? deepCloneJson(defaultRandomSwitchProps)
-              : nodeType === "emitNode"
-              ? { function: Object.keys(s.document.functions)[0] } as Emit
-              : nodeType === "playerReplies"
-              ? deepCloneJson(defaultPlayerRepliesProps)
-              : {},
-            ...initData,
-          },
-          position,
-        }),
-        edges: maybeSourceNode !== undefined
-          ? addEdge({
-            id: getNewId(currentDialogue.edges),
-            source: maybeSourceNode,
-            target: newNodeId,
-          }, currentDialogue.edges)
-          : currentDialogue.edges
-      },
+      nodes: s.nodes.concat({
+        id: newNodeId,
+        type: nodeType,
+        data: {
+          ...nodeType === "lockNode"
+            ? {
+              variable: Object.entries(document.variables).filter(([,v]) => v.type === "boolean")?.[0]?.[0],
+              action: "lock",
+            }
+            : nodeType === "randomSwitch"
+            ? deepCloneJson(defaultRandomSwitchProps)
+            : nodeType === "emitNode"
+            ? { function: Object.keys(document.functions)[0] } as Emit
+            : nodeType === "playerReplies"
+            ? deepCloneJson(defaultPlayerRepliesProps)
+            : {},
+          ...initData,
+        },
+        position,
+      }),
+      edges: maybeSourceNode !== undefined
+        ? addEdge({
+          id: getNewId(s.edges),
+          source: maybeSourceNode,
+          target: newNodeId,
+        }, s.edges)
+        : s.edges
     };
   });
 }
 
 const ToolsPanel = () => {
   // FIXME: only one of these should show at a time ever...
+  const currentDialogueId = useAppState(s => s.currentDialogueId);
   const [showParticipSelect, setShowParticipSelect] = React.useState(false);
   const [showFunctionSelect, setShowFunctionSelect] = React.useState(false);
   return (
-    <div style={{ display: "flex", flexDirection: "row" }}>
+    <div style={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
       <button
         style={{ width: 30, height: 30 }}
         title={"Select a participant to drag and drop a new line from"}
@@ -871,6 +867,12 @@ const ToolsPanel = () => {
         </div>
       )}
 
+      {/* FIXME: need a better breadcrumb design with the document name in the header or something */}
+      <div style={{ marginLeft: "var(--gap)"}}>
+        <em>
+          {currentDialogueId}
+        </em>
+      </div>
     </div>
   );
 };
@@ -886,7 +888,7 @@ const TopRightPanel = () => {
               onClick={() => {
                 downloadFile({
                   fileName: 'doc.name.json',
-                  content: JSON.stringify(useAppState.getState().document, undefined, "  "),
+                  content: JSON.stringify(useAppState.getState(), undefined, "  "),
                 });
               }}
             >

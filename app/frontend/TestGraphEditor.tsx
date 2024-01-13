@@ -109,7 +109,7 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
               className="nodrag"
               onChange={(e) => set({ speakerIndex: +e.currentTarget.value })}
             >
-              {participants.map((p, i) => <option key={p.name} value={i}>{p.name}</option>)}
+              {participants.map((p, i) => <option key={i} value={i}>{p.name}</option>)}
             </TransparentSelect>
             <img height="80px" style={{ width: "auto" }} src={participant.portraitUrl} />
           </div>
@@ -513,10 +513,10 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
   const updateNodeInternals = useUpdateNodeInternals();
   const participants = useAppState(s => s.document.participants);
   const speaker = useMemo(
-    () => props.data.speaker !== undefined
-      ? participants[props.data.speaker]
+    () => data?.speaker !== undefined
+      ? participants[data.speaker]
       : undefined,
-    [participants, props.data.speaker]
+    [participants, data?.speaker]
   );
 
   const nodeBodyRef = React.useRef<HTMLDivElement>(null);
@@ -563,17 +563,16 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
         isConnectable
       />
       <label style={{ marginBottom: "var(--gap)" }}>
-        Replier
-        <select
+        <TransparentSelect
           title={participants.length === 0 ? "You must add at least one participant to use them as in a reply" : undefined}
-          value={speaker?.name}
+          value={data.speaker}
           onChange={e => set(() => ({ speaker: +e.currentTarget.value }))}
           style={{ maxWidth: 150 }}
         >
           {participants.map((p, i) => (
               <option key={i} value={i}>{p.name}</option>
           ))}
-        </select>
+        </TransparentSelect>
       </label>
       <div className={styles.playerRepliesBody} ref={nodeBodyRef}>
         {data.replies.map((reply, index) => (

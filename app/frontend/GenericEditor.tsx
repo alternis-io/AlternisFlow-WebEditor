@@ -122,6 +122,7 @@ export function GenericEditor<T extends SupportedKeys>(
       {proposedName !== undefined
       ? <div>
           <div
+            // FIXME: use a transparent input instead of content editable
             contentEditable
             onKeyDown={(e) => {
               if (e.key === "Enter") {

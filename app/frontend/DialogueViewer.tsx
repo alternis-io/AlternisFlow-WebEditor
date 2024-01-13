@@ -49,6 +49,9 @@ export function DialogueViewer(props: DialogueViewer.Props) {
 
   const divProps = props;
 
+  if (dialogueCtx === undefined)
+    return <em>playback error</em>
+
   return (
     <div
       data-tut-id="dialogue-playback"

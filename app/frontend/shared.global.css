@@ -126,6 +126,10 @@ input.alternis__transparent {
   border-radius: var(--border-radius);
 }
 
+.react-flow__attribution {
+  background-color: transparent;
+}
+
 /* FIXME: move to scrollbar.global.css */
 
 ::-webkit-scrollbar {

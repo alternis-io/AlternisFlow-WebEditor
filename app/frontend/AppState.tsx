@@ -79,6 +79,8 @@ export const defaultDialogue = {
 
 export type Dialogue = typeof defaultDialogue;
 
+const defaultDialogueId = "My Dialogue"
+
 export const defaultAppState = {
   preferences: {
     participantEditor: {
@@ -110,14 +112,14 @@ export const defaultAppState = {
   // FIXME: this should always be defined
   projectId: undefined as string | undefined,
 
-  currentDialogueId: "dialogue1",
+  currentDialogueId: defaultDialogueId,
 
   // TODO: document should be optional...
   document: {
     id: 0,
     name: "New project",
     dialogues: {
-      dialogue1: defaultDialogue,
+      [defaultDialogueId]: defaultDialogue,
     } as {
       [name: string]: Dialogue;
     },

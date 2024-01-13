@@ -17,7 +17,14 @@ export function GenericEditor<T extends SupportedKeys>(
 
   const [proposedName, setProposedName] = useState<string>();
 
-  const setGeneric = (name: string, value: Partial<AppState["document"][T][string]> = props.newInitialVal) => set(s => ({
+  const defaultSetGenericValue = typeof props.newInitialVal === "function"
+    ? props.newInitialVal()
+    : props.newInitialVal;
+
+  const setGeneric = (
+    name: string,
+    value: Partial<AppState["document"][T][string]> = defaultSetGenericValue
+  ) => set(s => ({
     document: {
       ...s.document,
       [props.docPropKey]: {
@@ -68,10 +75,10 @@ export function GenericEditor<T extends SupportedKeys>(
           left={
             <span
               title={
-                `Double-click to edit.\n`
-                + "Drag into the graph to add a call node.\n"
-                + "Functions are callbacks into the environment that "
-                + "can invoke custom functionality during a dialogue."
+                // FIXME: this is bad
+                props.getTitle?.(name, data as any)
+                ?? "Double-click to edit the name.\n"
+                  + `Drag into the graph to add the corresponding node.`
               }
               className="alternis__hoverable"
               onDoubleClick={() => {
@@ -87,7 +94,8 @@ export function GenericEditor<T extends SupportedKeys>(
                 }));
                 e.dataTransfer.effectAllowed = "move";
               }}
-              draggable={"true"}
+              onClick={(e) => props.onClick?.(name, data as T, e)}
+              draggable={!props.noDrag}
             >
               {name}
             </span>
@@ -146,11 +154,14 @@ export namespace GenericEditor {
   export interface Props<T extends SupportedKeys> {
     singularEntityName: string;
     docPropKey: T;
-    newInitialVal: AppState["document"][T][string];
+    newInitialVal: AppState["document"][T][string] | (() => AppState["document"][T][string]);
     // FIXME: use correct react type that supports all possible components impls
     extraActions?: React.FunctionComponent<{
       data: AppState["document"][T][string];
       set: (data: Partial<AppState["document"][T][string]>) => void;
     }>;
+    noDrag?: boolean;
+    onClick?(key: string, t: T, e: React.MouseEvent<HTMLSpanElement>): void;
+    getTitle?(key: string, t: T): string;
   }
 }

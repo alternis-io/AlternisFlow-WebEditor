@@ -110,13 +110,15 @@ export const defaultAppState = {
   // FIXME: this should always be defined
   projectId: undefined as string | undefined,
 
-  currentDialogueId: undefined as string | undefined,
+  currentDialogueId: "dialogue1",
 
   // TODO: document should be optional...
   document: {
     id: 0,
     name: "New project",
-    dialogues: {} as {
+    dialogues: {
+      dialogue1: defaultDialogue,
+    } as {
       [name: string]: Dialogue;
     },
     participants: [] as Participant[],

@@ -4,6 +4,7 @@ import { ParticipantEditor } from "./ParticipantEditor";
 import { GenericEditor } from "./GenericEditor";
 import { Preferences } from "./components/Preferences";
 import { assert } from "js-utils/lib/browser-utils";
+import { defaultDialogue, useAppState } from "./AppState";
 
 const dataPanes = {
   participants: {
@@ -63,11 +64,15 @@ const dataPanes = {
   },
   dialogues: {
     label: "Dialogues",
-    component: () => <GenericEditor
-      newInitialVal={{ nodes: [], edges: [] }}
-      singularEntityName="dialogue"
-      docPropKey="dialogues"
-    />,
+    component: () => (
+      <GenericEditor
+        newInitialVal={() => structuredClone(defaultDialogue)}
+        singularEntityName="dialogue"
+        docPropKey="dialogues"
+        noDrag
+        onClick={(key) => useAppState.setState({ currentDialogueId: key })}
+      />
+    ),
     desc: "Choose dialogues from this project to edit."
   },
 } as const;

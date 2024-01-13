@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useState } from "react";
 import styles from "./DialogueViewer.module.css"; // FIXME: use separate file
-import { useAppState } from "./AppState";
+import { useAppState, useCurrentDialogue } from "./AppState";
 // FIXME: import /worker
 import { DialogueContext } from "alternis-js";
 import { WorkerDialogueContext, makeDialogueContext } from "alternis-js/dist/worker-api";
@@ -12,13 +12,13 @@ import debounce from "lodash.debounce";
 import { classNames } from "js-utils/lib/react-utils";
 import { assert } from "js-utils/lib/browser-utils";
 
-function useDialogueContext(json: string) {
+function useDialogueContext(json: string | undefined) {
   const [dialogueCtx, setDialogueCtx] = useState<WorkerDialogueContext>();
 
   // FIXME: debounce this because of typing
   useAsyncEffect(async ({ isStale }) => {
     // FIXME: useAsyncEffect has no effective cleanup!
-    const ctx = await makeDialogueContext(json);
+    const ctx = json !== undefined ? await makeDialogueContext(json) : undefined;
     if (!isStale())
       setDialogueCtx(ctx);
   }, [json]);
@@ -33,13 +33,15 @@ function useDialogueContext(json: string) {
 }
 
 export function DialogueViewer(props: DialogueViewer.Props) {
-  const currentDialogueName = useAppState(s => s.currentDialogue);
-  const dialogues = useAppState(s => s.document.dialogues);
-  const currentDialogue = dialogues[currentDialogueName];
+  const doc = useAppState(s => s.document);
+  const currentDialogue = useCurrentDialogue();
 
   // FIXME: it would be much more efficient to expose an API for dynamically modifying stuff...
   // FIXME: avoid running this expensive calculation on simple state changes like node movement
-  const json = useMemo(() => currentDialogue && JSON.stringify(exportDialogueToJson(currentDialogue)), [dialogue]);
+  const json = useMemo(
+    () => currentDialogue && JSON.stringify(exportDialogueToJson(doc, currentDialogue)),
+    [doc, currentDialogue],
+  );
 
   const dialogueCtx = useDialogueContext(json);
 

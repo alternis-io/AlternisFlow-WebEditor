@@ -206,7 +206,7 @@ const useLocalApiState = create<ApiState>()((set, get) => ({
 
       // nothing to update since local api cache only contains document metadata
       try {
-        await get()._apiFetch(`/users/me/documents/${prev.id}`, {
+        await get()._apiFetch(`/users/me/documents/${id}`, {
           method: "PATCH",
           body: JSON.stringify(patch),
           headers: { 'Content-Type': 'application/json' },

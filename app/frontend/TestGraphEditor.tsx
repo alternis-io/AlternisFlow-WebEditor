@@ -29,7 +29,7 @@ import { Link, useLocation } from "react-router-dom";
 import { baseUrl, useApi } from "./hooks/useApi";
 import { classNames, deepCloneJson } from 'js-utils/lib/react-utils'
 import { Center } from "./Center";
-import { getNode, makeNodeDataSetter, useAppState, AppState, resetAllAppState } from "./AppState";
+import { Node, getNode, makeNodeDataSetter, useAppState, useCurrentDialogue, AppState, resetAllAppState, getCurrentDialogue } from "./AppState";
 import { ReactComponent as LockIcon } from "./images/inkscape-lock.svg";
 import { ReactComponent as UnlockIcon } from "./images/inkscape-unlock.svg";
 import defaultParticipantIconUrl from "./images/participant-icon.svg";
@@ -39,7 +39,7 @@ import { SelectFunctionWidget } from './components/SelectFunctionWidget'
 import { TransparentSelect } from './components/TransparentSelect'
 import { NodeSearchBar } from "./components/NodeSearchBar";
 import { assert } from 'js-utils/lib/browser-utils'
-import { useOnExternalClick, useValidatedInput } from '@bentley/react-hooks'
+import { useValidatedInput } from '@bentley/react-hooks'
 import { InputStatus } from './hooks/useValidatedInput'
 import { useReactFlowClipboard } from './hooks/useReactFlowClipboard'
 import debounce from "lodash.debounce";
@@ -52,7 +52,7 @@ import { DialogueEntry, Emit, Lock, RandomSwitch, PlayerReplies, PlayerReply, de
 import { Tutorial1 } from './Tutorial1';
 import { DialogueViewer } from './DialogueViewer';
 import downloadFile, { uploadFile } from './localFileManip';
-import { exportDialogueToJson } from './export';
+import { exportCurrentDialogueToJson, exportDialogueToJson } from './export';
 
 const forceAddNodeEvent = "force-addnode";
 
@@ -777,12 +777,15 @@ const addNode = (
   } = {}
 ) => {
   useAppState.setState((s) => {
+    const currentDialogue = getCurrentDialogue(s);
+    if (currentDialogue === undefined)
+      return s;
     const maybeSourceNode = connectingNodeId?.current;
-    const newNodeId = getNewId(s.document.nodes);
+    const newNodeId = getNewId(currentDialogue.nodes);
     return {
       document: {
         ...s.document,
-        nodes: s.document.nodes.concat({
+        nodes: currentDialogue.nodes.concat({
           id: newNodeId,
           type: nodeType,
           data: {
@@ -804,11 +807,11 @@ const addNode = (
         }),
         edges: maybeSourceNode !== undefined
           ? addEdge({
-            id: getNewId(s.document.edges),
+            id: getNewId(currentDialogue.edges),
             source: maybeSourceNode,
             target: newNodeId,
-          }, s.document.edges)
-          : s.document.edges
+          }, currentDialogue.edges)
+          : currentDialogue.edges
       },
     };
   });
@@ -915,7 +918,7 @@ const TopRightPanel = () => {
           onClick={() => {
             downloadFile({
               fileName: 'doc.alternis.json',
-              content: JSON.stringify(exportDialogueToJson(useAppState.getState().document), undefined, "  "),
+              content: JSON.stringify(exportCurrentDialogueToJson(), undefined, "  "),
             });
           }}
         >
@@ -929,8 +932,8 @@ const TopRightPanel = () => {
 export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
   // FIXME: use correct types
   const graph = useReactFlow<{}, {}>();
-  const nodes = useAppState(s => s.document.nodes);
-  const edges = useAppState(s => s.document.edges);
+  const nodes = useCurrentDialogue(s => s.nodes, { assert: true });
+  const edges = useCurrentDialogue(s => s.edges, { assert: true });
   const permsVersion = useAppState(s => s.permissions.version);
 
   const [trialMessageShown, setTrialMessageShown] = useState(false);
@@ -1084,24 +1087,15 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
           edges={edges}
           deleteKeyCode={["Backspace", "Delete"]}
           // FIXME: need to filter illegal deletion changes here (e.g. no delete entry node)
-          onNodesChange={(changes) => useAppState.setState(s => ({
-            document: {
-              ...s.document,
-              nodes: applyNodeChanges(changes, s.document.nodes),
-            },
+          onNodesChange={(changes) => useCurrentDialogue.setState(s => ({
+            nodes: applyNodeChanges(changes, s.nodes) as Node[],
           }))}
-          onEdgesChange={(changes) => useAppState.setState(s => ({
-            document: {
-              ...s.document,
-              edges: applyEdgeChanges(changes, s.document.edges),
-            },
+          onEdgesChange={(changes) => useCurrentDialogue.setState(s => ({
+            edges: applyEdgeChanges(changes, s.edges),
           }))}
           onConnect={(connection) => {
-            useAppState.setState(s => ({
-              document: {
-                ...s.document,
-                edges: addEdge(connection, s.document.edges),
-              },
+            useCurrentDialogue.setState(s => ({
+              edges: addEdge(connection, s.edges),
             }));
           }}
           snapToGrid

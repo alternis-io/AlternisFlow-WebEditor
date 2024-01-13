@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import styles from "./Ide.module.css";
 import { AppState, KeyModifiers, MouseButtons, MouseInteractions, clientIsLinux, clientIsMac, useAppState }  from "../AppState";
 import { MouseBinding, MouseBindingInput } from "./KeyBindingInput";
+import { ValueOf } from "ts-essentials";
 
 type GraphPrefs = AppState["preferences"]["graph"]
 
@@ -27,12 +28,12 @@ type ValueTypeSubset<T extends object, V> = {
   [K in keyof T]: T[K] extends V ? T[K] : never;
 }
 
-const makeEnumSelectComponent = <E extends object>(
+const makeEnumSelectComponent = <E extends Record<string, any>>(
   stateKey: keyof ValueTypeSubset<GraphPrefs, E[keyof E]>,
   enum_: E,
   labels: Record<keyof E, string>
 ) => {
-  const options = Object.entries(enum_).map(([k, v]) => (
+  const options = (Object.entries(enum_) as [string, any][]).map(([k, v]) => (
     <option key={k} value={JSON.stringify(v)}>{labels[k]}</option>
   )).concat(
     <option key="null" value={JSON.stringify(null)}>none</option>

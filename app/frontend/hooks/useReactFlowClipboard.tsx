@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
-import { AppState, clientIsMac, useAppState } from "../AppState";
-import { useStable } from "@bentley/react-hooks";
+import { Dialogue, clientIsMac, useAppState, useCurrentDialogue, Node } from "../AppState";
 import { XYPosition, useOnSelectionChange, useReactFlow } from "reactflow";
 import { assert } from "js-utils/lib/browser-utils";
 import { useTrackMouse } from "./useTrackMouse";
@@ -18,12 +17,15 @@ function getNewId(nodes: { id: string }[]) {
 export function useReactFlowClipboard(args: {
   graphContainerElem: React.RefObject<HTMLDivElement>,
 }): void {
-  type NodeEdgeState = Pick<AppState["document"], "edges" | "nodes">;
+  type NodeEdgeState = Pick<Dialogue, "edges" | "nodes">;
   //const [clipboard, setClipboard] = React.useState<NodeEdgeState | undefined>();
   //const [selection, setSelection] = React.useState<NodeEdgeState | undefined>();
   const clipboard = React.useRef<NodeEdgeState>();
   const selection = React.useRef<NodeEdgeState>();
-  useOnSelectionChange({ onChange: (s) => (selection.current = s) });
+  useOnSelectionChange({ onChange: (s) => (selection.current = {
+    nodes: s.nodes as Node[],
+    edges: s.edges,
+  })});
 
   const graph = useReactFlow();
   const { position } = useTrackMouse();
@@ -46,27 +48,24 @@ export function useReactFlowClipboard(args: {
         const edgeIdSet = new Set(clipboard.current?.edges.map(e => e.id));
         const nodeIdSet = new Set(clipboard.current?.nodes.map(n => n.id));
         copySelection();
-        useAppState.setState(s => ({
-          document: {
-            ...s.document,
-            nodes: s.document.nodes.filter(n => !nodeIdSet.has(n.id)),
-            edges: s.document.edges.filter(e => !edgeIdSet.has(e.id)),
-          },
+        useCurrentDialogue.setState(s => ({
+          nodes: s.nodes.filter(n => !nodeIdSet.has(n.id)),
+          edges: s.edges.filter(e => !edgeIdSet.has(e.id)),
         }));
 
       } else if (pastePressed) {
-        useAppState.setState(s => {
+        useCurrentDialogue.setState(s => {
           if (selection.current === undefined)
             return s;
 
           let nodeRemapTable = new Map<string, string>();
           let edgeRemapTable = new Map<string, string>();
           {
-            let nextNodeId = +getNewId(s.document.nodes);
+            let nextNodeId = +getNewId(s.nodes);
             for (const { id }  of selection.current.nodes)
               nodeRemapTable.set(id, String(nextNodeId++));
 
-            let nextEdgeId = +getNewId(s.document.edges);
+            let nextEdgeId = +getNewId(s.edges);
             for (const { id }  of selection.current.edges)
               edgeRemapTable.set(id, String(nextEdgeId++));
           }
@@ -97,22 +96,19 @@ export function useReactFlowClipboard(args: {
           };
 
           return {
-            document: {
-              ...s.document,
-              nodes: s.document.nodes.concat(selection.current.nodes.map(n => ({
-                ...n,
-                id: nodeRemapTable.get(n.id)!,
-                position: { x: n.position.x + 200, y: n.position.y + 200 },
-              }))),
-              edges: s.document.edges.concat(selection.current.edges.map(e => ({
-                ...e,
-                id: edgeRemapTable.get(e.id)!,
-                source: nodeRemapTable.get(e.source) ?? e.source,
-                target: nodeRemapTable.get(e.target) ?? e.target,
-                sourceHandle: e.sourceHandle && remapHandle(e.sourceHandle) || e.sourceHandle,
-                targetHandle: e.targetHandle && remapHandle(e.targetHandle) || e.targetHandle,
-              }))),
-            },
+            nodes: s.nodes.concat(selection.current.nodes.map(n => ({
+              ...n,
+              id: nodeRemapTable.get(n.id)!,
+              position: { x: n.position.x + 200, y: n.position.y + 200 },
+            }))),
+            edges: s.edges.concat(selection.current.edges.map(e => ({
+              ...e,
+              id: edgeRemapTable.get(e.id)!,
+              source: nodeRemapTable.get(e.source) ?? e.source,
+              target: nodeRemapTable.get(e.target) ?? e.target,
+              sourceHandle: e.sourceHandle && remapHandle(e.sourceHandle) || e.sourceHandle,
+              targetHandle: e.targetHandle && remapHandle(e.targetHandle) || e.targetHandle,
+            }))),
           };
         });
       }

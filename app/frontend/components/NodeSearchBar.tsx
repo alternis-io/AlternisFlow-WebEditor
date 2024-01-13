@@ -1,6 +1,7 @@
 import { useReactFlow } from "reactflow";
+import { PlayerReplies, DialogueEntry } from "../nodes/data";
 import React from "react";
-import { Node, useAppState } from "../AppState";
+import { Node, useCurrentDialogue, useAppState } from "../AppState";
 import type { NodeTypes } from "../TestGraphEditor";
 import { useWithPrevDepsEffect } from "../hooks/usePrevValue";
 
@@ -14,7 +15,7 @@ function useWildcardSearch(search: string | undefined) {
   }, [search]);
 }
 
-export function NodeSearchBar(props: {}) {
+export function NodeSearchBar() {
   const [searchOpen, setSearchOpen] = React.useState(false);
   const [searchInput, setSearchInput] = React.useState<string>();
   // FIXME: use fuzzy find
@@ -29,17 +30,17 @@ export function NodeSearchBar(props: {}) {
 
     const matchers: Partial<Record<NodeTypes, (r: RegExp, n: Node) => void>> = {
       dialogueEntry: (r, node) => {
-        if (r.test(node.data.text))
+        if (r.test((node.data as DialogueEntry).text))
           matches.push(node);
       },
       playerReplies: (r, node) => {
-        if (node.data.replies.some(reply => r.test(reply.text)))
+        if ((node.data as PlayerReplies).replies.some(reply => r.test(reply.text)))
           matches.push(node);
       },
     };
 
-    const appState = useAppState.getState();
-    for (const node of appState.document.nodes) {
+    const currentDialogue = useCurrentDialogue.getState();
+    for (const node of currentDialogue?.nodes ?? []) {
       if (node.type === undefined) continue;
       // FIXME: type these strings!
       matchers[node.type]?.(searchAsRegex, node);

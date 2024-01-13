@@ -36,6 +36,7 @@ export function RespGrid(props: RespGrid.Props) {
         gridAutoRows: `fit-content`,
       }}
     >
+      {/*
       <ContextMenuOptions options={Object.entries(gridSizes)
         .map(([name, size]) =>
           ({
@@ -45,6 +46,7 @@ export function RespGrid(props: RespGrid.Props) {
           }))
         }
       />
+      */}
       {props.cells.map((cell) =>
         <div
           key={cell.key}

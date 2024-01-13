@@ -45,7 +45,8 @@ export const uploadFile = async (opts: { type: 'text' | 'dataurl' }) => {
       input.onchange = function() {
         try {
           if (input.files === null) throw Error("No files in input")
-          const [file] = input.files;
+          const file = input.files.item(0)
+          if (file === null) throw Error("First file in input was null")
           const blob = file
           const reader = new FileReader()
           reader.onloadend = function(ev) {

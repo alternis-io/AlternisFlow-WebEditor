@@ -1,24 +1,22 @@
 import { assert } from "js-utils/lib/browser-utils";
-import { AppState, useAppState } from "./AppState";
+import { AppState, useAppState, getCurrentDialogue, Dialogue } from "./AppState";
 import type { NodeTypes } from "./TestGraphEditor";
 import { DialogueEntry, PlayerReplies, RandomSwitch, Lock, Emit, Goto, BaseNodeData } from "./nodes/data";
 import { Node } from "reactflow";
 
 export function exportCurrentDialogueToJson() {
-  const appState = useAppState.getState();
-  if (!appState.currentDialogue)
-    throw Error("no current dialogue");
-  return exportDialogueToJson(appState.document.dialogues[appState.currentDialogue]);
+  const currentDialogue = getCurrentDialogue(useAppState.getState(), { assert: true });
+  return exportDialogueToJson(useAppState.getState().document, currentDialogue);
 }
 
 /** export to the external format */
-export function exportDialogueToJson(doc: AppState["document"]["dialogues"][string]) {
+export function exportDialogueToJson(doc: AppState["document"], dialogue: Dialogue) {
   const nodes: any[] = [];
 
-  const nodeByIdMap = new Map(doc.nodes.map(n => [n.id, n]));
+  const nodeByIdMap = new Map(dialogue.nodes.map(n => [n.id, n]));
   const nodeOutputsMap = new Map<string, string[]>();
 
-  for (const edge of doc.edges) {
+  for (const edge of dialogue.edges) {
     assert(edge.sourceHandle && edge.targetHandle);
 
     const [startNodeId, startHandleType, startHandleIndex] = edge.sourceHandle.split("_");
@@ -47,7 +45,7 @@ export function exportDialogueToJson(doc: AppState["document"]["dialogues"][stri
   }
 
   // NOTE: can probably skip this...
-  const entry = doc.nodes.find(n => n.type as NodeTypes === "entry");
+  const entry = dialogue.nodes.find(n => n.type as NodeTypes === "entry");
   assert(entry);
 
   const localToExportedIdMap = new Map<string, number>();
@@ -67,7 +65,7 @@ export function exportDialogueToJson(doc: AppState["document"]["dialogues"][stri
     assert(node, "bad node id");
 
     const nextId = node.type as NodeTypes === "goto"
-      ? doc.nodes
+      ? dialogue.nodes
         .find(n => n.data?.label && n.data.label === (node.data as Goto).target)?.id
       : nodeId;
     assert(nextId, `invalid raw next id, probably a bad goto label: '${(node.data as Goto).target}'`);

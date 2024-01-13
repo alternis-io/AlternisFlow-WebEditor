@@ -55,7 +55,8 @@ export function Tutorial(props: Tutorial.Props) {
         ?.map(id => document.querySelectorAll(`[data-tut-id="${id}"]`));
 
       for (const highlightElems of highlightElemGroups ?? []) {
-        for (const highlightElem of highlightElems) {
+        for (let i = 0; i < highlightElems.length; ++i) {
+          const highlightElem = highlightElems[i];
           highlightElem.classList.add(highlightClass);
         }
       }
@@ -64,7 +65,8 @@ export function Tutorial(props: Tutorial.Props) {
     return () => {
       clearTimeout(timeout);
       for (const highlightElems of highlightElemGroups ?? []) {
-        for (const highlightElem of highlightElems) {
+        for (let i = 0; i < highlightElems.length; ++i) {
+          const highlightElem = highlightElems[i];
           highlightElem.classList.remove(highlightClass);
         }
       }

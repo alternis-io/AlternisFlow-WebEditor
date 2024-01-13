@@ -219,6 +219,12 @@ export namespace useCurrentDialogue {
       };
     });
   };
+
+  export const getState = () => {
+    const s = useAppState.getState();
+    if (!s.currentDialogueId) return undefined;
+    return s.document.dialogues[s.currentDialogueId];
+  };
 }
 
 // FIXME: this needs to ignore API based changes!

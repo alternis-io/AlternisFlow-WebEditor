@@ -1,8 +1,7 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Tutorial, TutorialData } from "./components/Tutorial";
 import { useLocation } from "react-router-dom";
 import * as ProjectDataEditor from "./ProjectDataEditor";
-import { classNames } from "js-utils";
 
 const hasSeenTutKey = "alternis-v1_hasSeenIntroTutorial1";
 const hasSeenTutorial = localStorage.getItem(hasSeenTutKey) === "true";

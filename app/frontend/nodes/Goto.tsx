@@ -1,14 +1,14 @@
 import React from "react";
 import { NodeProps, Position } from "reactflow";
 import { NodeHandle } from "./handle";
-import { getNode, makeNodeDataSetter, useAppState } from "../AppState";
+import { getNode, makeNodeDataSetter, useCurrentDialogue } from "../AppState";
 import { Center } from "../Center";
 import styles from "../TestGraphEditor.module.css";
 import { BaseNode } from "./BaseNode";
 import { Goto } from "./data";
 
 export function GotoNode(props: GotoNode.Props) {
-  const nodes = useAppState(s => s.document.nodes);
+  const nodes = useCurrentDialogue(s => s.nodes, { assert: true });
   const targets = nodes.filter(n => n.data?.label).map(n => n.data?.label) as string[];
   const data = getNode<Goto>(props.id)?.data;
   const set = makeNodeDataSetter<Goto>(props.id);

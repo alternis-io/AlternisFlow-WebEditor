@@ -4,7 +4,7 @@
     "noEmit": true,
     "declaration": false,
     "target": "es2015",
-    "module": "NodeNext",
+    "module": "ES2022",
     "jsx": "react",
     "moduleResolution": "node",
     "lib": ["DOM", "ScriptHost", "ES2020"],
@@ -12,7 +12,8 @@
     "skipLibCheck": true,
     //"types": ["node", "./env.d.ts"]
     "types": ["vite"],
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
   },
   "include": ["**/*.ts"]
 }

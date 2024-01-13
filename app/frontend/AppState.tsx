@@ -77,6 +77,8 @@ export const defaultDialogue = {
   edges: [] as Edge<any>[],
 };
 
+export type Dialogue = typeof defaultDialogue;
+
 export const defaultAppState = {
   preferences: {
     participantEditor: {
@@ -108,14 +110,14 @@ export const defaultAppState = {
   // FIXME: this should always be defined
   projectId: undefined as string | undefined,
 
-  currentDialogue: undefined as string | undefined,
+  currentDialogueId: undefined as string | undefined,
 
   // TODO: document should be optional...
   document: {
     id: 0,
     name: "New project",
     dialogues: {} as {
-      [name: string]: typeof defaultDialogue;
+      [name: string]: Dialogue;
     },
     participants: [] as Participant[],
     variables: {} as {
@@ -133,10 +135,12 @@ export const defaultAppState = {
 Object.freeze(defaultAppState);
 
 export type AppState = typeof defaultAppState;
+export type Document = AppState["document"]
 
 const appStateKey = "alternis-v1_appState";
 
 import template1 from "./templates/template1.json";
+import { assert } from "js-utils/lib/browser-utils.js";
 
 const initialState: AppState = (() => {
   let maybeLocallyStoredState: AppState | undefined;
@@ -171,6 +175,52 @@ export const useAppState = create<SettableState<AppState>>()(
   }),
 ));
 
+export function getCurrentDialogue(s: AppState, opts: { assert: true }): Dialogue;
+export function getCurrentDialogue(s: AppState, opts?: { assert?: boolean }): Dialogue | undefined;
+// NOTE: funky typescript union of function types
+export function getCurrentDialogue(s: AppState, opts?: { assert?: boolean }): Dialogue | undefined {
+  const result = s.currentDialogueId === undefined
+    ? undefined
+    : s.document.dialogues[s.currentDialogueId];
+  if (opts?.assert && result === undefined)
+    throw Error(`Current dialogue '${s.currentDialogueId}' was not defined`);
+  return result;
+}
+
+export function useCurrentDialogue<T>(cb: (s: Dialogue) => T, opts: { assert: true }): T;
+export function useCurrentDialogue<T>(cb: (s: Dialogue | undefined) => T, opts?: { assert?: boolean }): T;
+export function useCurrentDialogue(): Dialogue | undefined;
+// NOTE: funky typescript union of function types
+export function useCurrentDialogue<T>(cb?: ((s: Dialogue) => T) | ((s: Dialogue | undefined) => T), opts?: { assert?: boolean }): T {
+  return useAppState((s) => {
+    const currentDialogue = getCurrentDialogue(s, opts);
+    if (cb === undefined) return currentDialogue as T;
+    return (cb as (s: Dialogue | undefined) => T)(currentDialogue);
+  });
+}
+
+export namespace useCurrentDialogue {
+  export const setState = (value: Partial<Dialogue> | ((s: Dialogue) => Partial<Dialogue>)) => {
+    useAppState.setState((s) => {
+      if (!s.currentDialogueId) return s;
+      const currentDialogue = s.document.dialogues[s.currentDialogueId];
+
+      return {
+        document: {
+          ...s.document,
+          dialogues: {
+            ...s.document.dialogues,
+            [s.currentDialogueId]: {
+              ...currentDialogue,
+              ...typeof value === "function" ? value(currentDialogue) : value,
+            },
+          },
+        },
+      };
+    });
+  };
+}
+
 // FIXME: this needs to ignore API based changes!
 export const useTemporalAppState = <T extends any>(
   selector: (state: TemporalState<SettableState<AppState>>) => T,
@@ -187,15 +237,17 @@ export function resetAllAppState() {
   useAppState.setState(deepCloneJson(defaultAppState));
 }
 
-/** throws on bad node id */
+/** throws on bad node id or no current dialogue */
 export const getNode = <T extends object>(nodeId: string) =>
-  useAppState(s => s.document.nodes.find(n => n.id === nodeId)) as Node<T> | undefined;
+  useCurrentDialogue(s => s.nodes.find(n => n.id === nodeId), { assert: true }) as Node<T> | undefined;
 
-export const makeNodeDataSetter = <T extends object>(nodeId: string) => (value: Partial<T> | ((s: T) => Partial<T>)) => {
+export const makeNodeDataSetter = <T extends BaseNodeData>(nodeId: string) => (value: Partial<T> | ((s: T) => Partial<T>)) => {
   useAppState.setState((s) => {
-    const nodes = s.document.nodes.slice();
-    const thisNodeIndex = s.document.nodes.findIndex(n => n.id === nodeId);
-    const thisNode = s.document.nodes[thisNodeIndex] as Node<T> | undefined;
+    const currentDialogue = getCurrentDialogue(s, { assert: true });
+    assert(s.currentDialogueId);
+    const nodes = currentDialogue.nodes.slice();
+    const thisNodeIndex = currentDialogue.nodes.findIndex(n => n.id === nodeId);
+    const thisNode = currentDialogue.nodes[thisNodeIndex] as _Node | undefined;
 
     if (thisNode === undefined)
       return s;
@@ -204,13 +256,20 @@ export const makeNodeDataSetter = <T extends object>(nodeId: string) => (value: 
       ...thisNode,
       data: {
         ...thisNode.data,
-        ...typeof value === "function" ? value(thisNode.data) : value,
+        ...typeof value === "function" ? value(thisNode.data as T) : value,
       },
     };
+
     return {
       document: {
         ...s.document,
-        nodes,
+        dialogues: {
+          ...s.document.dialogues,
+          [s.currentDialogueId]: {
+            ...s.document.dialogues[s.currentDialogueId],
+            nodes,
+          },
+        },
       },
     };
   });

@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { ContextMenuOptions } from "../components/ContextMenu";
 import { UniqueInput } from "../components/UniqueInput";
-import { getNode, makeNodeDataSetter, useAppState } from "../AppState";
+import { getNode, makeNodeDataSetter, useCurrentDialogue } from "../AppState";
 import styles from "../TestGraphEditor.module.css"
 import playbackStyles from "../DialogueViewer.module.css"
 import { Center } from "../Center";
@@ -13,7 +13,7 @@ const FloatingTools = (props: {
   data: BaseNodeData;
   set: ReturnType<typeof makeNodeDataSetter<BaseNodeData>>
 }) => {
-  const nodes = useAppState(s => s.document.nodes);
+  const nodes = useCurrentDialogue(s => s.nodes, { assert: true });
   const otherLabeledNodes = useMemo(() => nodes.filter((n) => n.data?.label && n.id !== props.id), [nodes]);
   const takenLabels = useMemo(() => otherLabeledNodes.map(n => n.data.label as string), [otherLabeledNodes]);
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -69,11 +69,8 @@ export const BaseNode = (props: BaseNode.Props) => {
   const nodeContextMenuOpts: ContextMenuOptions.Option[] = React.useMemo(() => [
     {
       id: "delete",
-      onSelect: () => useAppState.setState(s => ({
-        document: {
-          ...s.document,
-          nodes: s.document.nodes.filter(n => n.id !== id)
-        },
+      onSelect: () => useCurrentDialogue.setState(s => ({
+        nodes: s.nodes.filter(n => n.id !== id)
       })),
     }
   ], []);

@@ -3,6 +3,7 @@
   "scripts": {
     "build": "vite build --mode production",
     "typecheck": "tsc -p tsconfig.json",
+    "typecheck-watch": "tsc -p tsconfig.json --watch",
     "preview": "vite preview",
     "dev": "vite --port 3001",
     "test": "mocha --config ./.mocharc.js tests/unit/**/*.test.ts",

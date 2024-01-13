@@ -1,380 +1,382 @@
 {
   "name": "New project",
-  "nodes": [
-    {
-      "id": "1",
-      "type": "entry",
-      "position": {
-        "x": 255,
-        "y": 105
+  "dialogues": {
+    "nodes": [
+      {
+        "id": "1",
+        "type": "entry",
+        "position": {
+          "x": 255,
+          "y": 105
+        },
+        "width": 68,
+        "height": 41,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 255,
+          "y": 105
+        },
+        "dragging": false
       },
-      "width": 68,
-      "height": 41,
-      "selected": false,
-      "positionAbsolute": {
-        "x": 255,
-        "y": 105
+      {
+        "id": "2",
+        "type": "dialogueEntry",
+        "data": {
+          "speakerIndex": 0,
+          "text": "Hey"
+        },
+        "position": {
+          "x": 390,
+          "y": 45
+        },
+        "width": 207,
+        "height": 151,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 390,
+          "y": 45
+        },
+        "dragging": false
       },
-      "dragging": false
-    },
-    {
-      "id": "2",
-      "type": "dialogueEntry",
-      "data": {
-        "speakerIndex": 0,
-        "text": "Hey"
+      {
+        "id": "3",
+        "type": "randomSwitch",
+        "data": {
+          "proportions": [
+            1,
+            9
+          ]
+        },
+        "position": {
+          "x": 660,
+          "y": 30
+        },
+        "width": 174,
+        "height": 170,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 660,
+          "y": 30
+        },
+        "dragging": false
       },
-      "position": {
-        "x": 390,
-        "y": 45
+      {
+        "id": "4",
+        "type": "dialogueEntry",
+        "data": {
+          "speakerIndex": 1,
+          "text": "WELL HELLO"
+        },
+        "position": {
+          "x": 945,
+          "y": -75
+        },
+        "width": 207,
+        "height": 151,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 945,
+          "y": -75
+        },
+        "dragging": false
       },
-      "width": 207,
-      "height": 151,
-      "selected": false,
-      "positionAbsolute": {
-        "x": 390,
-        "y": 45
+      {
+        "id": "5",
+        "type": "dialogueEntry",
+        "data": {
+          "speakerIndex": 1,
+          "text": "Yo"
+        },
+        "position": {
+          "x": 945,
+          "y": 150
+        },
+        "width": 207,
+        "height": 151,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 945,
+          "y": 150
+        },
+        "dragging": false
       },
-      "dragging": false
-    },
-    {
-      "id": "3",
-      "type": "randomSwitch",
-      "data": {
-        "proportions": [
-          1,
-          9
-        ]
+      {
+        "id": "6",
+        "type": "playerReplies",
+        "data": {
+          "replies": [
+            {
+              "text": "It's {name} and I like waffles",
+              "condition": "none"
+            },
+            {
+              "text": "It's {name}",
+              "condition": "none"
+            },
+            {
+              "lockVariable": "Aaron likes you",
+              "condition": "unlocked",
+              "text": "Wanna go eat waffles?"
+            }
+          ],
+          "label": "name-replies"
+        },
+        "position": {
+          "x": 1920,
+          "y": 30
+        },
+        "width": 375,
+        "height": 164,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 1920,
+          "y": 30
+        },
+        "dragging": false
       },
-      "position": {
-        "x": 660,
-        "y": 30
+      {
+        "id": "7",
+        "type": "goto",
+        "data": {
+          "target": "name-replies"
+        },
+        "position": {
+          "x": 3060,
+          "y": 30
+        },
+        "width": 216,
+        "height": 111,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 3060,
+          "y": 30
+        },
+        "dragging": false
       },
-      "width": 174,
-      "height": 170,
-      "selected": false,
-      "positionAbsolute": {
-        "x": 660,
-        "y": 30
+      {
+        "id": "8",
+        "type": "lockNode",
+        "data": {
+          "action": "unlock"
+        },
+        "position": {
+          "x": 2385,
+          "y": -180
+        },
+        "width": 209,
+        "height": 133,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 2385,
+          "y": -180
+        },
+        "dragging": false
       },
-      "dragging": false
-    },
-    {
-      "id": "4",
-      "type": "dialogueEntry",
-      "data": {
-        "speakerIndex": 1,
-        "text": "WELL HELLO"
+      {
+        "id": "9",
+        "type": "dialogueEntry",
+        "data": {
+          "speakerIndex": 1,
+          "text": "What's your name?"
+        },
+        "position": {
+          "x": 1290,
+          "y": 45
+        },
+        "width": 207,
+        "height": 151,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 1290,
+          "y": 45
+        },
+        "dragging": false
       },
-      "position": {
-        "x": 945,
-        "y": -75
+      {
+        "id": "10",
+        "type": "dialogueEntry",
+        "data": {
+          "speakerIndex": 1,
+          "text": "You're pretty cool!\nWhat was your name again?"
+        },
+        "position": {
+          "x": 2685,
+          "y": -210
+        },
+        "width": 207,
+        "height": 151,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 2685,
+          "y": -210
+        },
+        "dragging": false
       },
-      "width": 207,
-      "height": 151,
-      "selected": false,
-      "positionAbsolute": {
-        "x": 945,
-        "y": -75
+      {
+        "id": "11",
+        "type": "dialogueEntry",
+        "data": {
+          "speakerIndex": 1,
+          "text": "Ok. What was your name again?"
+        },
+        "position": {
+          "x": 2370,
+          "y": 0
+        },
+        "width": 207,
+        "height": 151,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 2370,
+          "y": 0
+        },
+        "dragging": false
       },
-      "dragging": false
-    },
-    {
-      "id": "5",
-      "type": "dialogueEntry",
-      "data": {
-        "speakerIndex": 1,
-        "text": "Yo"
+      {
+        "id": "12",
+        "type": "dialogueEntry",
+        "data": {
+          "speakerIndex": 1,
+          "text": "Yeah, {name}."
+        },
+        "position": {
+          "x": 2400,
+          "y": 210
+        },
+        "width": 207,
+        "height": 151,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 2400,
+          "y": 210
+        },
+        "dragging": false
       },
-      "position": {
-        "x": 945,
-        "y": 150
+      {
+        "id": "13",
+        "type": "emitNode",
+        "data": {},
+        "position": {
+          "x": 1605,
+          "y": 60
+        },
+        "width": 215,
+        "height": 130,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 1605,
+          "y": 60
+        },
+        "dragging": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "1",
+        "sourceHandle": "1_source_0",
+        "target": "2",
+        "targetHandle": "2_target_0",
+        "id": "reactflow__edge-11_source_0-22_target_0",
+        "selected": false
       },
-      "width": 207,
-      "height": 151,
-      "selected": false,
-      "positionAbsolute": {
-        "x": 945,
-        "y": 150
+      {
+        "source": "3",
+        "sourceHandle": "3_source_1",
+        "target": "5",
+        "targetHandle": "5_target_0",
+        "id": "reactflow__edge-33_source_1-55_target_0",
+        "selected": false
       },
-      "dragging": false
-    },
-    {
-      "id": "6",
-      "type": "playerReplies",
-      "data": {
-        "replies": [
-          {
-            "text": "It's {name} and I like waffles",
-            "condition": "none"
-          },
-          {
-            "text": "It's {name}",
-            "condition": "none"
-          },
-          {
-            "lockVariable": "Aaron likes you",
-            "condition": "unlocked",
-            "text": "Wanna go eat waffles?"
-          }
-        ],
-        "label": "name-replies"
+      {
+        "source": "4",
+        "sourceHandle": "4_source_0",
+        "target": "9",
+        "targetHandle": "9_target_0",
+        "id": "reactflow__edge-44_source_0-99_target_0",
+        "selected": false
       },
-      "position": {
-        "x": 1920,
-        "y": 30
+      {
+        "source": "5",
+        "sourceHandle": "5_source_0",
+        "target": "9",
+        "targetHandle": "9_target_0",
+        "id": "reactflow__edge-55_source_0-99_target_0",
+        "selected": false
       },
-      "width": 375,
-      "height": 164,
-      "selected": false,
-      "positionAbsolute": {
-        "x": 1920,
-        "y": 30
+      {
+        "source": "8",
+        "sourceHandle": "8_source_0",
+        "target": "10",
+        "targetHandle": "10_target_0",
+        "id": "reactflow__edge-88_source_0-1010_target_0"
       },
-      "dragging": false
-    },
-    {
-      "id": "7",
-      "type": "goto",
-      "data": {
-        "target": "name-replies"
+      {
+        "source": "6",
+        "sourceHandle": "6_source_1",
+        "target": "11",
+        "targetHandle": "11_target_0",
+        "id": "reactflow__edge-66_source_1-1111_target_0"
       },
-      "position": {
-        "x": 3060,
-        "y": 30
+      {
+        "source": "6",
+        "sourceHandle": "6_source_2",
+        "target": "12",
+        "targetHandle": "12_target_0",
+        "id": "reactflow__edge-66_source_2-1212_target_0"
       },
-      "width": 216,
-      "height": 111,
-      "selected": false,
-      "positionAbsolute": {
-        "x": 3060,
-        "y": 30
+      {
+        "source": "10",
+        "sourceHandle": "10_source_0",
+        "target": "7",
+        "targetHandle": "7_target_0",
+        "id": "reactflow__edge-1010_source_0-77_target_0"
       },
-      "dragging": false
-    },
-    {
-      "id": "8",
-      "type": "lockNode",
-      "data": {
-        "action": "unlock"
+      {
+        "source": "11",
+        "sourceHandle": "11_source_0",
+        "target": "7",
+        "targetHandle": "7_target_0",
+        "id": "reactflow__edge-1111_source_0-77_target_0"
       },
-      "position": {
-        "x": 2385,
-        "y": -180
+      {
+        "source": "9",
+        "sourceHandle": "9_source_0",
+        "target": "13",
+        "targetHandle": "13_target_0",
+        "id": "reactflow__edge-99_source_0-1313_target_0",
+        "selected": false
       },
-      "width": 209,
-      "height": 133,
-      "selected": false,
-      "positionAbsolute": {
-        "x": 2385,
-        "y": -180
+      {
+        "source": "13",
+        "sourceHandle": "13_source_0",
+        "target": "6",
+        "targetHandle": "6_target_0",
+        "id": "reactflow__edge-1313_source_0-66_target_0",
+        "selected": false
       },
-      "dragging": false
-    },
-    {
-      "id": "9",
-      "type": "dialogueEntry",
-      "data": {
-        "speakerIndex": 1,
-        "text": "What's your name?"
+      {
+        "source": "3",
+        "sourceHandle": "3_source_0",
+        "target": "4",
+        "targetHandle": "4_target_0",
+        "id": "reactflow__edge-33_source_0-44_target_0"
       },
-      "position": {
-        "x": 1290,
-        "y": 45
+      {
+        "source": "6",
+        "sourceHandle": "6_source_0",
+        "target": "8",
+        "targetHandle": "8_target_0",
+        "id": "reactflow__edge-66_source_0-88_target_0"
       },
-      "width": 207,
-      "height": 151,
-      "selected": false,
-      "positionAbsolute": {
-        "x": 1290,
-        "y": 45
-      },
-      "dragging": false
-    },
-    {
-      "id": "10",
-      "type": "dialogueEntry",
-      "data": {
-        "speakerIndex": 1,
-        "text": "You're pretty cool!\nWhat was your name again?"
-      },
-      "position": {
-        "x": 2685,
-        "y": -210
-      },
-      "width": 207,
-      "height": 151,
-      "selected": false,
-      "positionAbsolute": {
-        "x": 2685,
-        "y": -210
-      },
-      "dragging": false
-    },
-    {
-      "id": "11",
-      "type": "dialogueEntry",
-      "data": {
-        "speakerIndex": 1,
-        "text": "Ok. What was your name again?"
-      },
-      "position": {
-        "x": 2370,
-        "y": 0
-      },
-      "width": 207,
-      "height": 151,
-      "selected": false,
-      "positionAbsolute": {
-        "x": 2370,
-        "y": 0
-      },
-      "dragging": false
-    },
-    {
-      "id": "12",
-      "type": "dialogueEntry",
-      "data": {
-        "speakerIndex": 1,
-        "text": "Yeah, {name}."
-      },
-      "position": {
-        "x": 2400,
-        "y": 210
-      },
-      "width": 207,
-      "height": 151,
-      "selected": false,
-      "positionAbsolute": {
-        "x": 2400,
-        "y": 210
-      },
-      "dragging": false
-    },
-    {
-      "id": "13",
-      "type": "emitNode",
-      "data": {},
-      "position": {
-        "x": 1605,
-        "y": 60
-      },
-      "width": 215,
-      "height": 130,
-      "selected": false,
-      "positionAbsolute": {
-        "x": 1605,
-        "y": 60
-      },
-      "dragging": false
-    }
-  ],
-  "edges": [
-    {
-      "source": "1",
-      "sourceHandle": "1_source_0",
-      "target": "2",
-      "targetHandle": "2_target_0",
-      "id": "reactflow__edge-11_source_0-22_target_0",
-      "selected": false
-    },
-    {
-      "source": "3",
-      "sourceHandle": "3_source_1",
-      "target": "5",
-      "targetHandle": "5_target_0",
-      "id": "reactflow__edge-33_source_1-55_target_0",
-      "selected": false
-    },
-    {
-      "source": "4",
-      "sourceHandle": "4_source_0",
-      "target": "9",
-      "targetHandle": "9_target_0",
-      "id": "reactflow__edge-44_source_0-99_target_0",
-      "selected": false
-    },
-    {
-      "source": "5",
-      "sourceHandle": "5_source_0",
-      "target": "9",
-      "targetHandle": "9_target_0",
-      "id": "reactflow__edge-55_source_0-99_target_0",
-      "selected": false
-    },
-    {
-      "source": "8",
-      "sourceHandle": "8_source_0",
-      "target": "10",
-      "targetHandle": "10_target_0",
-      "id": "reactflow__edge-88_source_0-1010_target_0"
-    },
-    {
-      "source": "6",
-      "sourceHandle": "6_source_1",
-      "target": "11",
-      "targetHandle": "11_target_0",
-      "id": "reactflow__edge-66_source_1-1111_target_0"
-    },
-    {
-      "source": "6",
-      "sourceHandle": "6_source_2",
-      "target": "12",
-      "targetHandle": "12_target_0",
-      "id": "reactflow__edge-66_source_2-1212_target_0"
-    },
-    {
-      "source": "10",
-      "sourceHandle": "10_source_0",
-      "target": "7",
-      "targetHandle": "7_target_0",
-      "id": "reactflow__edge-1010_source_0-77_target_0"
-    },
-    {
-      "source": "11",
-      "sourceHandle": "11_source_0",
-      "target": "7",
-      "targetHandle": "7_target_0",
-      "id": "reactflow__edge-1111_source_0-77_target_0"
-    },
-    {
-      "source": "9",
-      "sourceHandle": "9_source_0",
-      "target": "13",
-      "targetHandle": "13_target_0",
-      "id": "reactflow__edge-99_source_0-1313_target_0",
-      "selected": false
-    },
-    {
-      "source": "13",
-      "sourceHandle": "13_source_0",
-      "target": "6",
-      "targetHandle": "6_target_0",
-      "id": "reactflow__edge-1313_source_0-66_target_0",
-      "selected": false
-    },
-    {
-      "source": "3",
-      "sourceHandle": "3_source_0",
-      "target": "4",
-      "targetHandle": "4_target_0",
-      "id": "reactflow__edge-33_source_0-44_target_0"
-    },
-    {
-      "source": "6",
-      "sourceHandle": "6_source_0",
-      "target": "8",
-      "targetHandle": "8_target_0",
-      "id": "reactflow__edge-66_source_0-88_target_0"
-    },
-    {
-      "source": "2",
-      "sourceHandle": "2_source_0",
-      "target": "3",
-      "targetHandle": "3_target_0",
-      "id": "reactflow__edge-22_source_0-33_target_0"
-    }
-  ],
+      {
+        "source": "2",
+        "sourceHandle": "2_source_0",
+        "target": "3",
+        "targetHandle": "3_target_0",
+        "id": "reactflow__edge-22_source_0-33_target_0"
+      }
+    ]
+  },
   "participants": [
     {
       "name": "Aisha",

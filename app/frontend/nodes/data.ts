@@ -56,6 +56,6 @@ export const defaultPlayerRepliesProps: PlayerReplies = {
   ],
 };
 
-export interface Goto {
+export interface Goto extends BaseNodeData {
   target: string;
 }

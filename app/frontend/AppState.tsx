@@ -1,5 +1,5 @@
 import type { Node, Edge } from "reactflow";
-import type { NodeTypes } from "./TestGraphEditor.tsx";
+import type { NodeTypes } from "./TestGraphEditor";
 import { Participant } from "../common/data-types/participant";
 import { deepCloneJson } from "js-utils/lib/react-utils";
 import { create, useStore } from "zustand";

@@ -3,6 +3,7 @@ import styles from "./Ide.module.css";
 import { ParticipantEditor } from "./ParticipantEditor";
 import { GenericEditor } from "./GenericEditor";
 import { Preferences } from "./components/Preferences";
+import { assert } from "js-utils/lib/browser-utils";
 
 const dataPanes = {
   participants: {
@@ -17,11 +18,12 @@ const dataPanes = {
       newInitialVal={{ type: "boolean", default: "value" }}
       singularEntityName="variable"
       docPropKey="variables"
-      extraActions={useRef(({ data, set }) => (
+      extraActions={useRef<GenericEditor.Props<"variables">["extraActions"]>(({ data, set }) => (
         <>
           <select
             value={data.type}
             onChange={(e) => {
+              assert(e.currentTarget.value === "string" || e.currentTarget.value === "boolean");
               set({ type: e.currentTarget.value });
             }}
           >
@@ -62,7 +64,7 @@ const dataPanes = {
   dialogues: {
     label: "Dialogues",
     component: () => <GenericEditor
-      newInitialVal={{}}
+      newInitialVal={{ nodes: [], edges: [] }}
       singularEntityName="dialogue"
       docPropKey="dialogues"
     />,

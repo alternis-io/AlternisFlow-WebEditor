@@ -70,7 +70,21 @@ const dataPanes = {
         singularEntityName="dialogue"
         docPropKey="dialogues"
         noDrag
-        onClick={(key) => useAppState.setState({ currentDialogueId: key })}
+        onClick={(key) => useAppState.setState(prev => ({
+          currentDialogueId: key,
+          /* FIXME: why?
+          document: {
+            ...prev.document,
+            dialogues: {
+              ...prev.document.dialogues,
+              [key]: prev.document.dialogues[prev.currentDialogueId],
+            },
+          },
+          */
+        }))}
+        onRename={(_oldName, newName) => useAppState.setState({
+          currentDialogueId: newName
+        })}
       />
     ),
     desc: "Choose dialogues from this project to edit."

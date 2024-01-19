@@ -36,12 +36,12 @@ function ResettingErrorBoundary(props: React.PropsWithChildren<{}>) {
         </button>
 
         <br />
-        <br />
 
         <details style={{whiteSpace: 'pre-wrap'}}>
           <summary>Advanced error data</summary>
-          <p><pre>{error?.toString()}</pre></p>
-          <p><pre>{error?.stack}</pre></p>
+          <pre>{error?.toString()}</pre>
+          <br />
+          <pre>{error?.stack}</pre>
         </details>
       </div>
     ) : this.props.children;

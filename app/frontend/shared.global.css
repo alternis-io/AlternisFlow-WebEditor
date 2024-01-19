@@ -41,11 +41,9 @@ img.alternis__hoverable {
   background-color: var(--bg-1-hover);
 }
 
-img.alternis__hoverable:hover {
-  filter: none;
-}
-
-.alternis__hoverable > img:hover {
+.alternis__hoverable:hover img,
+img.alternis__hoverable:hover
+{
   filter: none;
 }
 

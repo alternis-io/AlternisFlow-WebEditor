@@ -507,17 +507,12 @@ const ReplyLock = (props: {
 }
 
 const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
+  // FIXME: looks like node ids get messed up between when switching dialogues
   // REPORTME: react-flow seems to sometimes render non-existing nodes briefly?
   const data = getNode<PlayerReplies>(props.id)?.data;
   const set = makeNodeDataSetter<PlayerReplies>(props.id);
   const updateNodeInternals = useUpdateNodeInternals();
   const participants = useAppState(s => s.document.participants);
-  const speaker = useMemo(
-    () => data?.speaker !== undefined
-      ? participants[data.speaker]
-      : undefined,
-    [participants, data?.speaker]
-  );
 
   const nodeBodyRef = React.useRef<HTMLDivElement>(null);
 

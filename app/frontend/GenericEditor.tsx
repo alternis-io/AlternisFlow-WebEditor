@@ -15,15 +15,16 @@ export function GenericEditor<T extends SupportedKeys>(
   const generic = useAppState((s) => s.document[props.docPropKey]);
   const set = useAppState.setState;
 
+  const [keyBeingEdited, setKeyBeingEdited] = React.useState<string>();
   const [proposedName, setProposedName] = useState<string>();
 
   const defaultSetGenericValue = typeof props.newInitialVal === "function"
     ? props.newInitialVal()
     : props.newInitialVal;
 
-  const setGeneric = (
+  const setGeneric = React.useCallback((
     name: string,
-    value: Partial<AppState["document"][T][string]> = defaultSetGenericValue
+    value: Partial<AppState["document"][T][string]>,
   ) => set(s => ({
     document: {
       ...s.document,
@@ -35,11 +36,32 @@ export function GenericEditor<T extends SupportedKeys>(
         },
       },
     },
-  }));
+  })), [props.docPropKey]);
 
-  const addGeneric = setGeneric;
+  const addGeneric = React.useCallback(
+    (name: string) => setGeneric(name, defaultSetGenericValue),
+    [setGeneric, defaultSetGenericValue],
+  );
 
-  const deleteGeneric = (name: string) => set(s => {
+  const replaceGeneric = React.useCallback((
+    oldName: string,
+    newName: string,
+  ) => set(s => {
+    const result = {
+      document: {
+        ...s.document,
+        [props.docPropKey]: {
+          ...s.document[props.docPropKey],
+          [newName]: s.document[props.docPropKey][oldName],
+        },
+      },
+    };
+    if (oldName !== newName)
+      delete result.document.dialogues[oldName];
+    return result;
+  }), [props.docPropKey]);
+
+  const deleteGeneric = React.useCallback((name: string) => set(s => {
     const generic = { ...s.document[props.docPropKey] };
     delete generic[name];
     return {
@@ -48,28 +70,37 @@ export function GenericEditor<T extends SupportedKeys>(
         [props.docPropKey]: generic,
       },
     };
-  });
+  }), [props.docPropKey]);
 
   const proposedNameInputRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (proposedName === "")
+    if (proposedName === "" || proposedName === keyBeingEdited) {
       proposedNameInputRef.current?.focus();
+      // FIXME: use select once this ref is an input
+    }
   }, [proposedName]);
 
   const finishProposedGeneric = (value: string) => {
-    addGeneric(value);
+    if (keyBeingEdited !== undefined) {
+      replaceGeneric(keyBeingEdited, value)
+      setKeyBeingEdited(undefined);
+    } else {
+      addGeneric(value);
+    }
     setProposedName(undefined);
   };
 
-  const ExtraActions = props.extraActions ?? ((_p: any) => null);
+  const ExtraActions = props.extraActions ?? React.useRef((_p: any) => null).current;
 
   return (
     <div style={{
       display: "grid",
       gap: "11px",
     }}>
-      {Object.entries(generic).map(([name, data]) => (
+      {Object.entries(generic)
+      .filter(([name]) => name !== keyBeingEdited)
+      .map(([name, data]) => (
         <Split
           key={name}
           left={
@@ -77,14 +108,14 @@ export function GenericEditor<T extends SupportedKeys>(
               title={
                 // FIXME: this is bad
                 props.getTitle?.(name, data as any)
-                ?? "Double-click to edit the name.\n"
-                  + `Drag into the graph to add the corresponding node.`
+                ?? "Double-click to edit the name."
+                  + (props.noDrag ? "" : `\nDrag into the graph to add the corresponding node.`)
               }
               className="alternis__hoverable"
               onDoubleClick={() => {
-                deleteGeneric(name);
+                setKeyBeingEdited(name);
                 setProposedName(name);
-                proposedNameInputRef.current?.focus();
+                proposedNameInputRef.current?.focus(); // doesn't exist yet!
               }}
               onDragStart={(e) => {
                 e.dataTransfer.setData("application/alternis-project-data-item", JSON.stringify({
@@ -133,7 +164,14 @@ export function GenericEditor<T extends SupportedKeys>(
               }
             }}
             ref={proposedNameInputRef}
-            onBlur={(e) => finishProposedGeneric(e.currentTarget.innerText.trim() || "invalid name")}
+            // FIXME: just don't finalize if invalid
+            onBlur={(e) => {
+              const value = e.currentTarget.innerText.trim();
+              finishProposedGeneric(value || "invalid name")
+              if (keyBeingEdited) {
+                props.onRename?.(keyBeingEdited, value);
+              }
+            }}
           >
             {proposedName}
           </div>
@@ -164,5 +202,6 @@ export namespace GenericEditor {
     noDrag?: boolean;
     onClick?(key: string, t: T, e: React.MouseEvent<HTMLSpanElement>): void;
     getTitle?(key: string, t: T): string;
+    onRename?(oldKey: string, newKey: string): void;
   }
 }

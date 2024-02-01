@@ -1,9 +1,8 @@
 import { AppState } from "../AppState";
 import { assert } from "js-utils/lib/browser-utils";
 //import * as polyfills from "../polyfills";
-import type { Document, DocumentList, RegisterUserData, User } from "dialogue-middleware-app-backend/lib/prisma";
 import { StoreApi, UseBoundStore, create } from "zustand";
-import { UseApiResult } from ".";
+import type { Document, DocumentList, UseApiResult } from ".";
 
 const defaultLocalApiState = Object.freeze({
   me: undefined,
@@ -12,11 +11,9 @@ const defaultLocalApiState = Object.freeze({
 
 const initialLocalApiState = Object.freeze({ });
 
-// FIXME: use sequence
-const getNextInvalidId = () => -Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
-
 const promisifyReq = <T,>(req: IDBRequest<T>) => {
-  const thenable = new Promise<IDBDatabase>((res, rej) => {
+  const thenable = new Promise<T>((res, rej) => {
+    // FIXME: type this
     req.onsuccess = (e) => res(e.target!.result);
     req.onerror = rej;
   });
@@ -32,6 +29,8 @@ const dbPromise = new Promise<IDBDatabase>((res, rej) => {
 
     const documents = db.createObjectStore("documents", { keyPath: "id" });
     documents.createIndex("name", "name", { unique: true });
+    // FIXME: index on updatedAt to implement recents?
+    documents.createIndex("updatedAt", "updatedAt");
 
     const _recents = db.createObjectStore("documents/recents", { autoIncrement: true });
   };
@@ -57,63 +56,52 @@ const useLocalApiState = create<UseApiResult>()((set, get) => ({
   api: {
     async syncMyRecentDocuments() {
       const db = await dbPromise;
-      const recentsStore = db.transaction("documents/recents", "readonly").objectStore("documents/recents")
-      await new Promise((res, rej) => {
-        const req = recentsStore.getAll();
-        req.onsuccess = (e) => res(e.target!.result);
-        req.onerror = 
+      const recentsStore = db.transaction("documents/recents", "readonly").objectStore("documents/recents");
+      const recentDocuments = await promisifyReq<DocumentList>(recentsStore.getAll());
+      set({ documents: recentDocuments });
+    },
+
+    async getDocument(id: number): Promise<AppState["document"]> {
+      const db = await dbPromise;
+      const documentsStore = db.transaction("documents", "readonly").objectStore("documents");
+      const doc = await promisifyReq<Document>(documentsStore.get(id));
+
+      set((prev) => {
+        let hadDoc = false;
+        const nextCachedDocs = prev.documents?.map(d => d.id == id ? (hadDoc = true, doc) : d);
+        if (!hadDoc && nextCachedDocs !== undefined)
+          nextCachedDocs.push(doc);
+
+        return { documents: nextCachedDocs };
       });
-      const documents = await get()._apiFetch("/users/me/documents/recents").then((r) => r.json() as Promise<DocumentList>);
-      set({ documents });
+
+      // FIXME: must this really be stringified?
+      return JSON.parse(doc.jsonContents);
     },
 
-    async getDocument(id: string): Promise<AppState["document"]> {
-      return get()._apiFetch(`/users/me/documents/${id}`).then((r) => r.json());
-    },
+    async patchDocument(id: number, _prev: AppState, next: AppState): Promise<void> {
+      const doc = next.document;
+      const db = await dbPromise;
+      const documentsStore = db.transaction("documents", "readonly").objectStore("documents");
+      await promisifyReq(documentsStore.put(doc));
 
-    async patchDocument(id: number, prev: AppState, next: AppState): Promise<void> {
-      const patch = jsonpatch.compare(prev, next);
+      set((prev) => {
+        let hadDoc = false;
+        const nextCachedDocs = prev.documents?.map(d => d.id == id ? (hadDoc = true, {
+          id: doc.id,
+          name: doc.name,
+          updatedAt: doc.updatedAt,
+          ownerEmail: doc.ownerEmail,
+        }) : d);
+        if (!hadDoc && nextCachedDocs !== undefined)
+          nextCachedDocs.push(doc);
 
-      // nothing to update since local api cache only contains document metadata
-      try {
-        await get()._apiFetch(`/users/me/documents/${id}`, {
-          method: "PATCH",
-          body: JSON.stringify(patch),
-          headers: { 'Content-Type': 'application/json' },
-        });
-      } catch (err) {
-        throw err;
-      }
+        return { documents: nextCachedDocs };
+      });
     },
 
     async updateDocumentMeta(id: number, patch: Partial<Document>): Promise<void> {
-      let prev: DocumentList[number] | undefined;
-
-      set((s) => ({
-        documents: (s.documents ?? []).map(d =>
-          d.id === id
-          ? (prev = d, { ...d, ...patch, id: d.id })
-          : d
-        ),
-      }));
-
-      try {
-        await get()._apiFetch(`/users/me/documents/${id}`, {
-          method: "PATCH",
-          body: JSON.stringify(patch),
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-      } catch (err) {
-        // rollback on error
-        if (prev) {
-          set((s) => ({
-            documents: (s.documents ?? []).map(d => d.id === id ? prev! : d),
-          }));
-        }
-        throw err;
-      }
+      return this.patchDocument(id, undefined as any, patch);
     },
 
     async deleteDocument(id: number): Promise<void> {

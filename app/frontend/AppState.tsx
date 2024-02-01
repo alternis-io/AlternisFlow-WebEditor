@@ -117,6 +117,8 @@ export const defaultAppState = {
   // TODO: document should be optional...
   document: {
     id: 0,
+    updatedAt: new Date(),
+    ownerEmail: undefined as string | undefined,
     name: "New project",
     dialogues: {
       [defaultDialogueId]: defaultDialogue,

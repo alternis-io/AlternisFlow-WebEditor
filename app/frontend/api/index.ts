@@ -1,10 +1,8 @@
-import { AppState } from "../AppState";
+import { AppState, Document, DocumentHeader } from "../AppState";
 
 import type * as RemoteTypes from "dialogue-middleware-app-backend/lib/prisma";
-import { MarkOptional } from "ts-essentials/dist/mark-optional";
 
-export type Document = MarkOptional<RemoteTypes.Document, "ownerEmail">;
-export type DocumentList = Pick<RemoteTypes.Document, "id" | "name" | "ownerEmail" | "updatedAt">[];
+export type DocumentList = DocumentHeader[];
 
 export interface UseApiResult {
   // FIXME: put these labels as subobjects
@@ -21,7 +19,8 @@ export interface UseApiResult {
   /** computed values must be in a subobject, also they can't be persisted */
   computed: {
     isLoggedIn: boolean;
-  }
+  };
+
   // FIXME: need to standardize this, but these should all just mutate the store reactively,
   // and be renamed to "sync"
   api: {
@@ -31,10 +30,10 @@ export interface UseApiResult {
     logout: () => Promise<void>;
     syncMe(): Promise<void>;
     syncMyRecentDocuments(): Promise<void>;
-    getDocument(id: number): Promise<AppState["document"]>;
+    getDocument(id: number): Promise<Document>;
     updateDocumentMeta(id: number, patch: Partial<Document>): Promise<void>;
     // FIXME: unscrew the document type...
-    patchDocument(id: number, prev: AppState["document"], next: AppState["document"]): Promise<void>;
+    patchDocument(next: Document): Promise<void>;
     deleteDocument(id: number): Promise<void>;
     createDocument(doc?: { name?: string }): Promise<void>;
     duplicateDocument(doc: { id: number }): Promise<void>;

@@ -1,8 +1,8 @@
-import { AppState } from "../AppState";
+import { AppState, Document } from "../AppState";
 import { assert } from "js-utils/lib/browser-utils";
 //import * as polyfills from "../polyfills";
 import { StoreApi, UseBoundStore, create } from "zustand";
-import type { Document, DocumentList, UseApiResult } from ".";
+import type { DocumentList, UseApiResult } from ".";
 
 const defaultLocalApiState = Object.freeze({
   me: undefined,
@@ -56,48 +56,48 @@ const useLocalApiState = create<UseApiResult>()((set, get) => ({
   api: {
     async syncMyRecentDocuments() {
       const db = await dbPromise;
-      const recentsStore = db.transaction("documents/recents", "readonly").objectStore("documents/recents");
+      const transaction = db.transaction("documents/recents", "readonly");
+      const transactionDone = new Promise((res, rej) => {
+        transaction.oncomplete = res;
+        transaction.onerror = rej;
+        transaction.onabort = rej;
+      });
+      const recentsStore = transaction.objectStore("documents/recents");
       const recentDocuments = await promisifyReq<DocumentList>(recentsStore.getAll());
-      set({ documents: recentDocuments });
+      set(prev => {
+        transactionDone.catch(() => set({ documents: prev.documents })); // rollback
+        return { documents: recentDocuments }
+      });
+      await transactionDone;
     },
 
-    async getDocument(id: number): Promise<AppState["document"]> {
+    async getDocument(id: number): Promise<Document> {
       const db = await dbPromise;
-      const documentsStore = db.transaction("documents", "readonly").objectStore("documents");
-      const doc = await promisifyReq<Document>(documentsStore.get(id));
-
-      set((prev) => {
-        let hadDoc = false;
-        const nextCachedDocs = prev.documents?.map(d => d.id == id ? (hadDoc = true, doc) : d);
-        if (!hadDoc && nextCachedDocs !== undefined)
-          nextCachedDocs.push(doc);
-
-        return { documents: nextCachedDocs };
+      const transaction = db.transaction("documents", "readonly");
+      const transactionDone = new Promise((res, rej) => {
+        transaction.oncomplete = res;
+        transaction.onerror = rej;
+        transaction.onabort = rej;
       });
-
-      // FIXME: must this really be stringified?
-      return JSON.parse(doc.jsonContents);
+      const docStore = transaction.objectStore("documents");
+      const doc = await promisifyReq<Document>(docStore.get(id));
+      // FIXME: should this populate the retrieved document into local state?
+      await transactionDone;
+      return doc;
     },
 
-    async patchDocument(id: number, _prev: AppState, next: AppState): Promise<void> {
-      const doc = next.document;
+    async patchDocument(next: Document): Promise<void> {
       const db = await dbPromise;
-      const documentsStore = db.transaction("documents", "readonly").objectStore("documents");
-      await promisifyReq(documentsStore.put(doc));
-
-      set((prev) => {
-        let hadDoc = false;
-        const nextCachedDocs = prev.documents?.map(d => d.id == id ? (hadDoc = true, {
-          id: doc.id,
-          name: doc.name,
-          updatedAt: doc.updatedAt,
-          ownerEmail: doc.ownerEmail,
-        }) : d);
-        if (!hadDoc && nextCachedDocs !== undefined)
-          nextCachedDocs.push(doc);
-
-        return { documents: nextCachedDocs };
+      const transaction = db.transaction("documents", "readwrite");
+      const transactionDone = new Promise((res, rej) => {
+        transaction.oncomplete = res;
+        transaction.onerror = rej;
+        transaction.onabort = rej;
       });
+      const docStore = transaction.objectStore("documents");
+      await promisifyReq(docStore.put(next));
+      // FIXME: should this populate the retrieved document into local state?
+      await transactionDone;
     },
 
     async updateDocumentMeta(id: number, patch: Partial<Document>): Promise<void> {

@@ -4,12 +4,13 @@ import styles from "./Header.module.css";
 import { Split } from "../Split";
 import { resetAllAppState, useAppState } from "../AppState";
 import downloadFile, { uploadFile } from "../localFileManip";
-import { baseUrl, useApi } from "../hooks/useApi";
+import { useApi } from "../api/useApi";
+import { baseUrl } from "../api/useRemoteApi";
 import logoPath from "../../../resources/logo2.svg";
 import { exportCurrentDialogueToJson } from "../export";
 
 export function Header() {
-  const logout = useApi(s => s.api.logout);
+  const logout = useApi(s => s.auth?.logout);
   const location = useLocation();
 
   // FIXME: do real query param parsing!

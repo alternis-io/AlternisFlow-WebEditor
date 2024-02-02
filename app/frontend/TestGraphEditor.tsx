@@ -26,7 +26,8 @@ import ReactFlow, {
 import 'reactflow/dist/base.css'
 import styles from './TestGraphEditor.module.css'
 import { Link, useLocation } from "react-router-dom";
-import { baseUrl, useApi } from "./hooks/useApi";
+import { useApi } from "./api/useApi";
+import { baseUrl } from "./api/useRemoteApi";
 import { classNames, deepCloneJson } from 'js-utils/lib/react-utils'
 import { Center } from "./Center";
 import { Node, getNode, makeNodeDataSetter, useAppState, useCurrentDialogue, AppState, resetAllAppState, getCurrentDialogue } from "./AppState";

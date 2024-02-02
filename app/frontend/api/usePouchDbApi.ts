@@ -1,7 +1,8 @@
 import React from "react";
 import { Document, DocumentHeader } from "../AppState";
 import type { Id, UseApiResult } from ".";
-import  * as PouchDB from "pouchdb";
+import * as _PouchDB from "pouchdb/dist/pouchdb";
+const PouchDB = _PouchDB as typeof import("pouchdb");
 
 const docs = new PouchDB("alternis-v1/documents");
 
@@ -67,13 +68,16 @@ const stable = {
   },
 };
 
-export const usePouchDbApi = (): UseApiResult => {
+export const usePouchDbApi = <F extends (s: UseApiResult) => any>(
+  getter?: F
+): F extends (s: UseApiResult) => infer R ? R : UseApiResult => {
   const [documents, setDocuments] = React.useState<DocumentHeader[]>();
 
   // FIXME: use render effect?
   React.useLayoutEffect(() => {
     docs.changes({ since: "now", include_docs: true })
       .on("change", (change) => {
+        // FIXME: shouldn't only the current document be "populated" to prevent excess memory usage?
         setDocuments(prev => {
           if (!prev) return prev;
           let next = prev.slice();
@@ -91,9 +95,14 @@ export const usePouchDbApi = (): UseApiResult => {
       });
   }, []);
 
-  return React.useMemo(() => ({
-    documents,
-    me: undefined,
-    ...stable
-  }), [documents]);
+  // FIXME: is this efficient?
+  return React.useMemo(() => {
+    const state = {
+      documents,
+      me: undefined,
+      ...stable,
+    };
+    // FIXME: this breaks if the getter changes...
+    return getter?.(state) ?? state;
+  }, [documents]);
 };

@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useApi } from "./useApi";
 
 export function useRedirectIfNotLoggedIn() {
-  const isLoggedIn = useApi(s => s.computed.isLoggedIn);
+  const isLoggedIn = useApi(s => s.auth === undefined || s.auth.isLoggedIn);
   const location = useLocation();
   const navigate = useNavigate();
 

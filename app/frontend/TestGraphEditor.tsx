@@ -30,7 +30,7 @@ import { useApi } from "./api/useApi";
 import { baseUrl } from "./api/useRemoteApi";
 import { classNames, deepCloneJson } from 'js-utils/lib/react-utils'
 import { Center } from "./Center";
-import { Node, getNode, makeNodeDataSetter, useAppState, useCurrentDialogue, AppState, resetAllAppState, getCurrentDialogue } from "./AppState";
+import { Node, getNode, makeNodeDataSetter, useAppState, useCurrentDialogue, Document, resetAllAppState } from "./AppState";
 import { ReactComponent as LockIcon } from "./images/inkscape-lock.svg";
 import { ReactComponent as UnlockIcon } from "./images/inkscape-unlock.svg";
 import defaultParticipantIconUrl from "./images/participant-icon.svg";
@@ -944,19 +944,20 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
   const docId = useAppState(s => s.document.id);
   const patchDocument = useApi(s => s.api.patchDocument);
 
-  // FIXME: replace with middleware
+  // FIXME: replace with middleware?
+  // or sync should be built into the useApi store layer
   useEffect(() => {
     if (permsVersion === "trial")
       return;
 
-    const syncRemote = async (curr: AppState, prev: AppState) => {
-      await patchDocument(docId, prev, curr);
+    const syncRemote = async (curr: Document) => {
+      await patchDocument(curr);
     };
 
     const debouncedSyncRemote = debounce(syncRemote, 3_000, { maxWait: 20_000 });
 
-    const unsub = useAppState.subscribe((state, prevState) => {
-      debouncedSyncRemote(state, prevState)
+    const unsub = useAppState.subscribe((state) => {
+      debouncedSyncRemote(state.document)
     });
 
     return unsub;

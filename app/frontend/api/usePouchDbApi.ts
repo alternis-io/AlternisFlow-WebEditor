@@ -1,6 +1,8 @@
 import React from "react";
 import { Document, DocumentHeader } from "../AppState";
 import type { Id, UseApiResult } from ".";
+// REPORTME: types don't allow using this with vite
+// @ts-ignore
 import * as _PouchDB from "pouchdb/dist/pouchdb";
 const PouchDB = _PouchDB as typeof import("pouchdb");
 

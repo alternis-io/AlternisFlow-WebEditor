@@ -29,14 +29,18 @@ const apiOrigin
 
 function GoogleLogin(props: { onLogin?: () => void }) {
   // FIXME: this doesn't seem to rerender correctly?
-  const isLoggedIn = useApi(s => s.computed.isLoggedIn);
-  const googleLogin = useApi(s => s.api.googleLogin);
+  const isLoggedIn = useApi(s => s.auth?.isLoggedIn);
+  const googleLogin = useApi(s => s.auth?.googleLogin);
 
   const googleLoginBtn = useRef<HTMLDivElement>(null);
   const loginFunc = useRef(props.onLogin);
   loginFunc.current = props.onLogin;
 
+  /*
+  // NOTE: disabled after refactor to make auth optional, needs to be reworked
   useAsyncEffect(async () => {
+    if (googleLogin === undefined) return;
+
     function handleCredentialResponse(resp: { credential: string }) {
       // must set token before running login
       useApi.setState(({ _token: resp.credential }));
@@ -68,6 +72,7 @@ function GoogleLogin(props: { onLogin?: () => void }) {
     // display the One Tap dialog
     //globalThis.google.accounts.id.prompt();
   }, []);
+  */
 
   return isLoggedIn
     ? null
@@ -83,7 +88,7 @@ export function LoginState(_props: LoginPage.Props) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const encodedRedirectSource = searchParams.get("redirect");
-  const isLoggedIn = useApi(s => s.computed.isLoggedIn);
+  const isLoggedIn = useApi(s => s.auth?.isLoggedIn);
   const api = useApi(s => s.api);
 
   const [email, emailInput, setEmailInput, _emailStatus, emailError] = useValidatedInput<string>("", {

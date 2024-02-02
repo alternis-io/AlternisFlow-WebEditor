@@ -1,8 +1,10 @@
-import { AppState, Document, DocumentHeader } from "../AppState";
+import { Document, DocumentHeader } from "../AppState";
 
 import type * as RemoteTypes from "dialogue-middleware-app-backend/lib/prisma";
 
 export type DocumentList = DocumentHeader[];
+
+export type Id = string;
 
 export interface UseApiResult {
   // FIXME: put these labels as subobjects
@@ -30,12 +32,12 @@ export interface UseApiResult {
     logout: () => Promise<void>;
     syncMe(): Promise<void>;
     syncMyRecentDocuments(): Promise<void>;
-    getDocument(id: number): Promise<Document>;
-    updateDocumentMeta(id: number, patch: Partial<Document>): Promise<void>;
+    getDocument(id: Id): Promise<Document>;
+    updateDocumentMeta(id: Id, patch: Partial<Document>): Promise<void>;
     // FIXME: unscrew the document type...
     patchDocument(next: Document): Promise<void>;
-    deleteDocument(id: number): Promise<void>;
+    deleteDocument(id: Id): Promise<void>;
     createDocument(doc?: { name?: string }): Promise<void>;
-    duplicateDocument(doc: { id: number }): Promise<void>;
+    duplicateDocument(doc: { id: Id }): Promise<void>;
   };
 }

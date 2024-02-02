@@ -48,10 +48,12 @@
   ],
   "dependencies": {
     "@floating-ui/react": "^0.26.1",
+    "@types/pouchdb": "^6.4.2",
     "alternis-js": "workspace:^",
     "fast-json-patch": "^3.1.1",
     "jose": "^4.14.6",
     "js-utils": "workspace:^",
+    "pouchdb": "^8.0.1",
     "ts-essentials": "^9.4.1"
   }
 }

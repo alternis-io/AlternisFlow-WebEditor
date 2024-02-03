@@ -4,33 +4,31 @@ import { useAppState } from "../AppState";
 import { classNames } from "js-utils/lib/react-utils";
 import { useOnExternalClick } from "@bentley/react-hooks";
 
-// TODO: standardize the name... is it an event or a function? focus group some writers+non/coders+game devs
-// NOTE: I have a suspicion that "event" is easier to understand?
-export function SelectFunctionWidget(props: SelectFunctionWidget.Props) {
-  const functions = useAppState(s => s.document.functions);
+export function SelectVariableWidget(props: SelectVariableWidget.Props) {
+  const variables = useAppState(s => s.document.variables);
 
   const {
-    onSelectFunction: _1,
+    onSelectVariable: _1,
     getTitle: _3,
     onExternalClick: _4,
-    onDragFunctionEnd: _5,
+    onDragVariableEnd: _5,
     header: _6,
     ...divProps
   } = props;
 
   // FIXME: fix emit terminology
   const getTitle = props.getTitle
-    ?? ((name: string) => name + `\nClick (or drag) to place a emit event for this function`);
+    ?? ((name: string) => name + `\nDrag text variables into text to add to that text.\nDrag and drop true/false variables to make a lock node`);
 
   const rootElem = React.useRef<HTMLDivElement>(null);
 
   useOnExternalClick(rootElem, props.onExternalClick ?? (() => {}));
 
-  const functionEntries = React.useMemo(() => Object.entries(functions), [functions]);
+  const variableEntries = React.useMemo(() => Object.entries(variables), [variables]);
 
   return (
     <div className="alternis__floatingbox" ref={rootElem} {...divProps}>
-      <strong>{props.header ?? "Pick a function"}</strong>
+      <strong>{props.header ?? "Pick a variable"}</strong>
       <div
         style={{
           height: "max-content",
@@ -40,12 +38,12 @@ export function SelectFunctionWidget(props: SelectFunctionWidget.Props) {
           marginTop: "var(--gap)"
         }}
       >
-        {functionEntries.map(([eventName, _data]) => (
+        {variableEntries.map(([eventName, _data]) => (
           <div
             key={eventName}
             // FIXME: note that center's display:flex breaks text-overflow
             {...classNames("alternis__hoverable", "alternis__draggable")}
-            onClick={() => props.onSelectFunction?.(eventName)}
+            onClick={() => props.onSelectVariable?.(eventName)}
             title={getTitle(eventName)}
           >
             <div
@@ -53,30 +51,30 @@ export function SelectFunctionWidget(props: SelectFunctionWidget.Props) {
               onDragStart={(e) => {
                 console.log("started!")
                 e.dataTransfer.setData("application/alternis-project-data-item", JSON.stringify({
-                  type: "functions",
+                  type: "variables",
                   data: _data,
                   id: eventName,
                 }));
                 e.dataTransfer.effectAllowed = "move";
               }}
-              onDragEnd={(e) => props.onDragFunctionEnd?.(eventName, e)}
+              onDragEnd={(e) => props.onDragVariableEnd?.(eventName, e)}
             >
               {eventName}
             </div>
           </div>
         ))}
-        {functionEntries.length === 0 && <span>You haven't added a function yet</span>}
+        {variableEntries.length === 0 && <span>You haven't added a variable yet</span>}
       </div>
     </div>
   );
 }
 
-export namespace SelectFunctionWidget {
+export namespace SelectVariableWidget {
   export interface Props extends React.HTMLProps<HTMLDivElement> {
-    onSelectFunction?(eventName: string): void;
+    onSelectVariable?(eventName: string): void;
     getTitle?(eventName: string): string;
     onExternalClick?(): void;
-    onDragFunctionEnd?(eventName: string, evt: React.DragEvent<HTMLDivElement>): void;
+    onDragVariableEnd?(eventName: string, evt: React.DragEvent<HTMLDivElement>): void;
     header?: string;
   }
 }

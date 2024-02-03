@@ -37,6 +37,7 @@ import defaultParticipantIconUrl from "./images/participant-icon.svg";
 import { ContextMenu, ContextMenuOptions, Options } from './components/ContextMenu'
 import { SelectParticipantWidget } from './components/SelectParticipantWidget'
 import { SelectFunctionWidget } from './components/SelectFunctionWidget'
+import { SelectVariableWidget } from './components/SelectVariableWidget'
 import { TransparentSelect } from './components/TransparentSelect'
 import { NodeSearchBar } from "./components/NodeSearchBar";
 import { assert } from 'js-utils/lib/browser-utils'
@@ -834,60 +835,78 @@ const addNode = (
 const ToolsPanel = () => {
   // FIXME: only one of these should show at a time ever...
   const currentDialogueId = useAppState(s => s.currentDialogueId);
-  const [showParticipSelect, setShowParticipSelect] = React.useState(false);
-  const [showFunctionSelect, setShowFunctionSelect] = React.useState(false);
+  const [showSelect, setShowSelect] = React.useState<"participant" | "function" | "variable">();
+
   return (
     <div style={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
-      <button
-        style={{ width: 30, height: 30 }}
-        title={"Select a participant to drag and drop a new line from"}
-        className={"alternis__toolBtn alternis__center"}
-        onClick={() => setShowParticipSelect(prev => !prev)}
-      >
-        <img width={20} style={{ objectFit: "contain" }} src={defaultParticipantIconUrl} />
-      </button>
-      {/* FIXME: need external clicks to close this */}
-      {showParticipSelect && (
-        <div style={{position: "absolute", top: "100%"}}>
-          <SelectParticipantWidget
-            getParticipantTitle={(p) => (p.name + `\nDrag into the editor to place a new line from this participant`)}
-            onDragParticipantEnd={() => setShowParticipSelect(false)}
-            header="Drag a participant"
-          />
-        </div>
-      )}
+      <>
+        <button
+          style={{ width: 30, height: 30 }}
+          title={"Select a participant to drag and drop a new line from"}
+          className={"alternis__toolBtn alternis__center"}
+          onClick={() => setShowSelect(prev => prev === "participant" ? undefined : "participant")}
+        >
+          <img width={20} style={{ objectFit: "contain" }} src={defaultParticipantIconUrl} />
+        </button>
 
-      <button
-        style={{ width: 30, height: 30, fontFamily: "serif" }}
-        // FIXME: not implemented!
-        title={"Add a variable expansion to the text of the selected node or drag to any node"}
-        className={"alternis__toolBtn"}
-      >
-        <em><var style={{ fontSize: "20px", left: "-0.05em", bottom: "0.05em", position: "relative" }}>x</var></em>
-      </button>
+        {/* FIXME: need external clicks to close this */}
+        {showSelect === "participant" && (
+          <div style={{position: "absolute", top: "100%"}}>
+            <SelectParticipantWidget
+              getParticipantTitle={(p) => (p.name + `\nDrag into the editor to place a new line from this participant`)}
+              onDragParticipantEnd={() => setShowSelect(undefined)}
+              header="Drag a participant"
+            />
+          </div>
+        )}
+      </>
 
-      <button
-        style={{ width: 30, height: 30, fontFamily: "serif" }}
-        // FIXME: not implemented!
-        title={"Select a function node to drag and drop"}
-        className={"alternis__toolBtn"}
-        onClick={() => setShowFunctionSelect(prev => !prev)}
-      >
-        <em><var style={{ fontSize: "20px", left: "-0.1em", position: "relative" }}>f</var></em>
-      </button>
-      {/* TODO: better floating div implementation */}
-      {showFunctionSelect && (
-        <div style={{position: "absolute", top: "100%"}}>
-          <SelectFunctionWidget
-            getTitle={(name) => (name + `\nDrag into the editor to add a call node`)}
-            onDragFunctionEnd={() => setShowFunctionSelect(false)}
-            header="Drag a function"
-          />
-        </div>
-      )}
+      <>
+        <button
+          style={{ width: 30, height: 30, fontFamily: "serif" }}
+          // FIXME: not implemented!
+          title={"Add a variable expansion to the text of the selected node or drag to any node"}
+          className={"alternis__toolBtn"}
+          onClick={() => setShowSelect(prev => prev === "variable" ? undefined : "variable")}
+        >
+          <em><var style={{ fontSize: "20px", left: "-0.05em", bottom: "0.05em", position: "relative" }}>x</var></em>
+        </button>
+
+        {/* FIXME: need external clicks to close this */}
+        {showSelect === "variable" && (
+          <div style={{position: "absolute", top: "100%"}}>
+            <SelectVariableWidget
+              onDragVariableEnd={() => setShowSelect(undefined)}
+            />
+          </div>
+        )}
+      </>
+
+      <>
+        <button
+          style={{ width: 30, height: 30, fontFamily: "serif" }}
+          // FIXME: not implemented!
+          title={"Select a function node to drag and drop"}
+          className={"alternis__toolBtn"}
+          onClick={() => setShowSelect(prev => prev === "function" ? undefined : "function")}
+        >
+          <em><var style={{ fontSize: "20px", left: "-0.1em", position: "relative" }}>f</var></em>
+        </button>
+
+        {/* TODO: better floating div implementation */}
+        {showSelect === "function" && (
+          <div style={{position: "absolute", top: "100%"}}>
+            <SelectFunctionWidget
+              getTitle={(name) => (name + `\nDrag into the editor to add a call node`)}
+              onDragFunctionEnd={() => setShowSelect(undefined)}
+              header="Drag a function"
+            />
+          </div>
+        )}
+      </>
 
       {/* FIXME: need a better breadcrumb design with the document name in the header or something */}
-      <div style={{ marginLeft: "var(--gap)"}}>
+      <div style={{ marginLeft: "var(--gap)" }}>
         <em>
           {currentDialogueId}
         </em>

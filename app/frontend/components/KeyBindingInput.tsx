@@ -45,15 +45,14 @@ export namespace KeyBindingInput {
   }
 }
 
-export type MouseBinding =
-  | {
-    ctrlKey?: boolean;
-    altKey?: boolean;
-    metaKey?: boolean;
-    shiftKey?: boolean;
-    button: number;
-  }
-  | "double-click";
+export interface MouseBinding {
+  ctrlKey?: boolean;
+  altKey?: boolean;
+  metaKey?: boolean;
+  shiftKey?: boolean;
+  button: number;
+  type: string | "dblclick";
+}
 
 const mouseBindingNames: Record<number, string | undefined> = {
   0: "left mouse button",
@@ -64,25 +63,25 @@ const mouseBindingNames: Record<number, string | undefined> = {
 };
 
 function mouseBindingToLabel(b: MouseBinding): string {
-  return b === "double-click"
+  return b.type === "dblclick"
     ? "double click"
-    : (b.ctrlKey ? "ctrl+" : "")
-       + (b.shiftKey ? "shift+" : "")
-       + (b.altKey ? "alt+" : "")
-       + (b.metaKey ? "meta+" : "")
-       + mouseBindingNames[b.button] ?? "unknown mouse aux";
+    : ((b.ctrlKey ? "ctrl+" : "")
+     + (b.shiftKey ? "shift+" : "")
+     + (b.altKey ? "alt+" : "")
+     + (b.metaKey ? "meta+" : "")
+     + mouseBindingNames[b.button]
+      ?? "unknown mouse aux");
 }
 
 export function eventMatchesMouseBinding(e: MouseEvent | React.MouseEvent<any>, b: MouseBinding) {
-  return b === "double-click"
-    ? e.type === "dblclick"
-    : (
-      e.button === b.button
-      && !!b.ctrlKey === e.ctrlKey
-      && !!b.altKey === e.altKey
-      && !!b.shiftKey === e.shiftKey
-      && !!b.metaKey === e.metaKey
-    );
+  return (
+    e.type === b.type
+    && e.button === b.button
+    && !!b.ctrlKey === e.ctrlKey
+    && !!b.altKey === e.altKey
+    && !!b.shiftKey === e.shiftKey
+    && !!b.metaKey === e.metaKey
+  );
 }
 
 export function MouseBindingInput(props: MouseBindingInput.Props) {
@@ -94,18 +93,19 @@ export function MouseBindingInput(props: MouseBindingInput.Props) {
         e.preventDefault();
         e.stopPropagation();
 
-        let onDoubleClick: () => void;
-        const doubleClickPromise = new Promise<"double-click">((resolve) => {
-          onDoubleClick = () => resolve("double-click");
+        let onDoubleClick: (_e: MouseEvent) => void;
+        const doubleClickPromise = new Promise<MouseEvent>((resolve) => {
+          onDoubleClick = resolve;
           document.addEventListener("dblclick", onDoubleClick);
         }).finally(() => document.removeEventListener("dblclick", onDoubleClick));
 
-        const delay = new Promise(resolve => setTimeout(resolve, 200));
+        const delay = new Promise<"timeout">(resolve => setTimeout(() => resolve("timeout"), 200));
         const winner = await Promise.race([doubleClickPromise, delay]);
 
-        if (winner === "double-click")
+        if (winner !== "timeout") e = winner;
 
         props.onChange?.({
+          type: e.type,
           button: e.button,
           ctrlKey: !props.ignoreModifiers && e.ctrlKey,
           altKey: !props.ignoreModifiers && e.altKey,
@@ -116,6 +116,7 @@ export function MouseBindingInput(props: MouseBindingInput.Props) {
         setListening(false);
         return false;
       };
+
       document.addEventListener("mousedown", onMouseDown, true);
       return () => document.removeEventListener("mousedown", onMouseDown, true);
     }

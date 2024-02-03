@@ -931,15 +931,6 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
   const graph = useReactFlow<{}, {}>();
   const nodes = useCurrentDialogue(s => s.nodes, { assert: true });
   const edges = useCurrentDialogue(s => s.edges, { assert: true });
-  const permsVersion = useAppState(s => s.permissions.version);
-
-  const [trialMessageShown, setTrialMessageShown] = useState(false);
-
-  useEffect(() => {
-    // FIXME: source this number from a common json file
-    if (permsVersion === "trial" && nodes.length > 100)
-      setTrialMessageShown(true);
-  }, [nodes, permsVersion]);
 
   const docId = useAppState(s => s.document.id);
   const patchDocument = useApi(s => s.api.patchDocument);
@@ -947,9 +938,6 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
   // FIXME: replace with middleware?
   // or sync should be built into the useApi store layer
   useEffect(() => {
-    if (permsVersion === "trial")
-      return;
-
     const syncRemote = async (curr: Document) => {
       await patchDocument(curr);
     };
@@ -976,17 +964,6 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
   useReactFlowClipboard({ graphContainerElem });
 
   const editorRef = React.useRef<HTMLDivElement>(null);
-
-  const trialMessage = (
-    <dialog open={trialMessageShown}>
-      <p>Thank you for trying <Link to={baseUrl}>Alternis</Link>!</p>
-      <p>
-        Please <Link to={"FIXME"}>sign up</Link> (only $10 a month) to
-        use the full version!
-      </p>
-      <p> TODO a pretty advertisement with live cost data </p>
-    </dialog>
-  );
 
   // FIXME: do real query param parsing!
   const location = useLocation();
@@ -1079,7 +1056,6 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
         ref={graphContainerElem}
         style={{ height: noHeaderRequested ? "100vh" : undefined }}
       >
-        {trialMessage}
         <ReactFlow
           nodes={nodes}
           edges={edges}

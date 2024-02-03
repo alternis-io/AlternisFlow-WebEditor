@@ -168,6 +168,8 @@ const LockNode = (props: NodeProps<Lock>) => {
     }
   }, [bools, data?.variable]);
 
+  const varRefIsValid = data?.variable && bools.find(b => b[0] === data.variable);
+
   // need to use a DOM callback to intercept contextmenu
   React.useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -181,6 +183,16 @@ const LockNode = (props: NodeProps<Lock>) => {
     return () => iconRef.current?.removeEventListener("mousedown", handler, true);
   }, [set, iconRef.current]);
 
+  const varOptions = React.useMemo(() =>
+    [
+      data?.variable ?? "INVALID",
+      ...bools
+        .map(([boolName]) => boolName)
+        .filter(b => b !== data?.variable)
+    ].map((boolName) => (<option key={boolName} value={boolName}>{boolName}</option>)),
+    [data, bools],
+  );
+
   return !data ? null : (
     <BaseNode
       data-tut-id="node-lock"
@@ -188,7 +200,11 @@ const LockNode = (props: NodeProps<Lock>) => {
       title={
         "The 'Lock' node, changes the state of a gate.\n"
         + "Right click to change whether it locks or unlocks it"
+        + (varRefIsValid ? ""
+          : bools.length === 0 ? "\n\nError: no true/false variables exist, create one"
+          : "\n\nError: the selected variable does not exist, pick one")
       }
+      {...classNames(varRefIsValid ? undefined : styles.errorOutline)}
     >
       <NodeHandle
         nodeId={props.id}
@@ -217,9 +233,7 @@ const LockNode = (props: NodeProps<Lock>) => {
           value={data.variable}
           onChange={e => set(() => ({ variable: e.currentTarget.value }))}
         >
-          {bools.map(([boolName]) => (
-              <option key={boolName} value={boolName}>{boolName}</option>
-          ))}
+          {varOptions}
         </select>
       </label>
       <NodeHandle
@@ -955,6 +969,7 @@ const TopRightPanel = () => {
         <NodeSearchBar />
         <button
           data-tut-id="export-button"
+          className="alternis__toolBtn"
           onClick={() => {
             downloadFile({
               fileName: 'doc.alternis.json',

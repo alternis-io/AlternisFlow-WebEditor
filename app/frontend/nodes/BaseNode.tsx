@@ -77,12 +77,12 @@ export const BaseNode = (props: BaseNode.Props) => {
 
   // reactflow seems to render dead nodes sometimes? Or I do?
   return data ? (
-    <div {...divProps}>
-      <ContextMenuOptions options={nodeContextMenuOpts} />
+    <>
       <div
-        className={styles.node}
-        style={{ width: "max-content" }}
         data-tut-id={data.label && `node-${data.label}`}
+        {...divProps}
+        {...classNames(styles.node, divProps.className)}
+        style={{ width: "max-content", ...divProps.style }}
       >
         <FloatingTools id={props.id} data={data} set={set} />
         {children}
@@ -156,7 +156,8 @@ export const BaseNode = (props: BaseNode.Props) => {
           </div>
         }
       </div>
-    </div>
+      <ContextMenuOptions options={nodeContextMenuOpts} />
+    </>
   ) : null;
 };
 

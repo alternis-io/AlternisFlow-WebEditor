@@ -122,6 +122,8 @@ input.alternis__transparent {
   cursor: grab;
   background-color: var(--bg-1);
   border-radius: var(--border-radius);
+  width: 30px;
+  height: 30px;
 }
 
 .react-flow__attribution {

@@ -10,8 +10,12 @@ import { Split } from "./Split";
 type SupportedKeys = "variables" | "functions" | "dialogues";
 
 export function GenericEditor<T extends SupportedKeys>(
-  props: GenericEditor.Props<T>
+  inProps: GenericEditor.Props<T>
 ) {
+  // FIXME: must be in sync with props interface
+  const { singularEntityName, docPropKey, newInitialVal, extraActions, noDrag, onClickEntryName, getTitle, onRename, ...divProps } = inProps;
+  const props = { singularEntityName, docPropKey, newInitialVal, extraActions, noDrag, onClickEntryName, getTitle, onRename };
+
   const generic = useAppState((s) => s.document[props.docPropKey]);
   const set = useAppState.setState;
 
@@ -95,7 +99,7 @@ export function GenericEditor<T extends SupportedKeys>(
 
   return (
     <div
-      {...props}
+      {...divProps}
       style={{
         display: "flex",
         flexDirection: "column",

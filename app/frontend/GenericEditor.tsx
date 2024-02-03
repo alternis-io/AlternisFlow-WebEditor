@@ -95,7 +95,8 @@ export function GenericEditor<T extends SupportedKeys>(
 
   return (
     <div style={{
-      display: "grid",
+      display: "flex",
+      flexDirection: "column",
       gap: "11px",
     }}>
       {Object.entries(generic)
@@ -132,7 +133,7 @@ export function GenericEditor<T extends SupportedKeys>(
             </span>
           }
           right = {
-            <div style={{display: "flex", flexDirection: "row"}}>
+            <div style={{ display: "flex", flexDirection: "row", justifyContent: "flex-end", gap: "3px" }}>
               <ExtraActions
                 data={data as any}
                 set={(d: Partial<AppState["document"][T][string]>) => setGeneric(name, d)}

@@ -21,6 +21,24 @@ const dataPanes = {
       docPropKey="variables"
       extraActions={useRef<GenericEditor.Props<"variables">["extraActions"]>(({ data, set }) => (
         <>
+          {data.type === "boolean" ? (
+            <input
+              type="checkbox"
+              value={data.default}
+              // FIXME: should not be string
+              onChange={e => set({ default: String(e.currentTarget.checked) })}
+              title={`The initial value for this variable when the dialogue begins (${data.default})`}
+            />
+          ) : (
+            <input
+              // WTF: no idea how this works
+              style={{ minWidth: "40%", width: "100%", flex: 0 }}
+              value={data.default}
+              onChange={e => set({ default: e.currentTarget.value })}
+              onKeyDown={e => e.key === "Enter" && e.currentTarget.blur()}
+              title="The initial value for this variable when the dialogue begins"
+            />
+          )}
           <select
             value={data.type}
             onChange={(e) => {
@@ -28,8 +46,18 @@ const dataPanes = {
               set({ type: e.currentTarget.value });
             }}
           >
-            <option value="boolean" title="true/false">true/false</option>
-            <option value="string" title="text">text</option>
+            <option
+              value="boolean"
+              title="A variable which is true or false, can be used to make lock conversations"
+            >
+              true/false
+            </option>
+            <option
+              value="string"
+              title="A variable which can be any text, can be used in reply and line nodes"
+            >
+              text
+            </option>
           </select>
         </>
         // // NOTE: afaict no need for a default value yet

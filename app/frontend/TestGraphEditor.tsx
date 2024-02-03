@@ -30,7 +30,7 @@ import { useApi } from "./api/useApi";
 import { baseUrl } from "./api/useRemoteApi";
 import { classNames, deepCloneJson } from 'js-utils/lib/react-utils'
 import { Center } from "./Center";
-import { Node, getNode, makeNodeDataSetter, useAppState, useCurrentDialogue, Document, resetAllAppState } from "./AppState";
+import { Node, getNode, makeNodeDataSetter, useAppState, useCurrentDialogue, Document, resetAllAppState, Variable } from "./AppState";
 import { ReactComponent as LockIcon } from "./images/inkscape-lock.svg";
 import { ReactComponent as UnlockIcon } from "./images/inkscape-unlock.svg";
 import defaultParticipantIconUrl from "./images/participant-icon.svg";
@@ -80,16 +80,26 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
   return !data ? null : (
     <BaseNode
       id={props.id}
-      showMoreContent={<>
-        <label>
-          subtitle
-          <input
-            className="nodrag"
-            onChange={(e) => set({ title: e.currentTarget.value })}
-            value={data.title}
-          />
-        </label>
-      </>}
+      showMoreContent={
+        <>
+          <label>
+            subtitle
+            <input
+              className="nodrag"
+              onChange={(e) => set({ title: e.currentTarget.value })}
+              value={data.title}
+            />
+          </label>
+        </>
+      }
+      onDrop={(e) => {
+        e.preventDefault();
+        const dropDataText = e.dataTransfer.getData("application/alternis-project-data-item");
+        if (!dropDataText) return;
+        const { id, type, data } = JSON.parse(dropDataText);
+        if (!(type === "variables" && (data as Variable).type === "string")) return;
+        set(prev => ({ text: prev.text + `{${id}}` }));
+      }}
     >
       <NodeHandle
         type="target"
@@ -587,6 +597,20 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
                     replies: updated
                   };
                 });
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                const dropDataText = e.dataTransfer.getData("application/alternis-project-data-item");
+                if (!dropDataText) return;
+                const { id, type, data } = JSON.parse(dropDataText);
+                if (!(type === "variables" && (data as Variable).type === "string")) return;
+                set(prev => ({
+                  replies: prev.replies.map((r, i) =>
+                    i === index
+                      ? { ...r, text: r.text + `{${id}}` }
+                      : r
+                  ),
+                }));
               }}
             />
             <ReplyLock
@@ -1100,44 +1124,43 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
           selectionMode={SelectionMode.Partial}
           onDrop={(e) => {
             e.preventDefault();
-            const participantDataText = e.dataTransfer.getData("application/alternis-project-data-item");
-            if (participantDataText) {
-              const { id, type } = JSON.parse(participantDataText);
+            const dropDataText = e.dataTransfer.getData("application/alternis-project-data-item");
+            if (!dropDataText) return;
 
-              const [nodeType, nodeData]
-                = type === "participants"
-                ? ["dialogueEntry", {
-                    speakerIndex: +id,
-                    text: "",
-                  }] as const
-                // : type === "variables"
-                // ? ["dialogueEntry", {
-                //     speakerIndex: +id,
-                //     text: "",
-                //   } as DialogueEntry]
-                : type === "gates"
-                ? ["lockNode", {
-                    variable: id,
-                    action: "unlock",
-                  }] as const
-                : type === "functions"
-                ? ["emitNode", {
-                    function: id,
-                  }] as const
-                : assert(false) as never;
+            const { id, type, data } = JSON.parse(dropDataText);
 
-              const { top, left } = graphContainerElem.current!.getBoundingClientRect();
+            if (!(type === "participants" || (type === "variables" && (data as Variable).type === "boolean") || type === "functions"))
+              return;
 
-              // FIXME: better node width
-              addNode(nodeType, {
-                position: graph.project({
-                  x: e.clientX - left - 150/2,
-                  y: e.clientY - top,
-                }), 
-                initData: nodeData,
-                connectingNodeId,
-              });
-            }
+            const [nodeType, nodeData]
+              = type === "participants"
+              ? ["dialogueEntry", {
+                speakerIndex: +id,
+                text: "",
+              }] as const
+              : type === "variables"
+              ? ["lockNode", {
+                variable: id,
+                action: "unlock",
+              }] as const
+              : type === "functions"
+              ? ["emitNode", {
+                function: id,
+              }] as const
+              : assert(false) as never;
+
+            const { top, left } = graphContainerElem.current!.getBoundingClientRect();
+
+            // FIXME: better node width
+            addNode(nodeType, {
+              position: graph.project({
+                x: e.clientX - left - 150/2,
+                y: e.clientY - top,
+              }),
+              initData: nodeData,
+              connectingNodeId,
+            });
+
           }}
           onEdgeClick={(_evt, edge) => {
             graph.deleteElements({edges: [edge]})

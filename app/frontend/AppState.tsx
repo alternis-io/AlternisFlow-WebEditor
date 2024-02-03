@@ -144,6 +144,7 @@ Object.freeze(defaultAppState);
 export type AppState = typeof defaultAppState;
 export type Document = AppState["document"]
 export type DocumentHeader = Pick<Document, "id" | "name" | "updatedAt" | "ownerEmail">;
+export type Variable = AppState["document"]["variables"][string];
 
 const appStateKey = "alternis-v1_appState";
 

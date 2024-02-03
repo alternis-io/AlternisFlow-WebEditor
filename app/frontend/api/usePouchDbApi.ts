@@ -1,10 +1,16 @@
 import React from "react";
 import { Document, DocumentHeader } from "../AppState";
 import type { Id, UseApiResult } from ".";
+
 // REPORTME: types don't allow using this with vite
 // @ts-ignore
 import * as _PouchDB from "pouchdb/dist/pouchdb";
 const PouchDB = _PouchDB as typeof import("pouchdb");
+// @ts-ignore
+import * as _PouchDBUpsert from "pouchdb-upsert/dist/pouchdb.upsert";
+const PouchDBUpsert = _PouchDBUpsert as typeof import("pouchdb-upsert");
+
+PouchDB.plugin(PouchDBUpsert);
 
 const docs = new PouchDB("alternis-v1/documents");
 
@@ -25,8 +31,8 @@ const stable = {
     },
 
     async patchDocument(next: Document): Promise<void> {
-      const result = await docs.put({ ...next, _id: `${next.id}` });
-      (next as any)._rev = result.rev;
+      const result = await docs.upsert(`${next.id}`, () => next);
+      //(next as any)._rev = result.rev;
       return next as any as undefined; // FIXME: why?
     },
 

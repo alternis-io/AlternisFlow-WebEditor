@@ -94,11 +94,15 @@ export function GenericEditor<T extends SupportedKeys>(
   const ExtraActions = props.extraActions ?? React.useRef((_p: any) => null).current;
 
   return (
-    <div style={{
-      display: "flex",
-      flexDirection: "column",
-      gap: "11px",
-    }}>
+    <div
+      {...props}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "11px",
+        ...props.style,
+      }}
+    >
       {Object.entries(generic)
       .filter(([name]) => name !== keyBeingEdited)
       .map(([name, data]) => (
@@ -126,7 +130,7 @@ export function GenericEditor<T extends SupportedKeys>(
                 }));
                 e.dataTransfer.effectAllowed = "move";
               }}
-              onClick={(e) => props.onClick?.(name, data as T, e)}
+              onClick={(e) => props.onClickEntryName?.(name, data as T, e)}
               draggable={!props.noDrag}
             >
               {name}
@@ -191,7 +195,7 @@ export function GenericEditor<T extends SupportedKeys>(
 }
 
 export namespace GenericEditor {
-  export interface Props<T extends SupportedKeys> {
+  export interface Props<T extends SupportedKeys> extends React.HTMLProps<HTMLDivElement> {
     singularEntityName: string;
     docPropKey: T;
     newInitialVal: AppState["document"][T][string] | (() => AppState["document"][T][string]);
@@ -201,7 +205,7 @@ export namespace GenericEditor {
       set: (data: Partial<AppState["document"][T][string]>) => void;
     }>;
     noDrag?: boolean;
-    onClick?(key: string, t: T, e: React.MouseEvent<HTMLSpanElement>): void;
+    onClickEntryName?(key: string, t: T, e: React.MouseEvent<HTMLSpanElement>): void;
     getTitle?(key: string, t: T): string;
     onRename?(oldKey: string, newKey: string): void;
   }

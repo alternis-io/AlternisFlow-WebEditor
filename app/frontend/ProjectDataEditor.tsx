@@ -98,10 +98,11 @@ const dataPanes = {
         singularEntityName="dialogue"
         docPropKey="dialogues"
         noDrag
-        onClick={(key) => useAppState.setState({ currentDialogueId: key })}
+        onClickEntryName={(key) => useAppState.setState({ currentDialogueId: key })}
         onRename={(_oldName, newName) => useAppState.setState({
           currentDialogueId: newName
         })}
+        data-tut-id="dialogues-content"
       />
     ),
     desc: "Choose dialogues from this project to edit."
@@ -136,7 +137,7 @@ export function ProjectDataEditor(_props: ProjectDataEditor.Props) {
             title={data.desc}
             key={name}
             className="alternis__hoverable"
-            onClick={() => setOpenDataPane(name)}
+            onClickEntryName={() => setOpenDataPane(name)}
             style={{
               borderBottom: "1px solid var(--fg-1)",
               fontWeight: name === openDataPane ? "bold" : "normal",

@@ -68,7 +68,7 @@ export function Header() {
         )}>
           Feedback
         </nav>
-        <nav className="alternis__hoverable" onClick={logout}>
+        <nav className="alternis__hoverable" onClick={() => logout?.()}>
           Logout
         </nav>
       </div>

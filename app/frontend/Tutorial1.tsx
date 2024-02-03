@@ -40,7 +40,7 @@ const tutorial1Data: TutorialData = {
         </p>
         <p>
           You can also drag and drop the portraits into the graph to create
-          an <em>excerpt</em> node in the dialogue, said by that participant.
+          a <em>line</em> node in the dialogue, said by that participant.
         </p>
       </div>,
       highlightedTutIds: ["participant-add-button"],
@@ -76,23 +76,15 @@ const tutorial1Data: TutorialData = {
         </p>
         <p>
           You can drag and drop <em>text</em> type variables
-          onto <em>excerpt</em> and <em>reply</em> nodes to add them
+          onto <em>line</em> and <em>reply</em> nodes to add them
           to the text.
         </p>
         <p>
-          But it's usually easier to just type <code>{"{variable name}"}</code> manually. If you need to
-          type an actual <code>{"{"}</code> character, you will need to "escape" it by typing <code>{'\\{'}</code> instead.
+          But it's usually easier to just type <code>{"{variable name}"}</code> manually.
         </p>
         <p>
           You can drag and drop <em>true/false</em> (boolean) variables into the graph
-          to spawn a <em>lock/unlock</em> node.
-        </p>
-        <p>
-          <strong>
-            FIXME:
-            drag and drop is not actually implemented for these yet, type {"{variable}"} manually or spawn a lock node
-            from the context menu for now.
-          </strong>
+          to spawn a <em>lock/unlock</em> node that locks or unlocks that variable when reached.
         </p>
       </div>,
       highlightedTutIds: ["generic-proj-data-add-button"],
@@ -136,6 +128,18 @@ const tutorial1Data: TutorialData = {
       highlightedTutIds: ["preferences"],
     },
     {
+      onReached() {
+        ProjectDataEditor.setOpenDataPane("dialogues");
+      },
+      body: <div style={{ maxWidth: "400px" }}>
+        <p>
+          You can have multiple dialogues. You can add new ones and switch between which one
+          you are editing under the "dialogues" tab.
+        </p>
+      </div>,
+      highlightedTutIds: ["dialogues-content"],
+    },
+    {
       body: <div style={{ maxWidth: "400px" }}>
         <p>
           Now that we're done looking at the side panel, let's look at the graph.
@@ -163,7 +167,7 @@ const tutorial1Data: TutorialData = {
           into one (its left), to connect them. You can also drag from one to the other.
         </p>
         <p>
-          Click on a <em>link</em> between two nodes to delete it.
+          Click on any <em>link</em> between two nodes to delete that link.
         </p>
       </div>,
       highlightedTutIds: ["node-handle"],

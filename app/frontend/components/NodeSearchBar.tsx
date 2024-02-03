@@ -4,6 +4,7 @@ import React from "react";
 import { Node, useCurrentDialogue, useAppState } from "../AppState";
 import type { NodeTypes } from "../TestGraphEditor";
 import { useWithPrevDepsEffect } from "../hooks/usePrevValue";
+import { ReactComponent as MagnifyingGlass } from "../images/magnifying-glass.svg";
 
 function useWildcardSearch(search: string | undefined) {
   return React.useMemo(() => {
@@ -79,19 +80,20 @@ export function NodeSearchBar() {
         className={"alternis__toolBtn"}
         onClick={() => setSearchOpen(p => !p)}
       >
-        <strong>search</strong>
+        <MagnifyingGlass width={18} height={18} />
       </button>
       {searchOpen &&
-        <input
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.currentTarget.value)}
-        />
-      }
-      {matchIndex !== undefined && matches.length > 0 && (
-        <div>
+        <div style={{ position: "absolute", top: "100%" }}>
+          <input
+            placeholder={"search node text"}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.currentTarget.value)}
+          />
           <button
+            style={{ height: 25, width: 25 }}
             className={"alternis__toolBtn"}
-            onClick={() => setMatchIndex(p =>
+            disabled={matchIndex === undefined}
+            onClick={() => matchIndex !== undefined && setMatchIndex(p =>
               p === undefined
               ? undefined
               : p === 0
@@ -99,11 +101,13 @@ export function NodeSearchBar() {
               : p - 1
             )}
           >
-            <strong>previous</strong>
+            <strong>&lt;</strong>
           </button>
           <button
+            style={{ height: 25, width: 25 }}
             className={"alternis__toolBtn"}
-            onClick={() => setMatchIndex(p =>
+            disabled={matchIndex === undefined}
+            onClick={() => matchIndex !== undefined && setMatchIndex(p =>
               p === undefined
               ? undefined
               : p === matches.length - 1
@@ -111,11 +115,11 @@ export function NodeSearchBar() {
               : p + 1
             )}
           >
-            <strong>next</strong>
+            <strong>&gt;</strong>
           </button>
-          <span>{matchIndex+1}/{matches.length}</span>
+          <span>{(matchIndex ?? -1)+1}/{matches.length}</span>
         </div>
-      )}
+      }
     </div>
   );
 }

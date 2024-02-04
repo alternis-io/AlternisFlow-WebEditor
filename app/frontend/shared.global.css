@@ -119,7 +119,7 @@ input.alternis__transparent {
 
 .alternis__toolBtn {
   color: var(--fg-1);
-  cursor: grab;
+  cursor: pointer;
   background-color: var(--bg-1);
   border-radius: var(--border-radius);
   width: 30px;

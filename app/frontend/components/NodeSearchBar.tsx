@@ -75,12 +75,12 @@ export function NodeSearchBar() {
   }, [currentNode]);
 
   return (
-    <div>
+    <>
       <button
-        className={"alternis__toolBtn"}
+        className={"alternis__toolBtn alternis__hoverable"}
         onClick={() => setSearchOpen(p => !p)}
       >
-        <MagnifyingGlass width={18} height={18} />
+        <MagnifyingGlass width={20} height={20} className="alternis__center" />
       </button>
       {searchOpen &&
         <div style={{ position: "absolute", top: "100%" }}>
@@ -120,6 +120,6 @@ export function NodeSearchBar() {
           <span>{(matchIndex ?? -1)+1}/{matches.length}</span>
         </div>
       }
-    </div>
+    </>
   );
 }

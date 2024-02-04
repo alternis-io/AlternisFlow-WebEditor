@@ -33,6 +33,8 @@ import { Center } from "./Center";
 import { Node, getNode, makeNodeDataSetter, useAppState, useCurrentDialogue, Document, resetAllAppState, Variable } from "./AppState";
 import { ReactComponent as LockIcon } from "./images/inkscape-lock.svg";
 import { ReactComponent as UnlockIcon } from "./images/inkscape-unlock.svg";
+import { ReactComponent as ExportIcon } from "./images/inkscape-export.svg";
+import { ReactComponent as ImportIcon } from "./images/inkscape-import.svg";
 import defaultParticipantIconUrl from "./images/participant-icon.svg";
 import { ContextMenu, ContextMenuOptions, Options } from './components/ContextMenu'
 import { SelectParticipantWidget } from './components/SelectParticipantWidget'
@@ -857,7 +859,7 @@ const ToolsPanel = () => {
         <button
           style={{ width: 30, height: 30 }}
           title={"Select a participant to drag and drop a new line from"}
-          className={"alternis__toolBtn alternis__center"}
+          className={"alternis__toolBtn alternis__center alternis__hoverable"}
           onClick={() => setShowSelect(prev => prev === "participant" ? undefined : "participant")}
         >
           <img width={20} style={{ objectFit: "contain" }} src={defaultParticipantIconUrl} />
@@ -880,7 +882,7 @@ const ToolsPanel = () => {
           style={{ width: 30, height: 30, fontFamily: "serif" }}
           // FIXME: not implemented!
           title={"Add a variable expansion to the text of the selected node or drag to any node"}
-          className={"alternis__toolBtn"}
+          className={"alternis__toolBtn alternis__hoverable"}
           onClick={() => setShowSelect(prev => prev === "variable" ? undefined : "variable")}
         >
           <em><var style={{ fontSize: "20px", left: "-0.05em", bottom: "0.05em", position: "relative" }}>x</var></em>
@@ -901,7 +903,7 @@ const ToolsPanel = () => {
           style={{ width: 30, height: 30, fontFamily: "serif" }}
           // FIXME: not implemented!
           title={"Select a function node to drag and drop"}
-          className={"alternis__toolBtn"}
+          className="alternis__toolBtn alternis__hoverable"
           onClick={() => setShowSelect(prev => prev === "function" ? undefined : "function")}
         >
           <em><var style={{ fontSize: "20px", left: "-0.1em", position: "relative" }}>f</var></em>
@@ -948,16 +950,6 @@ const TopRightPanel = () => {
             </button>
             <button
               onClick={async () => {
-                const file = await uploadFile({ type: 'text' })
-                const json = JSON.parse(file.content)
-                // FIXME: validate state!
-                useAppState.setState(json);
-              }}
-            >
-              Import
-            </button>
-            <button
-              onClick={async () => {
                 resetAllAppState();
               }}
             >
@@ -966,10 +958,11 @@ const TopRightPanel = () => {
             <br/>
           </>
         )}
-        <NodeSearchBar />
+      </div>
+      <div>
         <button
           data-tut-id="export-button"
-          className="alternis__toolBtn"
+          className="alternis__toolBtn alternis__hoverable"
           onClick={() => {
             downloadFile({
               fileName: 'doc.alternis.json',
@@ -977,8 +970,21 @@ const TopRightPanel = () => {
             });
           }}
         >
-          Export
+          <ExportIcon width={20} height={20} className="alternis__center" />
         </button>
+        <button
+          data-tut-id="import-button"
+          className="alternis__toolBtn alternis__hoverable"
+          onClick={async () => {
+            const file = await uploadFile({ type: 'text' })
+            const json = JSON.parse(file.content)
+            // FIXME: validate state!
+            useAppState.setState(json);
+          }}
+        >
+          <ImportIcon width={20} height={20} className="alternis__center" />
+        </button>
+        <NodeSearchBar />
       </div>
     </Panel>
   );

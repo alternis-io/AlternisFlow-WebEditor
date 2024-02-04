@@ -159,7 +159,7 @@ const useLocalApiState = create<UseApiResult>()((set, get) => ({
             ...doc,
             id: tempDocId,
             name: "New Document",
-            updatedAt: new Date(),
+            updatedAt: new Date().toISOString(),
             ownerEmail,
           },
           ...s.documents ?? [],
@@ -202,7 +202,7 @@ const useLocalApiState = create<UseApiResult>()((set, get) => ({
               ...srcDoc,
               id: tempDocId,
               name: `${srcDoc.name} copy`, // FIXME: share with backend logic
-              updatedAt: new Date(),
+              updatedAt: new Date().toISOString(),
             },
             ...s.documents ?? [],
           ],

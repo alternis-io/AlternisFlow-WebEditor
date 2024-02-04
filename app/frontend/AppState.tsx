@@ -118,7 +118,7 @@ export const defaultAppState = {
   document: {
     /** FIXME: must be a number on some backends? */
     id: "0",
-    updatedAt: new Date(),
+    updatedAt: new Date().toISOString(),
     ownerEmail: undefined as string | undefined,
     name: "New project",
     dialogues: {
@@ -148,27 +148,19 @@ export type Variable = AppState["document"]["variables"][string];
 
 const appStateKey = "alternis-v1_appState";
 
-import template1 from "./templates/template1.json";
+import _template1 from "./templates/template1.json";
+const template1 = _template1 as Document;
+
 import { assert } from "js-utils/lib/browser-utils.js";
 
-const initialState: AppState = (() => {
-  let maybeLocallyStoredState: AppState | undefined;
-
-  try {
-    const localState = localStorage.getItem(appStateKey);
-    if (localState !== null)
-      maybeLocallyStoredState = JSON.parse(localState);
-  } catch {}
-
-  return {
-    // FIXME: use structuredClone instead
-    ...deepCloneJson(defaultAppState),
-    ...maybeLocallyStoredState,
-    ...window.location.hash.includes("?trial") && {
-      document: template1 as AppState["document"],
-    },
-  };
-})();
+const initialState: AppState = {
+  ...structuredClone(defaultAppState),
+  //...maybeLocallyStoredState,
+  ...window.location.hash.includes("?trial") && {
+    document: template1 as AppState["document"],
+    currentDialogueId: Object.keys(template1.dialogues)[0],
+  },
+};
 
 type SettableState<T extends any> = T & {
   /** @deprecated, just use useAppState.setState */

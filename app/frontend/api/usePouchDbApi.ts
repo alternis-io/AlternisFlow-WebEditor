@@ -54,7 +54,7 @@ const stable = {
         id: tempDocId,
         name: doc.name ?? "",
         ownerEmail,
-        updatedAt: new Date(),
+        updatedAt: new Date().toString(),
         functions: {},
         variables: {},
         dialogues: {},

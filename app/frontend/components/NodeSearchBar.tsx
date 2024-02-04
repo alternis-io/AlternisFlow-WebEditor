@@ -43,7 +43,7 @@ export function NodeSearchBar() {
     const currentDialogue = useCurrentDialogue.getState();
     for (const node of currentDialogue?.nodes ?? []) {
       if (node.type === undefined) continue;
-      // FIXME: type these strings!
+      // FIXME: type these strings! (node.type?)
       matchers[node.type]?.(searchAsRegex, node);
     }
 
@@ -51,6 +51,15 @@ export function NodeSearchBar() {
   }, [searchAsRegex]);
 
   const [matchIndex, setMatchIndex] = React.useState<number>();
+
+  const searchInputRef = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    if (searchOpen) {
+      searchInputRef.current?.focus();
+    }
+  }, [searchOpen])
+
 
   const currentNode = React.useMemo(() =>
     matchIndex !== undefined
@@ -83,10 +92,11 @@ export function NodeSearchBar() {
         <MagnifyingGlass width={20} height={20} className="alternis__center" />
       </button>
       {searchOpen &&
-        <div style={{ position: "absolute", top: "100%" }}>
+        <div style={{ position: "absolute", top: "100%", right: 0 }}>
           <input
+            ref={searchInputRef}
             placeholder={"search node text"}
-            value={searchInput}
+            value={searchInput ?? ""}
             onChange={(e) => setSearchInput(e.currentTarget.value)}
           />
           <button

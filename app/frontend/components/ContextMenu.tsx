@@ -18,6 +18,7 @@ export const ContextMenu = React.forwardRef<ContextMenu.Ref, ContextMenu.Props>(
   children,
   mouseBinding = { button: 2 } as MouseEvent,
   onHide,
+  /** a custom event type that can be used to invoke the context menu to appear regardless of the binding */
   forceEventKey = defaultCustomEventKey,
 }, ref) => {
   const rootElemRef = useRef<HTMLDivElement>(null);
@@ -76,11 +77,13 @@ export const ContextMenu = React.forwardRef<ContextMenu.Ref, ContextMenu.Props>(
     const preventDefault = (e: MouseEvent) => e.preventDefault();
     const eventsToPrevent = ["contextmenu", "click", "dblclick", "auxclick"] as const;
     parentElem?.addEventListener("mousedown", handler);
+    parentElem?.addEventListener("dblclick", handler);
     document.addEventListener(forceEventKey as any, handler);
     eventsToPrevent.forEach((e) => parentElem?.addEventListener(e, preventDefault));
     eventsToPrevent.forEach((e) => rootElemRef.current?.addEventListener(e, preventDefault));
     return () =>  {
       parentElem?.removeEventListener("mousedown", handler);
+      parentElem?.removeEventListener("dblclick", handler);
       document.removeEventListener(forceEventKey as any, handler);
       eventsToPrevent.forEach((e) => parentElem?.removeEventListener(e, preventDefault));
       eventsToPrevent.forEach((e) => rootElemRef.current?.removeEventListener(e, preventDefault));

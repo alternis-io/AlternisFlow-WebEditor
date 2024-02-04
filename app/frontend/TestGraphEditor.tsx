@@ -1162,6 +1162,8 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
           panOnDrag={dragPanMouseBinding ? [dragPanMouseBinding.button] : false} // middle mouse, not great for laptops
           selectionOnDrag={enableBoxSelectOnDrag}
           selectionMode={SelectionMode.Partial}
+          // this allows us to use it for adding nodes
+          zoomOnDoubleClick={false}
           onDrop={(e) => {
             e.preventDefault();
             const dropDataText = e.dataTransfer.getData("application/alternis-project-data-item");

@@ -1,6 +1,5 @@
 /*
- * FIXME: can remove these prefixes if can confirm/alter vite config so that
- * CSS hashes are per CSS file (I think this is already the case)
+ * FIXME: looks like vite does per CSS file hashing, so we should move everything here to shared.module.css
  */
 
 .alternis__center {

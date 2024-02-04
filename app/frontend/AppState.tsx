@@ -95,10 +95,10 @@ export const defaultAppState = {
       dragBoxSelectMouseBinding: { button: 0 } as MouseBinding,
       dragPanMouseBinding: { button: 0 } as MouseBinding,
       ...clientIsMac ? {
-        addNodeMouseBinding: { button: 2, metaKey: true } as MouseBinding,
+        // FIXME: check that this works
+        addNodeMouseBinding: { button: 0, type: "dblclick" } as MouseBinding,
         appendToSelectModifier: KeyModifiers.Meta as KeyModifiers | null,
       } : {
-        // FIXME: document why we can't just use right mouse click
         addNodeMouseBinding: { button: 2 } as MouseBinding,
         appendToSelectModifier: KeyModifiers.Control as KeyModifiers | null,
       }

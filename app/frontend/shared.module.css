@@ -1,0 +1,16 @@
+/*
+ * shared styles go in here.
+ */
+
+:root {
+  --outline-width: 2px;
+  --outline-color: #ef3434;
+}
+
+.error {
+  outline: var(--outline-width) solid var(--outline-color);
+}
+
+input[type="checkbox"].error {
+  border-radius: 2px; /* NOTE: doesn't actually do anything (checked on firefox anyway) */
+}

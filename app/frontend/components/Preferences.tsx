@@ -1,8 +1,9 @@
-import React, { useEffect } from "react";
+import React from "react";
+import sharedStyles from "../shared.module.css";
 import styles from "./Ide.module.css";
-import { AppState, KeyModifiers, MouseButtons, MouseInteractions, clientIsLinux, clientIsMac, useAppState }  from "../AppState";
-import { MouseBinding, MouseBindingInput } from "./KeyBindingInput";
-import { ValueOf } from "ts-essentials";
+import { AppState, KeyModifiers, MouseInteractions, clientIsLinux, clientIsMac, useAppState }  from "../AppState";
+import { MouseBindingInput } from "./KeyBindingInput";
+import { classNames } from "js-utils/lib/react-utils";
 
 type GraphPrefs = AppState["preferences"]["graph"]
 
@@ -84,6 +85,8 @@ export function Preferences() {
   const addNodeBinding = useBindingSetting("addNodeMouseBinding");
   const enableBoxSelectOnDrag = useBindingSetting("enableBoxSelectOnDrag");
 
+  const badPanBindingForBoxSelect = enableBoxSelectOnDrag.binding && dragPanMouseBinding.binding.button === MouseInteractions.Left;
+
   return (
     <div data-tut-id="preferences">
       <label title="Which mouse button you can click and drag to move around the graph" className="alternis__split">
@@ -94,14 +97,19 @@ export function Preferences() {
       </label>
 
       <label
-        title={"If on, click and drag to start a box selection of graph elements.\n"
-             + "We are working on supporting more than just left mouse"}
+        title={"If on, click and drag to start a box selection of graph elements."}
         className="alternis__split"
       >
         <span>
           Turn on box select on left mouse drag
         </span>
         <input type="checkbox"
+          {...classNames(badPanBindingForBoxSelect && sharedStyles.error)}
+          title={
+            badPanBindingForBoxSelect
+            ? "Box select currently only works with left mouse, which is currently bound to pan graph"
+            : undefined
+          }
           checked={enableBoxSelectOnDrag.binding || false}
           onChange={() => enableBoxSelectOnDrag.setBinding(p => !p)}
         />

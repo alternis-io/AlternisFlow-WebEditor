@@ -29,6 +29,7 @@
   outline: var(--outline) solid #7f7ff2;
 }
 
+/* FIXME: rename to node-specific error outline */
 .errorOutline {
   outline: var(--outline) solid #ef3434;
   border-radius: var(--node-border-radius);

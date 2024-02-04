@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useMemo, useState } from "react";
 import styles from "./DialogueViewer.module.css"; // FIXME: use separate file
 import { useAppState, useCurrentDialogue } from "./AppState";
 // FIXME: import /worker
@@ -59,7 +59,8 @@ export function DialogueViewer(props: DialogueViewer.Props) {
       {...classNames(styles.dialogueViewer, divProps.className)}
     >
       {!currentStep ? (
-        <div title="Start dialogue"
+        <div
+          title="Start dialogue"
           onClick={async () => {
             if (dialogueCtx)
             setCurrentStep(await dialogueCtx.step());
@@ -72,7 +73,8 @@ export function DialogueViewer(props: DialogueViewer.Props) {
         </div>
       ) : (
           <>
-            <div title="Stop dialogue"
+            <div
+              title="Stop dialogue"
               onClick={async () => {
                 if (dialogueCtx)
                 await dialogueCtx.reset();
@@ -103,9 +105,8 @@ export function DialogueViewer(props: DialogueViewer.Props) {
             ) : "options" in currentStep ? (
                 <div className={styles.options}>
                   {currentStep.options.map((o, i) => (
-                    <div className={styles.options}>
+                    <div key={o.id} className={styles.options}>
                       <button
-                        key={i}
                         onClick={async () => {
                           if (!dialogueCtx) return;
                           await dialogueCtx.reply(i);

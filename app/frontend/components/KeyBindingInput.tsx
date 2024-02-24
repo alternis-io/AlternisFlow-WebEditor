@@ -75,7 +75,7 @@ function mouseBindingToLabel(b: MouseBinding): string {
 
 export function eventMatchesMouseBinding(e: MouseEvent | React.MouseEvent<any>, b: MouseBinding) {
   return (
-    e.type === b.type
+    ((b.type === undefined && e.type === "mousedown") || e.type === b.type)
     && e.button === b.button
     && !!b.ctrlKey === e.ctrlKey
     && !!b.altKey === e.altKey

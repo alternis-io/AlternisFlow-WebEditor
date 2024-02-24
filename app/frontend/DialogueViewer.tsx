@@ -4,8 +4,7 @@ import { useAppState, useCurrentDialogue } from "./AppState";
 // FIXME: import /worker
 import { DialogueContext } from "alternis-js";
 import { WorkerDialogueContext, makeDialogueContext } from "alternis-js/dist/worker-api";
-//import { WorkerDialogueContext, makeDialogueContext } from "alternis-js/worker";
-import { exportDialogueToJson } from "./export";
+import { exportDocumentToJson } from "./export";
 import { useAsyncEffect } from "@bentley/react-hooks";
 import { useWithPrevDepsEffect } from "./hooks/usePrevValue";
 import debounce from "lodash.debounce";
@@ -34,13 +33,16 @@ function useDialogueContext(json: string | undefined) {
 
 export function DialogueViewer(props: DialogueViewer.Props) {
   const doc = useAppState(s => s.document);
-  const currentDialogue = useCurrentDialogue();
+  const currentDialogueId = useAppState(s => s.currentDialogueId);
+  const dialogues = useAppState(s => s.document.dialogues);
+  const dialogueIndex = Object.keys(dialogues).findIndex(d => d === currentDialogueId);
+  assert(dialogueIndex !== undefined);
 
   // FIXME: it would be much more efficient to expose an API for dynamically modifying stuff...
   // FIXME: avoid running this expensive calculation on simple state changes like node movement
   const json = useMemo(
-    () => currentDialogue && JSON.stringify(exportDialogueToJson(doc, currentDialogue)),
-    [doc, currentDialogue],
+    () => JSON.stringify(exportDocumentToJson(doc)),
+    [doc],
   );
 
   const dialogueCtx = useDialogueContext(json);
@@ -63,7 +65,7 @@ export function DialogueViewer(props: DialogueViewer.Props) {
           title="Start dialogue"
           onClick={async () => {
             if (dialogueCtx)
-            setCurrentStep(await dialogueCtx.step());
+              setCurrentStep(await dialogueCtx.step(dialogueIndex));
           }}
         >
           <svg height="30px" width="30px" viewBox="-3 -3 16 16">
@@ -77,7 +79,7 @@ export function DialogueViewer(props: DialogueViewer.Props) {
               title="Stop dialogue"
               onClick={async () => {
                 if (dialogueCtx)
-                await dialogueCtx.reset();
+                  await dialogueCtx.reset(dialogueIndex, 0);
                 setCurrentStep(undefined)
               }}
             >
@@ -96,7 +98,7 @@ export function DialogueViewer(props: DialogueViewer.Props) {
                   {...classNames(styles.dialogueButton, styles.nextButton)}
                   onClick={async () => {
                     if (dialogueCtx)
-                    setCurrentStep(await dialogueCtx.step());
+                      setCurrentStep(await dialogueCtx.step(dialogueIndex));
                   }}
                 >
                   next
@@ -109,8 +111,8 @@ export function DialogueViewer(props: DialogueViewer.Props) {
                       <button
                         onClick={async () => {
                           if (!dialogueCtx) return;
-                          await dialogueCtx.reply(i);
-                          setCurrentStep(await dialogueCtx.step());
+                          await dialogueCtx.reply(dialogueIndex, i);
+                          setCurrentStep(await dialogueCtx.step(dialogueIndex));
                         }}
                         className={styles.dialogueButton}
                       >

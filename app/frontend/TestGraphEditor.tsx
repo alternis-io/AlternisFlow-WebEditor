@@ -56,7 +56,7 @@ import { DialogueEntry, Emit, Lock, RandomSwitch, PlayerReplies, PlayerReply, de
 import { Tutorial1 } from './Tutorial1';
 import { DialogueViewer } from './DialogueViewer';
 import downloadFile, { uploadFile } from './localFileManip';
-import { exportCurrentDialogueToJson, exportDialogueToJson } from './export';
+import { exportToJson } from './export';
 
 const forceAddNodeEvent = "force-addnode";
 
@@ -966,7 +966,7 @@ const TopRightPanel = () => {
           onClick={() => {
             downloadFile({
               fileName: 'doc.alternis.json',
-              content: JSON.stringify(exportCurrentDialogueToJson(), undefined, "  "),
+              content: JSON.stringify(exportToJson(), undefined, "  "),
             });
           }}
         >

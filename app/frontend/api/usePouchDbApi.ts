@@ -1,6 +1,7 @@
 import React from "react";
 import { Document, DocumentHeader } from "../AppState";
 import type { Id, UseApiResult } from ".";
+import { create } from "zustand";
 
 // REPORTME: types don't allow using this with vite
 // @ts-ignore
@@ -8,6 +9,7 @@ import * as _PouchDB from "pouchdb/dist/pouchdb";
 const PouchDB = _PouchDB as typeof import("pouchdb");
 // @ts-ignore
 import * as _PouchDBUpsert from "pouchdb-upsert/dist/pouchdb.upsert";
+import { useStore } from "zustand";
 const PouchDBUpsert = _PouchDBUpsert as typeof import("pouchdb-upsert");
 
 PouchDB.plugin(PouchDBUpsert);
@@ -76,10 +78,16 @@ const stable = {
   },
 };
 
+const usePouchDbStore = create((set) => ({
+  documents: [] as DocumentHeader[],
+  ...stable,
+}));
+
 export const usePouchDbApi = <F extends (s: UseApiResult) => any>(
   getter?: F
 ): F extends (s: UseApiResult) => infer R ? R : UseApiResult => {
-  const [documents, setDocuments] = React.useState<DocumentHeader[]>();
+  // FIXME: this duplicates the store
+  const { documents } = usePouchDbStore();
 
   // FIXME: use render effect?
   React.useLayoutEffect(() => {
@@ -111,6 +119,6 @@ export const usePouchDbApi = <F extends (s: UseApiResult) => any>(
       ...stable,
     };
     // FIXME: this breaks if the getter changes...
-    return getter?.(state) ?? state;
+    return typeof getter === "function" ? getter(state) : state;
   }, [documents]);
 };

@@ -6,20 +6,20 @@ import { Center } from "../Center";
 import { classNames } from "js-utils/lib/react-utils";
 import * as styles from "./ProjectSelector.module.css";
 import { MoreMenu } from "./ContextMenu";
-import { AppState } from "../AppState";
+import { Document, defaultAppState } from "../AppState";
 
 import template1 from "../templates/template1.json";
 
-const templates: Record<string, AppState["document"]> = {
+const templates: Record<string, Omit<Document, "id">> = {
   template1,
-  empty: { name: "Empty", nodes: [], edges: [], participants: [], functions: {}, variables: {} },
+  empty: structuredClone(defaultAppState.document),
 };
 
 function ProjectTile(props: {
   doc: DocumentList[number],
   onSelectProject: ProjectSelector.Props["onSelectProject"],
 }) {
-  const updateDocumentMeta = useApi(s => s.api.updateDocument);
+  const updateDocumentMeta = useApi(s => s.api.updateDocumentMeta);
   const deleteDocument = useApi(s => s.api.deleteDocument);
   const duplicateDocument = useApi(s => s.api.duplicateDocument);
 

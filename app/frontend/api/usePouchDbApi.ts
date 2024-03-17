@@ -1,5 +1,5 @@
 import React from "react";
-import { Document, DocumentHeader } from "../AppState";
+import { Document, DocumentHeader, useAppState } from "../AppState";
 import type { Id, UseApiResult } from ".";
 import { create } from "zustand";
 
@@ -9,7 +9,7 @@ import * as _PouchDB from "pouchdb/dist/pouchdb";
 const PouchDB = _PouchDB as typeof import("pouchdb");
 // @ts-ignore
 import * as _PouchDBUpsert from "pouchdb-upsert/dist/pouchdb.upsert";
-import { useStore } from "zustand";
+import { useAsyncEffect } from "@bentley/react-hooks";
 const PouchDBUpsert = _PouchDBUpsert as typeof import("pouchdb-upsert");
 
 PouchDB.plugin(PouchDBUpsert);
@@ -78,37 +78,62 @@ const stable = {
   },
 };
 
-const usePouchDbStore = create((set) => ({
+interface PouchDbStoreState {
+  documents: DocumentHeader[] ;
+}
+
+const usePouchDbStore = create<PouchDbStoreState>(() => ({
   documents: [] as DocumentHeader[],
   ...stable,
 }));
+
+let usePouchDbApiCount = 0;
 
 export const usePouchDbApi = <F extends (s: UseApiResult) => any>(
   getter?: F
 ): F extends (s: UseApiResult) => infer R ? R : UseApiResult => {
   // FIXME: this duplicates the store
-  const { documents } = usePouchDbStore();
+  const documents = usePouchDbStore(s => s.documents);
+
+  useAsyncEffect(async () => {
+    const allDocs = await docs.allDocs<Document>({
+      include_docs: true,
+    });
+    usePouchDbStore.setState(prevState => ({
+      ...prevState,
+      documents: allDocs.rows.map(r => r.doc!),
+    }));
+  }, []);
 
   // FIXME: use render effect?
   React.useLayoutEffect(() => {
-    docs.changes({ since: "now", include_docs: true })
+    ++usePouchDbApiCount;
+    if (usePouchDbApiCount !== 1)
+      return;
+
+    docs.changes({ since: "now", include_docs: true, live: true })
       .on("change", (change) => {
         // FIXME: shouldn't only the current document be "populated" to prevent excess memory usage?
-        setDocuments(prev => {
-          if (!prev) return prev;
+        usePouchDbStore.setState(prevState => {
+          const prev = prevState.documents;
+          if (!prev) return prevState;
           let next = prev.slice();
           const index = next.findIndex(d => d.id === change.id);
           const newDoc = change.doc as any as Document;
           if (index !== -1) next[index] = newDoc;
           else next.push(newDoc);
           if (change.deleted) next = next.filter(d => d.id !== change.id);
-          return next;
+          return { ...prevState, documents: next };
         });
       })
       .on("error", (err) => {
         // FIXME: set react error boundary?
         console.error(err);
       });
+
+    return () => {
+      --usePouchDbApiCount;
+    };
   }, []);
 
   // FIXME: is this efficient?

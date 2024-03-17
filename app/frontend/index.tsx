@@ -70,7 +70,10 @@ const router = createBrowserRouter([
       <RedirectIfNotLoggedIn />
       <Header />
       <ProjectSelector
-        onSelectProject={(projectId) => useAppState.setState({ projectId })}
+        onSelectProject={(projectId) => {
+          useAppState.setState({ projectId });
+          router.navigate("/app");
+        }}
       />
     </>,
     ErrorBoundary: ResettingErrorBoundary,

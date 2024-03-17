@@ -1,32 +1,45 @@
 import React, { useMemo, useState } from "react";
 import styles from "./DialogueViewer.module.css"; // FIXME: use separate file
-import { useAppState, useCurrentDialogue } from "./AppState";
+import { useAppState } from "./AppState";
 // FIXME: import /worker
 import { DialogueContext } from "alternis-js";
 import { WorkerDialogueContext, makeDialogueContext } from "alternis-js/dist/worker-api";
 import { exportDocumentToJson } from "./export";
 import { useAsyncEffect } from "@bentley/react-hooks";
-import { useWithPrevDepsEffect } from "./hooks/usePrevValue";
 import debounce from "lodash.debounce";
 import { classNames } from "js-utils/lib/react-utils";
 import { assert } from "js-utils/lib/browser-utils";
+import { create } from "zustand";
 
-function useDialogueContext(json: string | undefined) {
+type AsyncEffect<T extends void | Promise<void>> = Parameters<typeof useAsyncEffect<T>>[0];
+
+const useDialogueStore = create((set) => ({
+  dialogueCtx: undefined as DialogueContext | undefined,
+}));
+
+export function useDialogueContext(json: string | undefined) {
   const [dialogueCtx, setDialogueCtx] = useState<WorkerDialogueContext>();
 
-  // FIXME: debounce this because of typing
-  useAsyncEffect(async ({ isStale }) => {
-    // FIXME: useAsyncEffect has no effective cleanup!
+  const updateDialogue: AsyncEffect<Promise<void>> = async ({ isStale, setPerformCancel }) => {
     const ctx = json !== undefined ? await makeDialogueContext(json) : undefined;
     if (!isStale())
       setDialogueCtx(ctx);
-  }, [json]);
+    if (ctx !== undefined)
+      setPerformCancel(() => ctx.dispose())
+  };
 
-  useWithPrevDepsEffect(([prevCtx]) => {
-    if (prevCtx !== undefined) {
-      prevCtx.dispose();
-    }
-  }, [dialogueCtx])
+  const latestUpdateDialogue = React.useRef(updateDialogue);
+  latestUpdateDialogue.current = updateDialogue;
+
+  const debouncedUpdateDialogue = React.useRef(
+    debounce<AsyncEffect<Promise<void>>>(
+      (...args) => latestUpdateDialogue.current(...args),
+      500,
+    )
+  ).current;
+
+  // FIXME: debounce this because of typing
+  useAsyncEffect(debouncedUpdateDialogue, [json]);
 
   return dialogueCtx;
 }

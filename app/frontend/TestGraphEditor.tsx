@@ -1233,7 +1233,7 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
           <Background />
 
           <Panel position={"bottom-center"}>
-            <DialogueViewer className={styles.dialogueViewer} />
+            <DialogueViewer />
           </Panel>
 
           <Panel position="top-left">

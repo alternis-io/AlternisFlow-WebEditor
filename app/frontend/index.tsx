@@ -11,15 +11,13 @@ import { LoginState } from "./components/LoginPage";
 import { RedirectIfNotLoggedIn } from "./hooks/useRedirectIfNotLoggedIn";
 
 function ResettingErrorBoundary(props: React.PropsWithChildren<{}>) {
-  const navigate = useNavigate();
   const error = useRouteError();
   // FIXME: replace this with better handling
   return error
     ? (
       <div style={{ padding: 20 }}>
         <p>
-          An error has occurred, the event was anonymized and sent logged for us to investigate.
-          To continue, try reloading the page. If that doesn't work, you must reset the local state,
+          An error has occurred. To continue, try reloading the page. If that doesn't work, you must reset the local state,
           which will likely destroy unsaved changes.
         </p>
         {/* FIXME: maybe they can just use "undo" ? */}
@@ -28,11 +26,17 @@ function ResettingErrorBoundary(props: React.PropsWithChildren<{}>) {
           advanced error data if that is an issue.
         </p>
 
+        <button onClick={() => window.location.reload()}>
+          reload the page
+        </button>
+
+        <br />
+
         <button onClick={() => {
           resetAllAppState();
-          navigate(".", { replace: true });
+          window.location.reload();
         }}>
-          <strong>delete</strong> local state and reload
+          <strong style={{ color: "red" }}>delete local state</strong> and reload
         </button>
 
         <br />

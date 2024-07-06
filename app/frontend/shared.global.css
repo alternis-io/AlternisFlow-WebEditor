@@ -77,6 +77,34 @@ img.alternis__hoverable:hover
   box-shadow: inset 0 0 4px 4px #ffff00 !important;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  .alternis__tutorial-highlighted {
+    animation: tutorial-pulsate 300ms ease-in-out infinite;
+  }
+
+  @keyframes tutorial-pulsate {
+    from {
+      box-shadow: 0 0 4px 4px #ffff00 !important;
+    }
+    to {
+      box-shadow: 0 0 8px 8px #ffff00 !important;
+    }
+  }
+
+  .alternis__tutorial-highlighted[data-tut-inset] {
+    animation: tutorial-pulsate 300ms ease-in-out infinite;
+  }
+
+  @keyframes tutorial-pulsate-inset {
+    from {
+      box-shadow: inset 0 0 4px 4px #ffff00 !important;
+    }
+    to {
+      box-shadow: inset 0 0 8px 8px #ffff00 !important;
+    }
+  }
+}
+
 .alternis__rel-anchor {
   position: relative;
 }

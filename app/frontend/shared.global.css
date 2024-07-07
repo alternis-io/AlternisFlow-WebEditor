@@ -92,7 +92,7 @@ img.alternis__hoverable:hover
   }
 
   .alternis__tutorial-highlighted[data-tut-inset] {
-    animation: tutorial-pulsate 300ms ease-in-out infinite;
+    animation: tutorial-pulsate-inset 300ms ease-in-out infinite;
   }
 
   @keyframes tutorial-pulsate-inset {

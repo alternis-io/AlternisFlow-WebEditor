@@ -5,8 +5,9 @@ dotenv.config();
 
 // FIXME: generate from .env template
 const requiredEnvVars = [
-  "GITHUB_CLIENT_ID",
-  "GITHUB_CLIENT_SECRET",
+  // TODO: these aren't required in the intended feature set for now
+  //"GITHUB_CLIENT_ID",
+  //"GITHUB_CLIENT_SECRET",
 ];
 
 for (const _var of requiredEnvVars)

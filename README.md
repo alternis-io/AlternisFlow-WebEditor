@@ -3,12 +3,6 @@
 Alternis is a tool/app and library for designing and then playing interactive
 dialogue in various application frameworks such as game engines and the web.
 
-This repository contains the web app and various plugins, currently:
-
-- [Godot Engine plugin]()
-- [Unreal Engine plugin]()
-- The JavaScript (node.js/browser) bindings are [here](/FIXME)
-
 It consumes the [library repository](/FIXME) via a submodule.
 
 The web app is built using [Vite](/FIXME), React, [react-flow](/FIXME),

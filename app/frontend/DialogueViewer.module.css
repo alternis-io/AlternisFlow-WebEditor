@@ -38,7 +38,6 @@
 .options {
   display: flex;
   flex-direction: row;
-  overflow-x: scroll;
   gap: var(--gap);
 }
 

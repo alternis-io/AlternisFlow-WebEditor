@@ -2,7 +2,7 @@
 node_modules
 
 # blender backups
-*.blend[0-9]
+*.blend?
 
 # deployment temp files
 staged.tar.gz

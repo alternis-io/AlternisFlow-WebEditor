@@ -1,71 +1,28 @@
+# Alternis
 
-## Organization
+Alternis is a tool/app and library for designing and then playing interactive
+dialogue in various application frameworks such as game engines and the web.
 
-### Dialogue Engine
+This repository contains the web app and various plugins, currently:
 
-#### persistence format
+- [Godot Engine plugin]()
+- [Unreal Engine plugin]()
+- The JavaScript (node.js/browser) bindings are [here](/FIXME)
 
-To start, a JSON file for maximum readability
+It consumes the [library repository](/FIXME) via a submodule.
 
-#### C API
+The web app is built using [Vite](/FIXME), React, [react-flow](/FIXME),
+and [PouchDB](/FIXME). It imports the web assembly version of the
+alternis library to play back dialogues in the editor. It is designed to be
+local-first (and today is actually local-only).
 
-We probably need a function prefix
+## Contributing
 
-- `set_allocators(malloc, free, realloc)`
+Please submit an issue or PR with feature requests.
 
-- `dialogue_create_ctx_builder_from_json(json: string) DialogueContext | Error`
-  loads a json dialogue file to create an incomplete dialogue context that must be "completed"
+## Intended future changes
 
-- `dialogue_ctx_builder_set_callback(DialogueContext, name: string, callback: () => void) DialogueContextBuilder | Error`
-  set a callback in a dialogue context builder
-
-- `dialogue_ctx_builder_complete() DialogueContext | Error`
-  create a dialogue context from the builder, error if it wasn't properly set up (e.g. callbacks not set)
-
-- `dialogue_ctx_character_id_by_name(ctx: DialogueContext, name: string) u32`
-  get the id of a character from their name
-
-- `try_enter_dialogue(ctx: DialogueContext, Character: u32) ?DialogueStep`
-  tries to open a dialogue with a character, possibly returning the resulting dialogue
-  response and continuation options
-
-- ... we also need optional debug inspection APIs to support a debugger
-
-#### Game Engine Plugins
-
-##### Unreal Engine
-
-- create Unreal Engine plugin, publish in unreal engine marketplace
-
-##### Unity
-
-- idk, publish in unity marketplace
-
-##### Godot
-
-- use GDNative
-
-### App
-
-nginx proxied website and API, with a postgres persistence layer.
-
-#### Frontend
-
-- react
-- react-flow
-- vite
-
-##### Mike's pipe dream
-
-- imgui + imgui nodes
-
-#### Backend
-
-- postgreSQL
-- SQLite for local no-hassle development
-- Vagrant/Docker for local debugging of production environment?
-- express.js REST API prototype
-
-##### Mike's pipe dream
-
-- use IMGUI in the browser, and its nodes extension
+- There is a need for compound boolean conditions when gating replies.
+  Either gate nodes should be introduced with boolean operation nodes, or
+  a separate editor for conditions may need to be introduced which opens when
+  editing a gate.

@@ -11,37 +11,26 @@ import { classNames } from "js-utils/lib/react-utils";
 import { assert } from "js-utils/lib/browser-utils";
 import { create } from "zustand";
 
-type AsyncEffect<T extends void | Promise<void>> = Parameters<typeof useAsyncEffect<T>>[0];
-
 const useDialogueStore = create((set) => ({
   dialogueCtx: undefined as DialogueContext | undefined,
+  setDialogueCtx: debouncedUpdateDialogue,
 }));
 
+const debouncedUpdateDialogue = debounce(
+  (json: string | undefined) => {
+    const prevCtx = useDialogueStore.getState().dialogueCtx;
+
+    if (prevCtx !== undefined)
+      prevCtx.dispose();
+
+    const newCtx = json !== undefined ? await makeDialogueContext(json) : undefined;
+    useDialogueStore.setState(s => ({ ...s, dialogueCtx: newCtx })));
+  },
+  400,
+);
+
 export function useDialogueContext(json: string | undefined) {
-  const [dialogueCtx, setDialogueCtx] = useState<WorkerDialogueContext>();
-
-  const updateDialogue: AsyncEffect<Promise<void>> = async ({ isStale, setPerformCancel }) => {
-    const ctx = json !== undefined ? await makeDialogueContext(json) : undefined;
-    if (!isStale())
-      setDialogueCtx(ctx);
-    if (ctx !== undefined)
-      setPerformCancel(() => ctx.dispose())
-  };
-
-  const latestUpdateDialogue = React.useRef(updateDialogue);
-  latestUpdateDialogue.current = updateDialogue;
-
-  const debouncedUpdateDialogue = React.useRef(
-    debounce<AsyncEffect<Promise<void>>>(
-      (...args) => latestUpdateDialogue.current(...args),
-      500,
-    )
-  ).current;
-
-  // FIXME: debounce this because of typing
-  useAsyncEffect(debouncedUpdateDialogue, [json]);
-
-  return dialogueCtx;
+  return useDialogueStore(p => p.dialogueCtx);
 }
 
 export function DialogueViewer(props: DialogueViewer.Props) {

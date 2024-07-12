@@ -3,6 +3,7 @@ import { ContextMenuOptions } from "../components/ContextMenu";
 import { UniqueInput } from "../components/UniqueInput";
 import { getNode, makeNodeDataSetter, useCurrentDialogue } from "../AppState";
 import styles from "../TestGraphEditor.module.css"
+import useDialogueContext from "../DialogueViewer"
 import playbackStyles from "../DialogueViewer.module.css"
 import { Center } from "../Center";
 import { classNames } from "js-utils/lib/react-utils";
@@ -18,20 +19,24 @@ const FloatingTools = (props: {
   const takenLabels = useMemo(() => otherLabeledNodes.map(n => n.data.label as string), [otherLabeledNodes]);
   const inputRef = React.useRef<HTMLInputElement>(null);
 
+  const dialogueCtx = useDialogueContext();
+
   return (
     <div style={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
-      <button
-        // FIXME: should only work on line nodes
-        // FIXME: not implemented
-        title={"Click to test playback starting from this node"}
-        onClick={() => {}}
-        {...classNames(styles.nodeLabelFocusButton, "alternis__hoverable")}
-      >
-        <svg height="15px" width="15px" viewBox="-3 -3 16 16">
-          <path {...classNames(playbackStyles.playButton, "alternis__hover")}
-            d="M0 0 l0 10 l10 -5 l-10 -5" />
-        </svg>
-      </button>
+      {data.type === "line" && (
+        <button
+          title={"Start playback from this node"}
+          onClick={() => {
+            dialogueContext.reset();
+          }}
+          {...classNames(styles.nodeLabelFocusButton, "alternis__hoverable")}
+        >
+          <svg height="15px" width="15px" viewBox="-3 -3 16 16">
+            <path {...classNames(playbackStyles.playButton, "alternis__hover")}
+              d="M0 0 l0 10 l10 -5 l-10 -5" />
+          </svg>
+        </button>
+      )}
       <div className="alternis__floatup">
         <UniqueInput
           initialValue={props.data.label}

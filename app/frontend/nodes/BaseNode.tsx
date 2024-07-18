@@ -1,9 +1,9 @@
 import React, { useMemo } from "react";
 import { ContextMenuOptions } from "../components/ContextMenu";
 import { UniqueInput } from "../components/UniqueInput";
-import { getNode, makeNodeDataSetter, useCurrentDialogue } from "../AppState";
+import { getNode, makeNodeDataSetter, useCurrentDialogue, useAppState } from "../AppState";
 import styles from "../TestGraphEditor.module.css"
-import useDialogueContext from "../DialogueViewer"
+import { useDialogueContext } from "../DialogueViewer"
 import playbackStyles from "../DialogueViewer.module.css"
 import { Center } from "../Center";
 import { classNames } from "js-utils/lib/react-utils";
@@ -20,14 +20,18 @@ const FloatingTools = (props: {
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   const dialogueCtx = useDialogueContext();
+  const currentDialogueId = useAppState(s => s.currentDialogueId);
+  const dialogues = useAppState(s => s.document.dialogues);
+  const dialogueIndex = Object.keys(dialogues).findIndex(d => d === currentDialogueId);
 
   return (
     <div style={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
-      {data.type === "line" && (
+      {props.data.type === "dialogueEntry" && (
         <button
           title={"Start playback from this node"}
           onClick={() => {
-            dialogueContext.reset();
+            //FIXME: no worky
+            dialogueCtx?.reset(dialogueIndex, 0);
           }}
           {...classNames(styles.nodeLabelFocusButton, "alternis__hoverable")}
         >

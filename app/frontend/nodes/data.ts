@@ -1,4 +1,7 @@
+import type { NodeTypes } from "../TestGraphEditor";
+
 export interface BaseNodeData {
+  type: NodeTypes;
   // FIXME: make this a required, auto-generated id
   label?: string;
   customData?: [string, string][];

@@ -11,25 +11,35 @@ import { classNames } from "js-utils/lib/react-utils";
 import { assert } from "js-utils/lib/browser-utils";
 import { create } from "zustand";
 
-const useDialogueStore = create((set) => ({
-  dialogueCtx: undefined as DialogueContext | undefined,
-  setDialogueCtx: debouncedUpdateDialogue,
-}));
+export interface DialogueStoreState {
+  dialogueCtx: WorkerDialogueContext | undefined;
+  setDialogueCtx: typeof debouncedUpdateDialogue;
+}
 
 const debouncedUpdateDialogue = debounce(
-  (json: string | undefined) => {
+  async (json: string | undefined) => {
     const prevCtx = useDialogueStore.getState().dialogueCtx;
+
+    const newCtx = json !== undefined ? await makeDialogueContext(json) : undefined;
 
     if (prevCtx !== undefined)
       prevCtx.dispose();
 
-    const newCtx = json !== undefined ? await makeDialogueContext(json) : undefined;
-    useDialogueStore.setState(s => ({ ...s, dialogueCtx: newCtx })));
+    useDialogueStore.setState(s => ({ ...s, dialogueCtx: newCtx }));
   },
   400,
 );
 
-export function useDialogueContext(json: string | undefined) {
+const useDialogueStore = create<DialogueStoreState>()((set) => ({
+  dialogueCtx: undefined,
+  setDialogueCtx: debouncedUpdateDialogue,
+}));
+
+
+export function useDialogueContext(json?: string) {
+  const setCtx = useDialogueStore(p => p.setDialogueCtx);
+  if (json !== undefined)
+    void setCtx(json);
   return useDialogueStore(p => p.dialogueCtx);
 }
 

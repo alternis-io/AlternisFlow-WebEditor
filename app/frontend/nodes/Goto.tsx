@@ -15,6 +15,7 @@ export function GotoNode(props: GotoNode.Props) {
 
   return (
     <BaseNode
+      type="goto"
       id={props.id}
       data-tut-id="node-goto"
       title={"A Goto node jumps to any labeled node"}

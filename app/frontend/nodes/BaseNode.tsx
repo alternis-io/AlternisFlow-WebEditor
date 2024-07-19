@@ -8,9 +8,11 @@ import playbackStyles from "../DialogueViewer.module.css"
 import { Center } from "../Center";
 import { classNames } from "js-utils/lib/react-utils";
 import { BaseNodeData } from "./data";
+import type { NodeTypes } from "../TestGraphEditor";
 
 const FloatingTools = (props: {
   id: string;
+  type: NodeTypes;
   data: BaseNodeData;
   set: ReturnType<typeof makeNodeDataSetter<BaseNodeData>>
 }) => {
@@ -18,6 +20,7 @@ const FloatingTools = (props: {
   const otherLabeledNodes = useMemo(() => nodes.filter((n) => n.data?.label && n.id !== props.id), [nodes]);
   const takenLabels = useMemo(() => otherLabeledNodes.map(n => n.data.label as string), [otherLabeledNodes]);
   const inputRef = React.useRef<HTMLInputElement>(null);
+  const nodeIndex = React.useMemo(() => nodes.findIndex(n => n.id === props.id), [nodes, props.id]);
 
   const dialogueCtx = useDialogueContext();
   const currentDialogueId = useAppState(s => s.currentDialogueId);
@@ -26,12 +29,12 @@ const FloatingTools = (props: {
 
   return (
     <div style={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
-      {props.data.type === "dialogueEntry" && (
+      {props.type === "dialogueEntry" && (
         <button
           title={"Start playback from this node"}
           onClick={() => {
-            //FIXME: no worky
-            dialogueCtx?.reset(dialogueIndex, 0);
+            if (nodeIndex !== undefined)
+              dialogueCtx?.reset(dialogueIndex, nodeIndex);
           }}
           {...classNames(styles.nodeLabelFocusButton, "alternis__hoverable")}
         >
@@ -93,7 +96,7 @@ export const BaseNode = (props: BaseNode.Props) => {
         {...classNames(styles.node, divProps.className)}
         style={{ width: "max-content", ...divProps.style }}
       >
-        <FloatingTools id={props.id} data={data} set={set} />
+        <FloatingTools id={props.id} type={props.type as NodeTypes} data={data} set={set} />
         {children}
         {(showMoreContent || !noLabel) && 
           <Center
@@ -173,6 +176,7 @@ export const BaseNode = (props: BaseNode.Props) => {
 export namespace BaseNode {
   export interface Props extends React.PropsWithChildren<{}>, React.HTMLProps<HTMLDivElement> {
     id: string;
+    type: NodeTypes;
     showMoreContent?: React.ReactNode;
     noMetadata?: boolean;
     noLabel?: boolean;

@@ -83,6 +83,7 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
   return !data ? null : (
     <BaseNode
       id={props.id}
+      type="dialogueEntry"
       showMoreContent={
         <>
           <label>
@@ -198,6 +199,7 @@ const LockNode = (props: NodeProps<Lock>) => {
   return !data ? null : (
     <BaseNode
       data-tut-id="node-lock"
+      type="lockNode"
       id={props.id}
       title={
         "The 'Lock' node, changes the state of a gate.\n"
@@ -265,6 +267,7 @@ const EmitNode = (props: NodeProps<Emit>) => {
 
   return !data ? null : (
     <BaseNode
+      type="emitNode"
       data-tut-id="node-function"
       id={props.id}
       title={
@@ -401,6 +404,7 @@ const RandomSwitchNode = (props: NodeProps<RandomSwitch>) => {
 
   return !data ? null : (
     <BaseNode
+      type="randomSwitch"
       id={props.id}
       data-tut-id="node-random-switch"
       title={
@@ -569,6 +573,7 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
 
   return !data ? null : (
     <BaseNode
+      type="playerReplies"
       id={props.id}
       data-tut-id="node-reply"
       title={
@@ -697,6 +702,7 @@ const UnknownNode = (props: NodeProps<{}>) => {
   // FIXME: log to support immediately
   return (
     <BaseNode
+      type="default"
       id={props.id}
       title="This is an error. Please contact support"
       noLabel

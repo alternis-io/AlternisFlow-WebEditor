@@ -156,10 +156,13 @@ const template1 = _template1 as Document;
 
 import { assert } from "js-utils/lib/browser-utils.js";
 
+// FIXME: this codebase confuses hash and search a lot... fix that
+let isLocalDemo = () => window.location.hash.includes("?demo");
+
 const initialState: AppState = {
   ...structuredClone(defaultAppState),
   //...maybeLocallyStoredState,
-  ...window.location.hash.includes("?demo") && {
+  ...isLocalDemo() && {
     document: template1 as AppState["document"],
     currentDialogueId: Object.keys(template1.dialogues)[0],
   },
@@ -238,10 +241,20 @@ export const useTemporalAppState = <T extends any>(
 ) => useStore(useAppState.temporal, selector, equality);
 
 
-// FIXME: replace with "persist" middleware
+// FIXME: replace with "persist" middleware?
+// FIXME: replace with custom middleware for pouchdb?
 useAppState.subscribe((state) =>
   localStorage.setItem(appStateKey, JSON.stringify(state))
 );
+
+let promotedLocalDemo = false;
+useAppState.subscribe((state) => {
+  if (!promotedLocalDemo && isLocalDemo()) {
+    window.location.hash = window.location.hash.replace("?demo", "");
+    promotedLocalDemo = true;
+  }
+});
+
 
 export function resetAllAppState() {
   useAppState.setState(deepCloneJson(defaultAppState));

@@ -143,7 +143,7 @@ export function LoginState(_props: LoginPage.Props) {
       {encodedRedirectSource && (
         <div>
           You must be logged in to use Alternis.
-          Want to just <Link to="/app?trial">try it</Link> out now?
+          Want to just <Link to="/app?demo">try it</Link> out now?
         </div>
       )}
       <div style={{

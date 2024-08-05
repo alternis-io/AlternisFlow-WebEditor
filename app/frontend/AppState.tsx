@@ -106,6 +106,9 @@ export const defaultAppState = {
   },
 
   permissions: {
+    // this means nothing, since I am open sourcing it
+    // but I'll leave it in if anyone ever asks for a special kind of
+    // account with cloud storage or something
     version: "trial" as "trial" | "standard" | "pro",
   },
 
@@ -156,7 +159,7 @@ import { assert } from "js-utils/lib/browser-utils.js";
 const initialState: AppState = {
   ...structuredClone(defaultAppState),
   //...maybeLocallyStoredState,
-  ...window.location.hash.includes("?trial") && {
+  ...window.location.hash.includes("?demo") && {
     document: template1 as AppState["document"],
     currentDialogueId: Object.keys(template1.dialogues)[0],
   },

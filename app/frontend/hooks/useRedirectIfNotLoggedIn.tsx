@@ -8,12 +8,12 @@ export function useRedirectIfNotLoggedIn() {
   const navigate = useNavigate();
 
   // FIXME: do query param parsing!
-  const inLocalTrial = location.search.includes("trial");
+  const inLocalDemo = location.search.includes("demo") || location.hash.includes("?demo");
 
   useEffect(() => {
-    if (!isLoggedIn && !inLocalTrial)
+    if (!isLoggedIn && !inLocalDemo)
       navigate(`/app/login?redirect=${encodeURIComponent(location.pathname)}`, { replace: true })
-  }, [isLoggedIn, navigate, location, inLocalTrial]);
+  }, [isLoggedIn, navigate, location, inLocalDemo]);
 }
 
 export function RedirectIfNotLoggedIn() {

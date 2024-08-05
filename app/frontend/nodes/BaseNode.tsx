@@ -30,7 +30,8 @@ const FloatingTools = (props: {
 
   return (
     <div style={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
-      {(props.type === "dialogueEntry" || props.type === "playerReplies") && (
+      {/* FIXME: exported ids are not yet stable so disabling for now */}
+      {(false && (props.type === "dialogueEntry" || props.type === "playerReplies")) && (
         <button
           title={"Start playback from this node"}
           onClick={() => {

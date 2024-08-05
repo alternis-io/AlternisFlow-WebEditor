@@ -53,7 +53,14 @@ export function DialogueViewer(props: DialogueViewer.Props) {
   // FIXME: it would be much more efficient to expose an API for dynamically modifying stuff...
   // FIXME: avoid running this expensive calculation on simple state changes like node movement
   const json = useMemo(
-    () => JSON.stringify(exportDocumentToJson(doc)),
+    () => {
+      try {
+        return JSON.stringify(exportDocumentToJson(doc));
+      } catch (err) {
+        console.error(err);
+        return undefined;
+      }
+    },
     [doc],
   );
 

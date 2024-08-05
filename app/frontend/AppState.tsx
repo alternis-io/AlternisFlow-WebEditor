@@ -272,7 +272,10 @@ export function resetAllAppState() {
 
 /** throws on bad node id or no current dialogue */
 export const getNode = <T extends object>(nodeId: string) =>
-  useCurrentDialogue(s => s.nodes.find(n => n.id === nodeId), { assert: true }) as Node<T> | undefined;
+  useCurrentDialogue(s =>
+    s.nodes.find(n => n.id === nodeId),
+    { assert: true },
+  ) as Node<T> | undefined;
 
 export const makeNodeDataSetter = <T extends BaseNodeData>(nodeId: string) => (value: Partial<T> | ((s: T) => Partial<T>)) => {
   useAppState.setState((s) => {

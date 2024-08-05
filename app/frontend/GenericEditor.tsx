@@ -13,8 +13,8 @@ export function GenericEditor<T extends SupportedKeys>(
   inProps: GenericEditor.Props<T>
 ) {
   // FIXME: must be in sync with props interface
-  const { singularEntityName, docPropKey, newInitialVal, extraActions, noDrag, onClickEntryName, getTitle, onRename, ...divProps } = inProps;
-  const props = { singularEntityName, docPropKey, newInitialVal, extraActions, noDrag, onClickEntryName, getTitle, onRename };
+  const { singularEntityName, docPropKey, newInitialVal, extraActions, noDrag, onClickEntryName, getTitle, onRename, onAdd, ...divProps } = inProps;
+  const props = { singularEntityName, docPropKey, newInitialVal, extraActions, noDrag, onClickEntryName, getTitle, onRename, onAdd };
 
   const generic = useAppState((s) => s.document[props.docPropKey]);
   const set = useAppState.setState;
@@ -91,6 +91,7 @@ export function GenericEditor<T extends SupportedKeys>(
       setKeyBeingEdited(undefined);
     } else {
       addGeneric(value);
+      props.onAdd?.(value);
     }
     setProposedName(undefined);
   };
@@ -212,5 +213,7 @@ export namespace GenericEditor {
     onClickEntryName?(key: string, t: T, e: React.MouseEvent<HTMLSpanElement>): void;
     getTitle?(key: string, t: T): string;
     onRename?(oldKey: string, newKey: string): void;
+    /** code to run after a user creates a new key */
+    onAdd?(key: string): void;
   }
 }

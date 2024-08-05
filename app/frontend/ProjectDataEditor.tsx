@@ -103,6 +103,7 @@ const dataPanes = {
           currentDialogueId: newName
         })}
         data-tut-id="dialogues-content"
+        onAdd={(key) => useAppState.setState({ currentDialogueId: key })}
       />
     ),
     desc: "Choose dialogues from this project to edit."

@@ -43,7 +43,7 @@ export function GotoNode(props: GotoNode.Props) {
           {targets
             .map((jumpTarget) => (
               <option key={jumpTarget} value={jumpTarget}>
-                <span>{jumpTarget}</span>
+                {jumpTarget}
                 {/* FIXME: replace find in map with a search button, possibly using a webfont... */}
                 {/*<div title="Find in graph" style={{backgroundColor: "red"}}>
                   <em>find</em>

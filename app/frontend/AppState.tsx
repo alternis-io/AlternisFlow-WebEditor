@@ -248,8 +248,18 @@ useAppState.subscribe((state) =>
 );
 
 let promotedLocalDemo = false;
-useAppState.subscribe((state) => {
-  if (!promotedLocalDemo && isLocalDemo()) {
+useAppState.subscribe((state, prev) => {
+  const listenedState = (s: typeof state) => [
+    Object.entries(s.document.dialogues).map(([name, dialogue]) => [
+      name,
+      dialogue.nodes.map(n => [n.id, n.type, n.data]),
+      dialogue.edges.map(e => [e.id, e.source, e.target])
+    ])
+  ];
+
+  const hasChanged = () => JSON.stringify(listenedState(state)) !== JSON.stringify(listenedState(prev));
+
+  if (!promotedLocalDemo && isLocalDemo() && hasChanged()) {
     window.location.hash = window.location.hash.replace("?demo", "");
     promotedLocalDemo = true;
   }

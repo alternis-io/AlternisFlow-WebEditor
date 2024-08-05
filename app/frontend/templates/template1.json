@@ -122,7 +122,8 @@
                 "text": "Wanna go eat waffles?"
               }
             ],
-            "label": "name-replies"
+            "label": "name-replies",
+            "speaker": 0
           },
           "position": {
             "x": 1920,
@@ -160,7 +161,8 @@
           "id": "8",
           "type": "lockNode",
           "data": {
-            "action": "unlock"
+            "action": "unlock",
+            "variable": "Aaron likes you"
           },
           "position": {
             "x": 2385,
@@ -258,7 +260,9 @@
         {
           "id": "13",
           "type": "emitNode",
-          "data": {},
+          "data": {
+            "function": "ask player name"
+          },
           "position": {
             "x": 1605,
             "y": 60

@@ -153,6 +153,7 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
   );
 };
 
+// FIXME: rename to key node
 const LockNode = (props: NodeProps<Lock>) => {
   const variables = useAppState(s => s.document.variables);
   const bools = useMemo(() => Object.entries(variables).filter(([, v]) => v.type === "boolean"), [variables]);

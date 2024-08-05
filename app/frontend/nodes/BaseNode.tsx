@@ -20,6 +20,7 @@ const FloatingTools = (props: {
   const otherLabeledNodes = useMemo(() => nodes.filter((n) => n.data?.label && n.id !== props.id), [nodes]);
   const takenLabels = useMemo(() => otherLabeledNodes.map(n => n.data.label as string), [otherLabeledNodes]);
   const inputRef = React.useRef<HTMLInputElement>(null);
+  // FIXME: definitely broken in the presence of disconnected nodes
   const nodeIndex = React.useMemo(() => nodes.findIndex(n => n.id === props.id), [nodes, props.id]);
 
   const dialogueCtx = useDialogueContext();
@@ -29,7 +30,7 @@ const FloatingTools = (props: {
 
   return (
     <div style={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
-      {props.type === "dialogueEntry" && (
+      {(props.type === "dialogueEntry" || props.type === "playerReplies") && (
         <button
           title={"Start playback from this node"}
           onClick={() => {

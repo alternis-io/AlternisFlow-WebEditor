@@ -324,6 +324,7 @@ const RandomSwitchInput = (props: {
   const set = makeNodeDataSetter<RandomSwitch>(props.nodeId);
   const [inputProportion, input, setInput, inputStatus, inputMessage] = useValidatedInput<number>(String(proportion));
 
+  // TODO: change this from an effect which may cause unnecessary rendering
   useEffect(() => {
     if (inputProportion === null)
       return;
@@ -1212,7 +1213,10 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
 
           }}
           onEdgeClick={(_evt, edge) => {
-            graph.deleteElements({edges: [edge]})
+            useCurrentDialogue.setState((s) => ({
+              ...s,
+              edges: s.edges.filter(e => e.id !== edge.id),
+            }));
           }}
           onConnectStart={(_, { nodeId }) => { connectingNodeId.current = nodeId ?? undefined; }}
           onConnectEnd={(e) => {

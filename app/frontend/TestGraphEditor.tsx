@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import ReactFlow, {
   Handle,
   NodeProps,
@@ -22,6 +22,8 @@ import ReactFlow, {
   Position,
   BackgroundVariant,
   Panel,
+  ReactFlowProps,
+  ReactFlowRefType,
 } from 'reactflow'
 import 'reactflow/dist/base.css'
 import styles from './TestGraphEditor.module.css'
@@ -62,9 +64,8 @@ const forceAddNodeEvent = "force-addnode";
 
 // FIXME: rename to Line node
 const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
-  const node = getNode<DialogueEntry>(props.id);
-
-  const data = node?.data;
+  //const data = getNode<DialogueEntry>(props.id)?.data;
+  const data = props?.data;
   const participants = useAppState((s) => s.document.participants);
   const participant = useAppState((s) =>
     data?.speakerIndex !== undefined
@@ -157,8 +158,11 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
 const LockNode = (props: NodeProps<Lock>) => {
   const variables = useAppState(s => s.document.variables);
   const bools = useMemo(() => Object.entries(variables).filter(([, v]) => v.type === "boolean"), [variables]);
+
   // REPORTME: react-flow seems to sometimes render non-existing nodes briefly?
-  const data = getNode<Lock>(props.id)?.data;
+  //const data = getNode<Lock>(props.id)?.data;
+  const data = props.data;
+
   const set = makeNodeDataSetter<Lock>(props.id);
 
   // FIXME: this might be low-performance? not sure it matters tbh
@@ -255,8 +259,11 @@ const LockNode = (props: NodeProps<Lock>) => {
 
 const EmitNode = (props: NodeProps<Emit>) => {
   const functions = useAppState(s => s.document.functions);
+
   // REPORTME: react-flow seems to sometimes render non-existing nodes briefly?
-  const data = getNode<Emit>(props.id)?.data;
+  //const data = getNode<Emit>(props.id)?.data;
+  const data = props.data;
+
   const set = makeNodeDataSetter<Emit>(props.id);
 
   useEffect(() => {
@@ -381,7 +388,9 @@ const RandomSwitchInput = (props: {
 
 const RandomSwitchNode = (props: NodeProps<RandomSwitch>) => {
   // REPORTME: react-flow seems to sometimes render non-existing nodes briefly?
-  const data = getNode<RandomSwitch>(props.id)?.data;
+  //const data = getNode<RandomSwitch>(props.id)?.data;
+  const data = props.data;
+
   const totalProportion = data?.proportions.reduce((prev, curr) => prev + curr, 0) ?? 1;
   const set = makeNodeDataSetter<RandomSwitch>(props.id);
   const updateNodeInternals = useUpdateNodeInternals();
@@ -543,7 +552,9 @@ const ReplyLock = (props: {
 const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
   // FIXME: looks like node ids get messed up between when switching dialogues
   // REPORTME: react-flow seems to sometimes render non-existing nodes briefly?
-  const data = getNode<PlayerReplies>(props.id)?.data;
+  //const data = getNode<PlayerReplies>(props.id)?.data;
+  const data = props.data;
+
   const set = makeNodeDataSetter<PlayerReplies>(props.id);
   const updateNodeInternals = useUpdateNodeInternals();
   const participants = useAppState(s => s.document.participants);

@@ -23,6 +23,13 @@ function ProjectTile(props: {
   const deleteDocument = useApi(s => s.api.deleteDocument);
   const duplicateDocument = useApi(s => s.api.duplicateDocument);
 
+  const editableRef = React.useRef<HTMLSpanElement>(null);
+
+  React.useLayoutEffect(() => {
+    if (editableRef.current)
+      editableRef.current.textContent = props.doc.name;
+  }, []);
+
   return (
     <div
       key={props.doc.name}
@@ -34,6 +41,10 @@ function ProjectTile(props: {
       <Center>
         <span
           contentEditable
+          onClick={(e) => {
+            // don't select the project when clicking this
+            e.stopPropagation();
+          }}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault();
@@ -42,35 +53,35 @@ function ProjectTile(props: {
                 e.currentTarget.innerText = "invalid name"
             }
           }}
-          onBlur={(e) =>
-            updateDocumentMeta(props.doc.id, {
-              name: e.currentTarget.innerText.trim() || "invalid name"
-            })
-          }
-        >
-          {props.doc.name}
-        </span>
+          onBlur={(e) => {
+            const newName = e.currentTarget.innerText.trim() || "invalid name";
+            updateDocumentMeta(props.doc.id, { name: newName });
+          }}
+          ref={editableRef}
+        />
       </Center>
-      <MoreMenu
-        style={{
-          position: "absolute",
-          bottom: 20,
-          right: 20,
-        }}
-        options={[
-          {
-            id: "duplicate-project",
-            onSelect: () => duplicateDocument(props.doc),
-            label: "Duplicate this project",
-          },
-          {
-            id: "delete-project",
-            // FIXME: this should be confirmed and a soft delete!
-            onSelect: () => deleteDocument(props.doc.id),
-            label: "Delete this project",
-          },
-        ]}
-      />
+      <div onClick={e => e.stopPropagation()}>
+        <MoreMenu
+          style={{
+            position: "absolute",
+            bottom: 20,
+            right: 20,
+          }}
+          options={[
+            {
+              id: "duplicate-project",
+              onSelect: () => duplicateDocument(props.doc),
+              label: "Duplicate this project",
+            },
+            {
+              id: "delete-project",
+              // FIXME: this should be confirmed and a soft delete!
+              onSelect: () => deleteDocument(props.doc.id),
+              label: "Delete this project",
+            },
+          ]}
+        />
+      </div>
     </div>
   );
 }

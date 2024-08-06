@@ -14,7 +14,12 @@ const PouchDBUpsert = _PouchDBUpsert as typeof import("pouchdb-upsert");
 
 PouchDB.plugin(PouchDBUpsert);
 
+declare global {
+  var _pouchdb: PouchDB.Database<{}>;
+}
+
 const docs = new PouchDB("alternis-v1/documents");
+globalThis._pouchdb = docs;
 
 // FIXME: can replace recents with a couchdb query?
 const recentsDocId = "recents" as const;
@@ -46,21 +51,25 @@ const stable = {
     async deleteDocument(id: Id): Promise<void> {
       const prev = await docs.get(id);
       await docs.remove(prev);
+      usePouchDbStore.setState((prev) => ({
+        documents: prev.documents.filter(d => d._id !== id && !d._deleted),
+      }))
     },
 
-    async createDocument(doc: { name?: string } = {}) {
+    async createDocument(doc: Partial<Document> = {}) {
       const ownerEmail = undefined;
       const tempDocId = `${getNextInvalidId()}`;
       await docs.put<Document>({
-        _id: tempDocId,
-        id: tempDocId,
-        name: doc.name ?? "",
+        name: "",
         ownerEmail,
         updatedAt: new Date().toString(),
         functions: {},
         variables: {},
         dialogues: {},
         participants: [],
+        ...doc,
+        _id: tempDocId,
+        id: tempDocId,
       });
     },
 
@@ -79,11 +88,14 @@ const stable = {
 };
 
 interface PouchDbStoreState {
-  documents: DocumentHeader[] ;
+  documents: DocumentHeader[];
+  documentsInitStarted: boolean;
 }
 
-const usePouchDbStore = create<PouchDbStoreState>(() => ({
+const usePouchDbStore = create<UseApiResult & PouchDbStoreState>(() => ({
+  documentsInitStarted: false,
   documents: [] as DocumentHeader[],
+  me: undefined,
   ...stable,
 }));
 
@@ -96,13 +108,18 @@ export const usePouchDbApi = <F extends (s: UseApiResult) => any>(
   const documents = usePouchDbStore(s => s.documents);
 
   useAsyncEffect(async () => {
+    if (usePouchDbStore.getState().documentsInitStarted)
+      return;
+
+    usePouchDbStore.setState({ documentsInitStarted: true })
+
     const allDocs = await docs.allDocs<Document>({
       include_docs: true,
     });
-    usePouchDbStore.setState(prevState => ({
-      ...prevState,
-      documents: allDocs.rows.map(r => r.doc!),
-    }));
+
+    usePouchDbStore.setState({
+      documents: allDocs.rows.map(r => r.doc!).filter(d => !d._deleted),
+    });
   }, []);
 
   // FIXME: use render effect?
@@ -122,7 +139,7 @@ export const usePouchDbApi = <F extends (s: UseApiResult) => any>(
           const newDoc = change.doc as any as Document;
           if (index !== -1) next[index] = newDoc;
           else next.push(newDoc);
-          if (change.deleted) next = next.filter(d => d.id !== change.id);
+          if (change.deleted) next = next.filter(d => d._id !== change.id);
           return { ...prevState, documents: next };
         });
       })
@@ -136,14 +153,7 @@ export const usePouchDbApi = <F extends (s: UseApiResult) => any>(
     };
   }, []);
 
-  // FIXME: is this efficient?
-  return React.useMemo(() => {
-    const state = {
-      documents,
-      me: undefined,
-      ...stable,
-    };
-    // FIXME: this breaks if the getter changes...
-    return typeof getter === "function" ? getter(state) : state;
-  }, [documents]);
+  const state = usePouchDbStore();
+
+  return typeof getter === "function" ? getter(state) : state;
 };

@@ -55,7 +55,13 @@ function ProjectTile(props: {
           }}
           onBlur={(e) => {
             const newName = e.currentTarget.innerText.trim() || "invalid name";
-            updateDocumentMeta(props.doc.id, { name: newName });
+            try {
+              updateDocumentMeta(props.doc.id, { name: newName });
+            } catch (err) {
+              // a delete can trigger a blur/defocus of the name input
+              if (err.name !== 'not_found')
+                throw err;
+            }
           }}
           ref={editableRef}
         />
@@ -113,7 +119,7 @@ export function ProjectSelector(props: ProjectSelector.Props) {
     <dialog className={styles.newProjectDialog} open={createDocDialogShown} ref={dialogRef}>
       <h2> Create a project </h2>
       <h5> Use a template </h5>
-      <div style={{ overflow: "scroll", maxHeight: "50vh" }}>
+      <div style={{ overflowY: "scroll", maxHeight: "50vh" }}>
         {ifEmptyDefault(
           Object.values(templates)?.map(t => (
             <div
@@ -131,7 +137,7 @@ export function ProjectSelector(props: ProjectSelector.Props) {
         )}
       </div>
       <h5> Or clone from an existing one </h5>
-      <div style={{ overflow: "scroll", maxHeight: "50vh" }}>
+      <div style={{ overflowY: "scroll", maxHeight: "50vh" }}>
         {ifEmptyDefault(
           documents?.map(d => (
             <div

@@ -7,3 +7,14 @@
   font-size: 2rem;
   font-weight: 500;
 }
+
+/* TODO: dedup with ProjectSelector create project dialog */
+.aboutDialog {
+  background-color: var(--bg-1);
+  position: absolute;
+  top: 30%;
+  box-shadow: var(--fg-1) 0 0 3px 1px;
+  border-radius: 10px;
+  min-width: 30vw;
+  max-width: 5in;
+}

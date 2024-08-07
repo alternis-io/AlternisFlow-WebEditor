@@ -11,6 +11,8 @@
   top: 30%;
   box-shadow: var(--fg-1) 0 0 3px 1px;
   border-radius: 10px;
+  min-width: 30vw;
+  max-width: 5in;
 }
 
 .projectTile { 

@@ -1,10 +1,22 @@
 import React from "react";
 import { Tutorial, TutorialData } from "./components/Tutorial";
-import { useLocation } from "react-router-dom";
 import * as ProjectDataEditor from "./ProjectDataEditor";
+import { create } from "zustand";
 
 const hasSeenTutKey = "alternis-v1_hasSeenIntroTutorial1";
 const hasSeenTutorial = localStorage.getItem(hasSeenTutKey) === "true";
+
+export interface TutorialState {
+  tutorialOpen: boolean;
+}
+
+// FIXME: do real query param parsing!
+const noTutorialRequested = window.location.search.includes("noTutorial");
+
+
+export const useTutorialStore = create<TutorialState>(() => ({
+  tutorialOpen: !hasSeenTutorial && !noTutorialRequested,
+}));
 
 const tutorial1Data: TutorialData = {
   name: "Tutorial",
@@ -291,12 +303,9 @@ const tutorial1Data: TutorialData = {
 };
 
 export function Tutorial1() {
-  const location = useLocation();
+  const tutorialState = useTutorialStore();
 
-  // FIXME: do real query param parsing!
-  const noTutorialRequested = location.search.includes("noTutorial");
-
-  return !hasSeenTutorial && !noTutorialRequested
+  return tutorialState.tutorialOpen
     ? <Tutorial
         data={tutorial1Data}
         onClose={() => { localStorage.setItem(hasSeenTutKey, "true"); }}

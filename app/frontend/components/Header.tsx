@@ -8,6 +8,7 @@ import { useApi } from "../api/useApi";
 import { baseUrl } from "../api/useRemoteApi";
 import logoPath from "../../../resources/logo2.svg";
 import { exportCurrentDialogueToJson } from "../export";
+import { useTutorialStore } from "../Tutorial1";
 
 export function Header() {
   const logout = useApi(s => s.auth?.logout);
@@ -17,6 +18,7 @@ export function Header() {
   const noHeaderRequested = location.search.includes("noHeaderLogo");
 
   const navigate = useNavigate();
+  const [aboutModalOpen, setAboutModalOpen] = React.useState(false);
 
   return !noHeaderRequested && <Split
     style={{
@@ -53,7 +55,7 @@ export function Header() {
       <div style={{
         display: "flex",
         gap: 11,
-        paddingRight: 5,
+        paddingRight: 11,
       }}
       >
         <nav className="alternis__hoverable" onClick={() => window.open(
@@ -62,11 +64,26 @@ export function Header() {
         )}>
           Newsletter
         </nav>
+        <nav className="alternis__hoverable" onClick={() => useTutorialStore.setState({ tutorialOpen: true })}>
+          Tutorial
+        </nav>
         <nav className="alternis__hoverable" onClick={() => window.open(
           "https://docs.google.com/forms/d/e/1FAIpQLSdeEraQ_YVaYn01LhIQT0951B3UJ_wyroKxpP1qZoQ1zPWnjg/viewform?usp=sf_link",
           "_blank"
         )}>
           Feedback
+        </nav>
+        {/* FIXME: add dialog */}
+        <nav className="alternis__hoverable" onClick={() => setAboutModalOpen(p => !p)}>
+          About
+          <dialog className={styles.aboutDialog} open={aboutModalOpen}>
+            <p>
+              <a href="">Github</a>
+            </p>
+            <p>
+              by <a href="https://mikemikeb.com">Michael Belousov</a>
+            </p>
+          </dialog>
         </nav>
       </div>
     }

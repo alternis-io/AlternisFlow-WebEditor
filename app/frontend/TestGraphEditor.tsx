@@ -57,6 +57,7 @@ import { Tutorial1 } from './Tutorial1';
 import { DialogueViewer } from './DialogueViewer';
 import downloadFile, { uploadFile } from './localFileManip';
 import { exportToJson } from './export';
+import { docs } from './api/usePouchDbApi';
 
 const forceAddNodeEvent = "force-addnode";
 
@@ -817,7 +818,7 @@ function getNewId(nodes: { id: string }[]) {
   return `${maxId + 1}`;
 }
 
-const addNode = (
+const addNode = async (
   nodeType: keyof typeof nodeTypes,
   {
     initData = undefined,
@@ -829,8 +830,12 @@ const addNode = (
     connectingNodeId?: { current?: string },
   } = {}
 ) => {
+  // gross pouchdb is making everything async...
+  const docId = useAppState.getState().projectId;
+  if (docId === undefined) throw Error("projectId cannot be undefined in the editor");
+  const document = await docs.get(docId);
+
   useCurrentDialogue.setState((s) => {
-    const { document } = useAppState.getState();
     const maybeSourceNode = connectingNodeId?.current;
     const newNodeId = getNewId(s.nodes);
     return {
@@ -1049,9 +1054,9 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
       .map((nodeType) => ({
         id: nodeType,
         label: nodeTypeNames[nodeType],
-        onSelect(e: React.MouseEvent<HTMLDivElement>) {
+        async onSelect(e: React.MouseEvent<HTMLDivElement>) {
           const { top, left } = graphContainerElem.current!.getBoundingClientRect();
-          addNode(nodeType, {
+          await addNode(nodeType, {
             position: graph.project({
               x: e.clientX - left - 150/2,
               y: e.clientY - top,
@@ -1084,11 +1089,11 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
         ) : (
           <SelectParticipantWidget
             //onDragStartDone={() => ctxMenuRef.current?.hide()}
-            onSelectParticipant={(_p, index) => {
+            onSelectParticipant={async (_p, index) => {
               const e = contextMenuPayload;
               assert(e !== undefined);
               const { top, left } = graphContainerElem.current!.getBoundingClientRect();
-              addNode("dialogueEntry", {
+              await addNode("dialogueEntry", {
                 position: graph.project({
                   x: e.clientX - left - 150/2,
                   y: e.clientY - top,
@@ -1161,8 +1166,9 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
           selectionMode={SelectionMode.Partial}
           // this allows us to use it for adding nodes
           zoomOnDoubleClick={false}
-          onDrop={(e) => {
+          onDrop={async (e) => {
             e.preventDefault();
+
             const dropDataText = e.dataTransfer.getData("application/alternis-project-data-item");
             if (!dropDataText) return;
 
@@ -1191,7 +1197,7 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
             const { top, left } = graphContainerElem.current!.getBoundingClientRect();
 
             // FIXME: better node width
-            addNode(nodeType, {
+            await addNode(nodeType, {
               position: graph.project({
                 x: e.clientX - left - 150/2,
                 y: e.clientY - top,

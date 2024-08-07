@@ -1,5 +1,5 @@
 import React from "react";
-import { Document, DocumentHeader, useAppState } from "../AppState";
+import { Document, DocumentHeader } from "../AppState";
 import type { DocumentList, Id, UseApiResult } from ".";
 import { create } from "zustand";
 import { useAllDocs } from "use-pouchdb";
@@ -19,7 +19,7 @@ declare global {
   var _pouchdb: PouchDB.Database<{}>;
 }
 
-export const docs = new PouchDB("alternis-v1/documents");
+export const docs = new PouchDB<Document>("alternis-v1/documents");
 
 globalThis.global = globalThis;
 globalThis._pouchdb = docs;

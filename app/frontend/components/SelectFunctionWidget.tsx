@@ -1,13 +1,13 @@
 import React from "react";
 import { RespGrid } from "./RespGrid";
-import { useAppState } from "../AppState";
+import { useCurrentDocument } from "../AppState";
 import { classNames } from "js-utils/lib/react-utils";
 import { useOnExternalClick } from "@bentley/react-hooks";
 
 // TODO: standardize the name... is it an event or a function? focus group some writers+non/coders+game devs
 // NOTE: I have a suspicion that "event" is easier to understand?
 export function SelectFunctionWidget(props: SelectFunctionWidget.Props) {
-  const functions = useAppState(s => s.document.functions);
+  const functions = useCurrentDocument(d => d.functions);
 
   const {
     onSelectFunction: _1,

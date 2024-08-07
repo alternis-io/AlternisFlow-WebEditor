@@ -27,12 +27,11 @@ import ReactFlow, {
 } from 'reactflow'
 import 'reactflow/dist/base.css'
 import styles from './TestGraphEditor.module.css'
-import { Link, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { useApi } from "./api/useApi";
-import { baseUrl } from "./api/useRemoteApi";
 import { classNames, deepCloneJson } from 'js-utils/lib/react-utils'
 import { Center } from "./Center";
-import { Node, getNode, makeNodeDataSetter, useAppState, useCurrentDialogue, Document, resetAllAppState, Variable } from "./AppState";
+import { Node, getNode, makeNodeDataSetter, useAppState, useCurrentDialogue, Document, resetAllAppState, Variable, useCurrentDocument } from "./AppState";
 import { ReactComponent as LockIcon } from "./images/inkscape-lock.svg";
 import { ReactComponent as UnlockIcon } from "./images/inkscape-unlock.svg";
 import { ReactComponent as ExportIcon } from "./images/inkscape-export.svg";
@@ -49,7 +48,6 @@ import { useValidatedInput } from '@bentley/react-hooks'
 import { InputStatus } from './hooks/useValidatedInput'
 import { useReactFlowClipboard } from './hooks/useReactFlowClipboard'
 import debounce from "lodash.debounce";
-import * as jsonpatch from "fast-json-patch";
 
 import { GotoNode } from './nodes';
 import { NodeHandle } from './nodes/handle';
@@ -66,7 +64,7 @@ const forceAddNodeEvent = "force-addnode";
 const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
   //const data = getNode<DialogueEntry>(props.id)?.data;
   const data = props?.data;
-  const participants = useAppState((s) => s.document.participants);
+  const participants = useCurrentDocument((d) => d.participants);
   const participant = useAppState((s) =>
     data?.speakerIndex !== undefined
     ? s.document.participants[data.speakerIndex]
@@ -156,7 +154,7 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
 
 // FIXME: rename to key node
 const LockNode = (props: NodeProps<Lock>) => {
-  const variables = useAppState(s => s.document.variables);
+  const variables = useCurrentDocument(d => d.variables);
   const bools = useMemo(() => Object.entries(variables).filter(([, v]) => v.type === "boolean"), [variables]);
 
   // REPORTME: react-flow seems to sometimes render non-existing nodes briefly?
@@ -258,7 +256,7 @@ const LockNode = (props: NodeProps<Lock>) => {
 };
 
 const EmitNode = (props: NodeProps<Emit>) => {
-  const functions = useAppState(s => s.document.functions);
+  const functions = useCurrentDocument(d => d.functions);
 
   // REPORTME: react-flow seems to sometimes render non-existing nodes briefly?
   //const data = getNode<Emit>(props.id)?.data;
@@ -479,7 +477,7 @@ const ReplyLock = (props: {
   set: (s: Partial<PlayerReply> | ((s: PlayerReply) => Partial<PlayerReply>)) => void;
   index: number;
 }) => {
-  const variables = useAppState(s => s.document.variables);
+  const variables = useCurrentDocument(d => d.variables);
   const bools = useMemo(() => Object.entries(variables).filter(([, v]) => v.type === "boolean"), [variables]);
   const Icon
     = props.reply.condition === "none"
@@ -557,7 +555,7 @@ const PlayerRepliesNode = (props: NodeProps<PlayerReplies>) => {
 
   const set = makeNodeDataSetter<PlayerReplies>(props.id);
   const updateNodeInternals = useUpdateNodeInternals();
-  const participants = useAppState(s => s.document.participants);
+  const participants = useCurrentDocument(d => d.participants);
 
   const nodeBodyRef = React.useRef<HTMLDivElement>(null);
 
@@ -982,10 +980,10 @@ const TopRightPanel = () => {
         <button
           data-tut-id="export-button"
           className="alternis__toolBtn alternis__hoverable"
-          onClick={() => {
+          onClick={async () => {
             downloadFile({
               fileName: 'doc.alternis.json',
-              content: JSON.stringify(exportToJson(), undefined, "  "),
+              content: JSON.stringify(await exportToJson(), undefined, "  "),
             });
           }}
         >
@@ -1014,26 +1012,6 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
   const graph = useReactFlow<{}, {}>();
   const nodes = useCurrentDialogue(s => s.nodes, { assert: true });
   const edges = useCurrentDialogue(s => s.edges, { assert: true });
-
-  const docId = useAppState(s => s.document.id);
-  const patchDocument = useApi(s => s.api.patchDocument);
-
-  // FIXME: replace with middleware?
-  // or sync should be built into the useApi store layer
-  useEffect(() => {
-    const syncRemote = async (curr: Document) => {
-      await patchDocument(curr);
-    };
-
-    const debouncedSyncRemote = debounce(syncRemote, 3_000, { maxWait: 20_000 });
-
-    const unsub = useAppState.subscribe((state) => {
-      debouncedSyncRemote(state.document)
-    });
-
-    return unsub;
-  }, [useAppState, docId, patchDocument]);
-
 
   // const dragBoxSelectMouseBinding = useAppState(s => s.preferences.graph.dragBoxSelectMouseBinding);
   const appendToSelectModifier = useAppState(s => s.preferences.graph.appendToSelectModifier);

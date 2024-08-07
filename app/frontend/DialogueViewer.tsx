@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import styles from "./DialogueViewer.module.css"; // FIXME: use separate file
-import { useAppState } from "./AppState";
+import { useAppState, useCurrentDocument } from "./AppState";
 // FIXME: import /worker
 import { DialogueContext } from "alternis-js";
 import { WorkerDialogueContext, makeDialogueContext } from "alternis-js/dist/worker-api";
@@ -44,9 +44,9 @@ export function useDialogueContext(json?: string) {
 }
 
 export function DialogueViewer(props: DialogueViewer.Props) {
-  const doc = useAppState(s => s.document);
+  const doc = useCurrentDocument();
   const currentDialogueId = useAppState(s => s.currentDialogueId);
-  const dialogues = useAppState(s => s.document.dialogues);
+  const dialogues = doc.dialogues;
   const dialogueIndex = Object.keys(dialogues).findIndex(d => d === currentDialogueId);
   assert(dialogueIndex !== undefined);
 

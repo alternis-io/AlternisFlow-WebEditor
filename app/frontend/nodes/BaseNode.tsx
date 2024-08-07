@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { ContextMenuOptions } from "../components/ContextMenu";
 import { UniqueInput } from "../components/UniqueInput";
-import { getNode, makeNodeDataSetter, useCurrentDialogue, useAppState } from "../AppState";
+import { getNode, makeNodeDataSetter, useCurrentDialogue, useAppState, useCurrentDocument } from "../AppState";
 import styles from "../TestGraphEditor.module.css"
 import { useDialogueContext } from "../DialogueViewer"
 import playbackStyles from "../DialogueViewer.module.css"
@@ -25,7 +25,7 @@ const FloatingTools = (props: {
 
   const dialogueCtx = useDialogueContext();
   const currentDialogueId = useAppState(s => s.currentDialogueId);
-  const dialogues = useAppState(s => s.document.dialogues);
+  const dialogues = useCurrentDocument(d => d.dialogues);
   const dialogueIndex = Object.keys(dialogues).findIndex(d => d === currentDialogueId);
 
   return (

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { AppState, useAppState } from "./AppState";
+import { AppState, useAppState, useCurrentDocument } from "./AppState";
 import "./shared.global.css";
 import styles from "./GenericEditor.module.css";
 import { Center } from "./Center";
@@ -16,7 +16,8 @@ export function GenericEditor<T extends SupportedKeys>(
   const { singularEntityName, docPropKey, newInitialVal, extraActions, noDrag, onClickEntryName, getTitle, onRename, onAdd, ...divProps } = inProps;
   const props = { singularEntityName, docPropKey, newInitialVal, extraActions, noDrag, onClickEntryName, getTitle, onRename, onAdd };
 
-  const generic = useAppState((s) => s.document[props.docPropKey]);
+  const doc = useCurrentDocument();
+  const generic = doc[props.docPropKey];
   const set = useAppState.setState;
 
   const [keyBeingEdited, setKeyBeingEdited] = React.useState<string>();

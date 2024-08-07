@@ -1,13 +1,13 @@
 import React from "react";
 import styles from "../ParticipantEditor.module.css";
 import { RespGrid } from "./RespGrid";
-import { useAppState } from "../AppState";
+import { useCurrentDocument } from "../AppState";
 import { classNames } from "js-utils/lib/react-utils";
 import { Participant } from "../../common/data-types/participant";
 import { useOnExternalClick } from "@bentley/react-hooks";
 
 export function SelectParticipantWidget(props: SelectParticipantWidget.Props) {
-  const participants = useAppState(s => s.document.participants);
+  const participants = useCurrentDocument(d => d.participants);
 
   const {
     onSelectParticipant: _1,

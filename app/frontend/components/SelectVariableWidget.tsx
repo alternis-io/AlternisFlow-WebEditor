@@ -1,11 +1,11 @@
 import React from "react";
 import { RespGrid } from "./RespGrid";
-import { useAppState } from "../AppState";
+import { useCurrentDocument } from "../AppState";
 import { classNames } from "js-utils/lib/react-utils";
 import { useOnExternalClick } from "@bentley/react-hooks";
 
 export function SelectVariableWidget(props: SelectVariableWidget.Props) {
-  const variables = useAppState(s => s.document.variables);
+  const variables = useCurrentDocument(d => d.variables);
 
   const {
     onSelectVariable: _1,

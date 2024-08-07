@@ -2,7 +2,7 @@ import React, { useCallback, useEffect } from "react";
 import styles from "./ParticipantEditor.module.css";
 import genericEditorStyles from "./GenericEditor.module.css";
 import { ContextMenuOptions } from "./components/ContextMenu";
-import { IconSizes, useAppState } from "./AppState";
+import { IconSizes, useAppState, useCurrentDocument } from "./AppState";
 import { useValidatedInput } from "./hooks/useValidatedInput";
 import { uploadFile } from "./localFileManip";
 import "./shared.global.css";
@@ -24,7 +24,7 @@ export const iconSizes: Record<IconSizes, { label: string }> = {
 } as const;
 
 export function ParticipantEditor() {
-  const participants = useAppState((s) => s.document.participants);
+  const participants = useCurrentDocument((d) => d.participants);
   const editorPrefs = useAppState((s) => s.preferences.participantEditor);
 
   const setIconSize = (val: IconSizes) => useAppState.setState((s) => ({

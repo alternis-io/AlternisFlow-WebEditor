@@ -1,11 +1,16 @@
 import { assert } from "js-utils/lib/browser-utils";
-import { AppState, useAppState, getCurrentDialogue, Dialogue } from "./AppState";
+import { AppState, useAppState, Document } from "./AppState";
 import type { NodeTypes } from "./TestGraphEditor";
 import { DialogueEntry, PlayerReplies, RandomSwitch, Lock, Emit, Goto, BaseNodeData } from "./nodes/data";
 import { Node } from "reactflow";
+import { docs } from "./api/usePouchDbApi";
 
-export function exportToJson() {
-  return exportDocumentToJson(useAppState.getState().document);
+export async function exportToJson() {
+  const docId = useAppState.getState().projectId;
+  if (docId === undefined)
+    throw Error("no project set")
+  const doc = await docs.get<Document>(docId)
+  return exportDocumentToJson(doc);
 }
 
 /** export to the external format */

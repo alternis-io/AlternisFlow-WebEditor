@@ -82,6 +82,7 @@ export type Dialogue = typeof defaultDialogue;
 
 const defaultDialogueId = "My Dialogue"
 
+// FIXME: I think all of this can go in pouchdb...
 export const defaultAppState = {
   preferences: {
     participantEditor: {
@@ -113,42 +114,31 @@ export const defaultAppState = {
     version: "trial" as "trial" | "standard" | "pro",
   },
 
-  // FIXME: this should always be defined
   projectId: undefined as string | undefined,
 
   currentDialogueId: defaultDialogueId,
-
-  // TODO: document should be optional...
-  document: {
-    /** FIXME: must be a number on some backends? */
-    id: "0",
-    updatedAt: new Date().toISOString(),
-    ownerEmail: undefined as string | undefined,
-    name: "New project",
-    dialogues: {
-      [defaultDialogueId]: defaultDialogue,
-    } as {
-      [name: string]: Dialogue;
-    },
-    participants: [] as Participant[],
-    variables: {} as {
-      [name: string]: {
-        type: "string" | "boolean",
-        default: string,
-      },
-    },
-    functions: {} as {
-      [name: string]: {},
-    },
-  },
 };
+
+export interface Document {
+  /** FIXME: must be a number on some backends? */
+  id: string;
+  updatedAt: string;
+  ownerEmail: string | undefined;
+  name: string;
+  dialogues: Record<string, Dialogue>;
+  participants: Participant[],
+  variables: Record<string, {
+    type: "string" | "boolean",
+    default: string,
+  }>;
+  functions: Record<string, {}>,
+}
 
 Object.freeze(defaultAppState);
 
 export type AppState = typeof defaultAppState;
-export type Document = AppState["document"]
 export type DocumentHeader = Pick<Document, "id" | "name" | "updatedAt" | "ownerEmail">;
-export type Variable = AppState["document"]["variables"][string];
+export type Variable = Document["variables"][string];
 
 const appStateKey = "alternis-v1_appState";
 
@@ -171,18 +161,8 @@ const initialState = {
   },
 };
 
-type SettableState<T extends any> = T & {
-  /** @deprecated, just use useAppState.setState */
-  set(
-    cb: (s: T) => DeepPartial<T> | Promise<DeepPartial<T>>,
-  ): void;
-};
-
-export const useAppState = create<SettableState<AppState>>()(
-  temporal((set) => ({
-    ...initialState,
-    set: set as SettableState<AppState>["set"],
-  }),
+export const useAppState = create<AppState>()(
+  temporal(() => ({ ...initialState, }),
 ));
 
 declare global {
@@ -257,7 +237,7 @@ export namespace useCurrentDialogue {
 
 // FIXME: this needs to ignore API based changes!
 export const useTemporalAppState = <T extends any>(
-  selector: (state: TemporalState<SettableState<AppState>>) => T,
+  selector: (state: TemporalState<AppState>) => T,
   equality?: (a: T, b: T) => boolean,
 ) => useStore(useAppState.temporal, selector, equality);
 

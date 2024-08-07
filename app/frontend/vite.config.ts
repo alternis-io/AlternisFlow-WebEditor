@@ -50,6 +50,9 @@ export default defineConfig(({ mode }) => {
     },
     define: {
       "process.env": process.env,
+      // REPORTME: needed for use-pouchdb package which seems to be bundled
+      // expecting node.js global polyfills
+      "global": "globalThis",
     },
     build: {
       minify: mode === "production" && "esbuild",

@@ -11,8 +11,8 @@ import { Document, defaultAppState } from "../AppState";
 import template1 from "../templates/template1.json";
 
 const templates: Record<string, Omit<Document, "id">> = {
+  empty: { ...structuredClone(defaultAppState.document), name: "Empty" },
   template1,
-  empty: structuredClone(defaultAppState.document),
 };
 
 function ProjectTile(props: {

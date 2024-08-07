@@ -55,6 +55,7 @@
     "js-utils": "workspace:^",
     "pouchdb": "^8.0.1",
     "pouchdb-upsert": "^2.2.0",
-    "ts-essentials": "^9.4.1"
+    "ts-essentials": "^9.4.1",
+    "use-pouchdb": "^2.0.2"
   }
 }

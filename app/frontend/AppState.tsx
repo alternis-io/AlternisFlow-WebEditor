@@ -7,6 +7,7 @@ import { TemporalState, temporal } from "zundo";
 import { DeepPartial } from "ts-essentials/dist/deep-partial";
 import { MouseBinding } from "./components/KeyBindingInput" ;
 import { BaseNodeData } from "./nodes/data";
+import { useDoc } from "use-pouchdb";
 
 // FIXME: move out icon data and get type from that list
 export type IconSizes = "small" | "medium" | "large";
@@ -159,11 +160,13 @@ import { assert } from "js-utils/lib/browser-utils.js";
 // FIXME: this codebase confuses hash and search a lot... fix that
 let isLocalDemo = () => window.location.hash.includes("?demo");
 
-const initialState: AppState = {
-  ...structuredClone(defaultAppState),
-  //...maybeLocallyStoredState,
+// FIXME: goes away once document can be undefined
+const initialStateNoDoc: Omit<AppState, "document"> = structuredClone(defaultAppState);
+delete (initialStateNoDoc as any).document;
+
+const initialState = {
+  ...initialStateNoDoc,
   ...isLocalDemo() && {
-    document: template1 as AppState["document"],
     currentDialogueId: Object.keys(template1.dialogues)[0],
   },
 };
@@ -181,6 +184,24 @@ export const useAppState = create<SettableState<AppState>>()(
     set: set as SettableState<AppState>["set"],
   }),
 ));
+
+declare global {
+  var _appState: typeof useAppState;
+}
+
+globalThis._appState = useAppState;
+
+// FIXME: remove document from useAppState state
+export function useCurrentDocument<T>(selector: ((d: Document) => T)): T;
+export function useCurrentDocument(): Document;
+export function useCurrentDocument<T>(selector?: ((d: Document) => T)): T {
+  const id = useAppState(s => s.projectId);
+  // FIXME: oh no
+  if (id === undefined)
+    throw Error("cannot use this hook without a document")
+  const doc = useDoc(id).doc as Document;
+  return typeof selector === "function" ? selector(doc) : doc as T;
+}
 
 export function getCurrentDialogue(s: AppState, opts: { assert: true }): Dialogue;
 export function getCurrentDialogue(s: AppState, opts?: { assert?: boolean }): Dialogue | undefined;
@@ -247,6 +268,7 @@ useAppState.subscribe((state) =>
   localStorage.setItem(appStateKey, JSON.stringify(state))
 );
 
+// FIXME: promote to a project with a name copied from the template
 let promotedLocalDemo = false;
 useAppState.subscribe((state, prev) => {
   const listenedState = (s: typeof state) => [

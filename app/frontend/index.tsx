@@ -9,6 +9,8 @@ import { resetAllAppState, useAppState } from "./AppState";
 import Header from "./components/Header";
 import { LoginState } from "./components/LoginPage";
 import { RedirectIfNotLoggedIn } from "./hooks/useRedirectIfNotLoggedIn";
+import { Provider as PouchDbProvider } from "use-pouchdb";
+import { docs } from "./api/usePouchDbApi";
 
 function ResettingErrorBoundary(props: React.PropsWithChildren<{}>) {
   const error = useRouteError();
@@ -92,6 +94,8 @@ const root = ReactDOM.createRoot(document.querySelector("#react-app")!);
 
 root.render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <PouchDbProvider pouchdb={docs}>
+      <RouterProvider router={router} />
+    </PouchDbProvider>
   </React.StrictMode>,
 );

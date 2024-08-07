@@ -1,7 +1,8 @@
 import React from "react";
 import { Document, DocumentHeader, useAppState } from "../AppState";
-import type { Id, UseApiResult } from ".";
+import type { DocumentList, Id, UseApiResult } from ".";
 import { create } from "zustand";
+import { useAllDocs } from "use-pouchdb";
 
 // REPORTME: types don't allow using this with vite
 // @ts-ignore
@@ -18,11 +19,10 @@ declare global {
   var _pouchdb: PouchDB.Database<{}>;
 }
 
-const docs = new PouchDB("alternis-v1/documents");
-globalThis._pouchdb = docs;
+export const docs = new PouchDB("alternis-v1/documents");
 
-// FIXME: can replace recents with a couchdb query?
-const recentsDocId = "recents" as const;
+globalThis.global = globalThis;
+globalThis._pouchdb = docs;
 
 // FIXME: use sequence
 const getNextInvalidId = () => -Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
@@ -51,9 +51,6 @@ const stable = {
     async deleteDocument(id: Id): Promise<void> {
       const prev = await docs.get(id);
       await docs.remove(prev);
-      usePouchDbStore.setState((prev) => ({
-        documents: prev.documents.filter(d => d._id !== id && !d._deleted),
-      }))
     },
 
     async createDocument(doc: Partial<Document> = {}) {
@@ -87,73 +84,20 @@ const stable = {
   },
 };
 
-interface PouchDbStoreState {
-  documents: DocumentHeader[];
-  documentsInitStarted: boolean;
-}
-
-const usePouchDbStore = create<UseApiResult & PouchDbStoreState>(() => ({
-  documentsInitStarted: false,
-  documents: [] as DocumentHeader[],
-  me: undefined,
-  ...stable,
-}));
-
-let usePouchDbApiCount = 0;
-
 export const usePouchDbApi = <F extends (s: UseApiResult) => any>(
   getter?: F
 ): F extends (s: UseApiResult) => infer R ? R : UseApiResult => {
-  // FIXME: this duplicates the store
-  const documents = usePouchDbStore(s => s.documents);
+  const documents = useAllDocs({
+    include_docs: true,
+  });
 
-  useAsyncEffect(async () => {
-    if (usePouchDbStore.getState().documentsInitStarted)
-      return;
-
-    usePouchDbStore.setState({ documentsInitStarted: true })
-
-    const allDocs = await docs.allDocs<Document>({
-      include_docs: true,
-    });
-
-    usePouchDbStore.setState({
-      documents: allDocs.rows.map(r => r.doc!).filter(d => !d._deleted),
-    });
-  }, []);
-
-  // FIXME: use render effect?
-  React.useLayoutEffect(() => {
-    ++usePouchDbApiCount;
-    if (usePouchDbApiCount !== 1)
-      return;
-
-    docs.changes({ since: "now", include_docs: true, live: true })
-      .on("change", (change) => {
-        // FIXME: shouldn't only the current document be "populated" to prevent excess memory usage?
-        usePouchDbStore.setState(prevState => {
-          const prev = prevState.documents;
-          if (!prev) return prevState;
-          let next = prev.slice();
-          const index = next.findIndex(d => d.id === change.id);
-          const newDoc = change.doc as any as Document;
-          if (index !== -1) next[index] = newDoc;
-          else next.push(newDoc);
-          if (change.deleted) next = next.filter(d => d._id !== change.id);
-          return { ...prevState, documents: next };
-        });
-      })
-      .on("error", (err) => {
-        // FIXME: set react error boundary?
-        console.error(err);
-      });
-
-    return () => {
-      --usePouchDbApiCount;
-    };
-  }, []);
-
-  const state = usePouchDbStore();
+  const state = React.useMemo(() => ({
+    documents: documents.rows
+      .filter(d => !d.doc!._deleted)
+      .map(d => d.doc as DocumentHeader),
+    me: undefined,
+    ...stable
+  }), [documents, stable]);
 
   return typeof getter === "function" ? getter(state) : state;
 };

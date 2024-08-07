@@ -4,6 +4,7 @@ import type { DocumentList, Id, UseApiResult } from ".";
 import { create } from "zustand";
 import { useAllDocs } from "use-pouchdb";
 
+// FIXME: use pouchdb-browser?
 // REPORTME: types don't allow using this with vite
 // @ts-ignore
 import * as _PouchDB from "pouchdb/dist/pouchdb";

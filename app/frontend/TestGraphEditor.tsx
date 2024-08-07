@@ -66,11 +66,10 @@ const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
   //const data = getNode<DialogueEntry>(props.id)?.data;
   const data = props?.data;
   const participants = useCurrentDocument((d) => d.participants);
-  const participant = useAppState((s) =>
-    data?.speakerIndex !== undefined
-    ? s.document.participants[data.speakerIndex]
-    : undefined
-  );
+  const participant
+    = data?.speakerIndex !== undefined
+    ? participants[data.speakerIndex]
+    : undefined;
   const set = makeNodeDataSetter<DialogueEntry>(props.id);
 
   const textInput = React.useRef<HTMLTextAreaElement>(null);

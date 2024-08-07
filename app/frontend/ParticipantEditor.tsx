@@ -10,6 +10,8 @@ import { classNames } from "js-utils/lib/react-utils";
 import { Center } from "./Center";
 import { Participant } from "../common/data-types/participant";
 import defaultParticipantIconUrl from "./images/participant-icon.svg";
+import { docs } from "./api/usePouchDbApi";
+import { useAsyncEffect } from "@bentley/react-hooks";
 
 export const iconSizes: Record<IconSizes, { label: string }> = {
   small: {
@@ -73,11 +75,12 @@ export function ParticipantEditor() {
     return `${newParticipantPrefix} ${nextNum}`;
   }, [participants]);
 
-  useEffect(() => {
+  useAsyncEffect(async () => {
     if (name === null || !selectedName || selectedName === name)
       return;
 
     const prevName = selectedName;
+
     useAppState.setState(s => {
       return {
         preferences: {
@@ -87,17 +90,21 @@ export function ParticipantEditor() {
             lastSelected: name,
           },
         },
-        document: {
-          ...s.document,
-          participants: s.document.participants.map(p =>
-            p.name === prevName
-            ? { ...p, name }
-            : p
-          ),
-        },
       };
-    }
-  );
+    });
+
+    const docId = useAppState.getState().projectId;
+    if (docId === undefined) throw Error("projectId cannot be undefined in the editor");
+    const doc = await docs.get(docId);
+
+    await docs.put({
+      ...doc,
+      participants: doc.participants.map(p =>
+        p.name === prevName
+        ? { ...p, name }
+        : p
+      ),
+    });
 
   }, [name, selectedName]);
 
@@ -114,17 +121,19 @@ export function ParticipantEditor() {
     setNameInput(val);
   };
 
-  const setSelectedPortrait = (participantName: string, portraitUrl: string) => {
-    useAppState.setState((s) => ({
-      document: {
-        ...s.document,
-        participants: s.document.participants.map(p =>
-          p.name === participantName
-          ? { ...p, portraitUrl }
-          : p
-        ),
-      },
-    }));
+  const setSelectedPortrait = async (participantName: string, portraitUrl: string) => {
+    const docId = useAppState.getState().projectId;
+    if (docId === undefined) throw Error("projectId cannot be undefined in the editor");
+    const doc = await docs.get(docId);
+
+    await docs.put({
+      ...doc,
+      participants: doc.participants.map(p =>
+        p.name === participantName
+        ? { ...p, portraitUrl }
+        : p
+      ),
+    });
   };
 
   const details = (
@@ -141,12 +150,16 @@ export function ParticipantEditor() {
           </label>
           <button
             title="Delete this participant"
-            onClick={() => useAppState.setState((s) => ({
-              document: {
-                ...s.document,
-                participants: s.document.participants.filter((p) => p !== selected)
-              }
-            }))}
+            onClick={async () => {
+              const docId = useAppState.getState().projectId;
+              if (docId === undefined) throw Error("projectId cannot be undefined in the editor");
+              const doc = await docs.get(docId);
+
+              await docs.put({
+                ...doc,
+                participants: doc.participants.filter((p) => p !== selected)
+              });
+            }}
           >
             Delete participant
           </button>
@@ -155,7 +168,7 @@ export function ParticipantEditor() {
             &nbsp;
             <button onClick={async () => {
               const file = await uploadFile({ type: 'dataurl' })
-              setSelectedPortrait(selectedName, file.content);
+              await setSelectedPortrait(selectedName, file.content);
             }}>
               Upload new portrait
             </button>
@@ -226,18 +239,20 @@ export function ParticipantEditor() {
           data-tut-inset
           {...classNames(genericEditorStyles.newButton, "alternis__hoverable")}
           style={{ height: "100%" }}
-          onClick={() => {
+          onClick={async () => {
             const newPartipant: Participant = {
               name: getAvailableNewParticipantName(),
               portraitUrl: defaultParticipantIconUrl,
             };
 
-            useAppState.setState((s) => ({
-              document: {
-                ...s.document,
-                participants: s.document.participants.concat(newPartipant),
-              },
-            }));
+            const docId = useAppState.getState().projectId;
+            if (docId === undefined) throw Error("projectId cannot be undefined in the editor");
+
+            const doc = await docs.get(docId);
+            await docs.put({
+              ...doc,
+              participants: doc.participants.concat(newPartipant),
+            });
 
             setSelectedName(newPartipant.name);
           }}

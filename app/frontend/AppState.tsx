@@ -174,7 +174,7 @@ declare global {
 
 globalThis._appState = useAppState;
 
-const emptyDocDialogueKey = "";
+const emptyDocDialogueId = defaultDialogueId;
 
 const emptyDoc = {
   id: "0",
@@ -182,7 +182,7 @@ const emptyDoc = {
   // FIXME: would be nice to not need a current dialogue in case this causes
   // a jitter in the dialogue list
   dialogues: {
-    [emptyDocDialogueKey]: {
+    [emptyDocDialogueId]: {
       nodes: [],
       edges: [],
     },
@@ -194,14 +194,18 @@ const emptyDoc = {
   functions: {}
 } as Document;
 
-Object.freeze(emptyDoc);
+// FIXME: use this because pouchdb api mutates it, but it should mutate it identically
+// so safe for now
+//Object.freeze(emptyDoc);
+
+const failingId = "";
 
 // FIXME: remove document from useAppState state
 export function useCurrentDocument<T>(selector: ((d: Document) => T)): T;
 export function useCurrentDocument(): Document;
 export function useCurrentDocument<T>(selector?: ((d: Document) => T)): T {
-  const id = useAppState(s => s.projectId);
-  const doc = ((id && useDoc(id).doc) ?? structuredClone(emptyDoc)) as Document;
+  const id = useAppState(s => s.projectId) ?? "";
+  const doc = useDoc<Document>(id ?? failingId, undefined, emptyDoc).doc as Document;
   return typeof selector === "function" ? selector(doc) : doc as T;
 }
 
@@ -210,13 +214,11 @@ export function useCurrentDialogue<T>(cb: (s: Dialogue) => T): T;
 export function useCurrentDialogue(): Dialogue;
 // NOTE: funky typescript union of function types
 export function useCurrentDialogue<T>(cb?: ((s: Dialogue) => T)): T {
-  const docId = useAppState(s => s.projectId);
+  const id = useAppState(s => s.projectId);
+  const doc = useDoc<Document>(id ?? failingId, undefined, emptyDoc).doc as Document;
 
-  const realDoc = docId !== undefined ? useDoc<Document>(docId).doc : undefined;
-  const returnedDoc = realDoc ?? emptyDoc;
-  
-  const dialogueId = realDoc ? useAppState(s => s.currentDialogueId) : emptyDocDialogueKey;
-  const dialogue = returnedDoc.dialogues[dialogueId];
+  const dialogueId = useAppState(s => s.currentDialogueId);
+  const dialogue = doc.dialogues[dialogueId];
 
   return cb ? cb(dialogue as Dialogue) : dialogue as T;
 }

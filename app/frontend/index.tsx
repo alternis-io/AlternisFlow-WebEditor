@@ -72,8 +72,8 @@ const router = createBrowserRouter([
       <RedirectIfNotLoggedIn />
       <Header />
       <ProjectSelector
-        onSelectProject={(projectId) => {
-          useAppState.setState({ projectId });
+        onSelectProject={(projectId, currentDialogueId) => {
+          useAppState.setState({ projectId, currentDialogueId });
           router.navigate("/app");
         }}
       />

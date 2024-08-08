@@ -1,9 +1,10 @@
 import React, { useRef, useState } from "react";
 import { useApi } from "../hooks/useApi";
 import { useAsyncEffect, useAsyncInterval, useOnExternalClick } from "@bentley/react-hooks";
-import type { DocumentList } from "dialogue-middleware-app-backend/lib/prisma";
+import type { DocumentList } from "../api";
 import { Center } from "../Center";
 import { classNames } from "js-utils/lib/react-utils";
+import { assert } from "js-utils/lib/browser-utils";
 import * as styles from "./ProjectSelector.module.css";
 import { MoreMenu } from "./ContextMenu";
 import { Document, defaultAppState } from "../AppState";
@@ -16,6 +17,7 @@ const templates: Record<string, Omit<Document, "id">> = {
 };
 
 function ProjectTile(props: {
+  // FIXME: extend type to include entry dialogue?
   doc: DocumentList[number],
   onSelectProject: ProjectSelector.Props["onSelectProject"],
 }) {
@@ -34,7 +36,9 @@ function ProjectTile(props: {
     <div
       key={props.doc.name}
       onClick={() => {
-        props.onSelectProject(props.doc.name);
+        const firstDialogueId = Object.keys(props.doc.dialogues)[0];
+        assert(firstDialogueId !== undefined);
+        props.onSelectProject(props.doc.id, firstDialogueId);
       }}
       {...classNames("alternis__hoverable", styles.projectTile)}
     >
@@ -179,7 +183,7 @@ export function ProjectSelector(props: ProjectSelector.Props) {
 
 namespace ProjectSelector {
   export interface Props {
-    onSelectProject(project: string): void;
+    onSelectProject(project: string, dialogue: string): void;
   }
 }
 

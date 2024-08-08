@@ -281,7 +281,10 @@ if (isLocalDemo()) {
 
   const impl = async () => {
     // if we're in the demo, install the demo document
-    await docs.put(template1);
+    await docs.put({
+      ...template1,
+      _id: template1.id,
+    });
 
     const changes = docs.changes({ since: "now", include_docs: true, live: true })
       .on("change", (change) => {

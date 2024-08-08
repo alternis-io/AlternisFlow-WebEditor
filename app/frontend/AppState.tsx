@@ -174,13 +174,15 @@ declare global {
 
 globalThis._appState = useAppState;
 
-const emptyDoc: Document = {
+const emptyDocDialogueKey = "";
+
+const emptyDoc = {
   id: "0",
   name: "",
   // FIXME: would be nice to not need a current dialogue in case this causes
   // a jitter in the dialogue list
   dialogues: {
-    "": {
+    [emptyDocDialogueKey]: {
       nodes: [],
       edges: [],
     },
@@ -190,7 +192,7 @@ const emptyDoc: Document = {
   participants: [],
   variables: {},
   functions: {}
-};
+} as Document;
 
 Object.freeze(emptyDoc);
 
@@ -199,10 +201,7 @@ export function useCurrentDocument<T>(selector: ((d: Document) => T)): T;
 export function useCurrentDocument(): Document;
 export function useCurrentDocument<T>(selector?: ((d: Document) => T)): T {
   const id = useAppState(s => s.projectId);
-  // FIXME: oh no
-  if (id === undefined)
-    throw Error("cannot use this hook without a document")
-  const doc = (useDoc(id).doc ?? structuredClone(emptyDoc)) as Document;
+  const doc = ((id && useDoc(id).doc) ?? structuredClone(emptyDoc)) as Document;
   return typeof selector === "function" ? selector(doc) : doc as T;
 }
 
@@ -213,13 +212,12 @@ export function useCurrentDialogue(): Dialogue;
 export function useCurrentDialogue<T>(cb?: ((s: Dialogue) => T)): T {
   const docId = useAppState(s => s.projectId);
 
-  if (docId === undefined)
-    throw Error("cannot use this hook without a document")
-
-  let doc = useDoc<Document>(docId).doc;
+  const realDoc = docId !== undefined ? useDoc<Document>(docId).doc : undefined;
+  const returnedDoc = realDoc ?? emptyDoc;
   
-  const dialogueId = useAppState(s => s.currentDialogueId);
-  const dialogue = doc ? doc.dialogues[dialogueId] : structuredClone(emptyDoc.dialogues[""]);;
+  const dialogueId = realDoc ? useAppState(s => s.currentDialogueId) : emptyDocDialogueKey;
+  const dialogue = returnedDoc.dialogues[dialogueId];
+
   return cb ? cb(dialogue as Dialogue) : dialogue as T;
 }
 

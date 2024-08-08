@@ -55,10 +55,6 @@ export function DialogueViewer(props: DialogueViewer.Props) {
   const json = useMemo(
     () => {
       try {
-        // FIXME: should error, but for now this is clogging logs, need a better way
-        // to recognize empty documents
-        if (Object.values(doc.dialogues).some(d => d.nodes.length === 0))
-          return undefined;
         return JSON.stringify(exportDocumentToJson(doc));
       } catch (err) {
         console.error(err);

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef } from "react";
 import { useApi } from "../hooks/useApi";
 import { useAsyncEffect, useAsyncInterval, useOnExternalClick } from "@bentley/react-hooks";
 import type { DocumentList } from "../api";
@@ -7,12 +7,12 @@ import { classNames } from "js-utils/lib/react-utils";
 import { assert } from "js-utils/lib/browser-utils";
 import * as styles from "./ProjectSelector.module.css";
 import { MoreMenu } from "./ContextMenu";
-import { Document, defaultAppState } from "../AppState";
+import { Document, emptyDoc } from "../AppState";
 
 import template1 from "../templates/template1.json";
 
 const templates: Record<string, Omit<Document, "id">> = {
-  empty: { ...structuredClone(defaultAppState.document), name: "Empty" },
+  empty: { ...structuredClone(emptyDoc), name: "Empty" },
   template1,
 };
 

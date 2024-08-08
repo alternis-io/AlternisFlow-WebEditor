@@ -176,14 +176,32 @@ globalThis._appState = useAppState;
 
 const emptyDocDialogueId = defaultDialogueId;
 
-const emptyDoc = {
+export const emptyDoc = {
   id: "0",
   name: "",
   // FIXME: would be nice to not need a current dialogue in case this causes
   // a jitter in the dialogue list
   dialogues: {
     [emptyDocDialogueId]: {
-      nodes: [],
+      nodes: [
+        {
+          id: "1",
+          type: "entry",
+          position: {
+            x: 255,
+            y: 105
+          },
+          data: {},
+          width: 68,
+          height: 41,
+          selected: false,
+          positionAbsolute: {
+            x: 255,
+            y: 105
+          },
+          dragging: false
+        },
+      ],
       edges: [],
     },
   },

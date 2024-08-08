@@ -4,7 +4,6 @@ import { Participant } from "../common/data-types/participant";
 import { deepCloneJson } from "js-utils/lib/react-utils";
 import { create, useStore } from "zustand";
 import { TemporalState, temporal } from "zundo";
-import { DeepPartial } from "ts-essentials/dist/deep-partial";
 import { MouseBinding } from "./components/KeyBindingInput" ;
 import { BaseNodeData } from "./nodes/data";
 import { useDoc } from "use-pouchdb";
@@ -144,11 +143,15 @@ const appStateKey = "alternis-v1_appState";
 
 import _template1 from "./templates/template1.json";
 const template1 = _template1 as Document;
+const demoDocId = _template1.id;
 
 import { assert } from "js-utils/lib/browser-utils.js";
+import { docs } from "./api/usePouchDbApi";
 
 // FIXME: this codebase confuses hash and search a lot... fix that
-let isLocalDemo = () => window.location.hash.includes("?demo");
+let isLocalDemo = () => {
+  return window.location.hash.includes("?demo");
+};
 
 // FIXME: goes away once document can be undefined
 const initialStateNoDoc: Omit<AppState, "document"> = structuredClone(defaultAppState);
@@ -183,6 +186,8 @@ export function useCurrentDocument<T>(selector?: ((d: Document) => T)): T {
   return typeof selector === "function" ? selector(doc) : doc as T;
 }
 
+/*
+ * FIXME: remove
 export function getCurrentDialogue(s: AppState, opts: { assert: true }): Dialogue;
 export function getCurrentDialogue(s: AppState, opts?: { assert?: boolean }): Dialogue | undefined;
 // NOTE: funky typescript union of function types
@@ -194,44 +199,54 @@ export function getCurrentDialogue(s: AppState, opts?: { assert?: boolean }): Di
     throw Error(`Current dialogue '${s.currentDialogueId}' was not defined`);
   return result;
 }
+*/
 
-export function useCurrentDialogue<T>(cb: (s: Dialogue) => T, opts: { assert: true }): T;
-export function useCurrentDialogue<T>(cb: (s: Dialogue | undefined) => T, opts?: { assert?: boolean }): T;
+export function useCurrentDialogue<T>(cb: (s: Dialogue) => T, opts: { assert: true }): T | undefined;
+export function useCurrentDialogue<T>(cb: (s: Dialogue | undefined) => T, opts?: { assert?: boolean }): T | undefined;
 export function useCurrentDialogue(): Dialogue | undefined;
 // NOTE: funky typescript union of function types
-export function useCurrentDialogue<T>(cb?: ((s: Dialogue) => T) | ((s: Dialogue | undefined) => T), opts?: { assert?: boolean }): T {
-  return useAppState((s) => {
-    const currentDialogue = getCurrentDialogue(s, opts);
-    if (cb === undefined) return currentDialogue as T;
-    return (cb as (s: Dialogue | undefined) => T)(currentDialogue);
-  });
+export function useCurrentDialogue<T>(cb?: ((s: Dialogue) => T), opts?: { assert?: boolean }): T | undefined {
+  const docId = useAppState(s => s.projectId);
+  if (docId === undefined)
+    throw Error("cannot use this hook without a document")
+  const doc = useDoc<Document>(docId).doc;
+  if (doc === undefined) return undefined;
+  const dialogueId = useAppState(s => s.currentDialogueId);
+  const dialogue = doc?.dialogues[dialogueId];
+  return cb ? cb(dialogue as Dialogue) : dialogue as T;
 }
 
+// FIXME: remove?
 export namespace useCurrentDialogue {
-  export const setState = (value: Partial<Dialogue> | ((s: Dialogue) => Partial<Dialogue>)) => {
-    useAppState.setState((s) => {
-      if (!s.currentDialogueId) return s;
-      const currentDialogue = s.document.dialogues[s.currentDialogueId];
+  export const setState = async (value: Partial<Dialogue> | ((s: Dialogue) => Partial<Dialogue>)) => {
+    const docId = useAppState.getState().projectId;
+    if (docId === undefined)
+      return;
+    const currentDialogueId = useAppState.getState().currentDialogueId;
+    const doc = await docs.get(docId);
+    if (doc === undefined) return;
+    const currentDialogue = doc.dialogues[currentDialogueId];
 
-      return {
-        document: {
-          ...s.document,
-          dialogues: {
-            ...s.document.dialogues,
-            [s.currentDialogueId]: {
-              ...currentDialogue,
-              ...typeof value === "function" ? value(currentDialogue) : value,
-            },
-          },
+    await docs.put({
+      ...doc,
+      dialogues: {
+        ...doc.dialogues,
+        [currentDialogueId]: {
+          ...currentDialogue,
+          ...typeof value === "function" ? value(currentDialogue) : value,
         },
-      };
+      },
     });
   };
 
-  export const getState = () => {
-    const s = useAppState.getState();
-    if (!s.currentDialogueId) return undefined;
-    return s.document.dialogues[s.currentDialogueId];
+  export const getState = async () => {
+    const docId = useAppState.getState().projectId;
+    if (docId === undefined)
+      throw Error("attempted to useCurrentDialogue.getState without a loaded document");
+    const doc = await docs.get(docId);
+    const currentDialogueId = useAppState.getState().currentDialogueId;
+    const currentDialogue = doc.dialogues[currentDialogueId];
+    return currentDialogue;
   };
 }
 
@@ -243,30 +258,39 @@ export const useTemporalAppState = <T extends any>(
 
 
 // FIXME: replace with "persist" middleware?
-// FIXME: replace with custom middleware for pouchdb?
+// FIXME: replace with pouchdb?
 useAppState.subscribe((state) =>
   localStorage.setItem(appStateKey, JSON.stringify(state))
 );
 
-// FIXME: promote to a project with a name copied from the template
-let promotedLocalDemo = false;
-useAppState.subscribe((state, prev) => {
-  const listenedState = (s: typeof state) => [
-    Object.entries(s.document.dialogues).map(([name, dialogue]) => [
+if (isLocalDemo()) {
+  const listenedState = (doc: Document) => [
+    Object.entries(doc.dialogues).map(([name, dialogue]) => [
       name,
       dialogue.nodes.map(n => [n.id, n.type, n.data]),
       dialogue.edges.map(e => [e.id, e.source, e.target])
     ])
   ];
 
-  const hasChanged = () => JSON.stringify(listenedState(state)) !== JSON.stringify(listenedState(prev));
+  const demoListenedState = JSON.stringify(listenedState(template1));
 
-  if (!promotedLocalDemo && isLocalDemo() && hasChanged()) {
-    window.location.hash = window.location.hash.replace("?demo", "");
-    promotedLocalDemo = true;
-  }
-});
+  const impl = async () => {
+    // if we're in the demo, install the demo document
+    await docs.put(template1);
 
+    const changes = docs.changes({ since: "now", include_docs: true, live: true })
+      .on("change", (change) => {
+        const changedFromDemo = () => JSON.stringify(listenedState(change.doc!)) !== demoListenedState;
+
+        if (change.id === demoDocId && isLocalDemo() && changedFromDemo()) {
+          window.location.hash = window.location.hash.replace("?demo", "");
+          changes.removeAllListeners();
+        }
+      });
+  };
+
+  void impl();
+}
 
 export function resetAllAppState() {
   useAppState.setState(deepCloneJson(defaultAppState));
@@ -279,36 +303,27 @@ export const getNode = <T extends object>(nodeId: string) =>
     { assert: true },
   ) as Node<T> | undefined;
 
-export const makeNodeDataSetter = <T extends BaseNodeData>(nodeId: string) => (value: Partial<T> | ((s: T) => Partial<T>)) => {
-  useAppState.setState((s) => {
-    const currentDialogue = getCurrentDialogue(s, { assert: true });
-    assert(s.currentDialogueId);
-    const nodes = currentDialogue.nodes.slice();
-    const thisNodeIndex = currentDialogue.nodes.findIndex(n => n.id === nodeId);
-    const thisNode = currentDialogue.nodes[thisNodeIndex] as _Node | undefined;
+export const makeNodeDataSetter = <T extends BaseNodeData>(nodeId: string) =>
+  (value: Partial<T> | ((s: T) => Partial<T>)) => {
+    useCurrentDialogue.setState((d) => {
+      const nodes = d.nodes.slice();
+      const thisNodeIndex = d.nodes.findIndex(n => n.id === nodeId);
+      const thisNode = d.nodes[thisNodeIndex] as _Node | undefined;
 
-    if (thisNode === undefined)
-      return s;
+      if (thisNode === undefined)
+        return d;
 
-    nodes[thisNodeIndex] = {
-      ...thisNode,
-      data: {
-        ...thisNode.data,
-        ...typeof value === "function" ? value(thisNode.data as T) : value,
-      },
-    };
-
-    return {
-      document: {
-        ...s.document,
-        dialogues: {
-          ...s.document.dialogues,
-          [s.currentDialogueId]: {
-            ...s.document.dialogues[s.currentDialogueId],
-            nodes,
-          },
+      nodes[thisNodeIndex] = {
+        ...thisNode,
+        data: {
+          ...thisNode.data,
+          ...typeof value === "function" ? value(thisNode.data as T) : value,
         },
-      },
-    };
-  });
-};
+      };
+
+      return {
+        ...d,
+        nodes,
+      };
+    });
+  };

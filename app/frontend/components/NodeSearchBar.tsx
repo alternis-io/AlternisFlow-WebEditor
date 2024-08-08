@@ -1,7 +1,7 @@
 import { useReactFlow } from "reactflow";
 import { PlayerReplies, DialogueEntry } from "../nodes/data";
 import React from "react";
-import { Node, useCurrentDialogue, useAppState } from "../AppState";
+import { Node, useCurrentDialogue } from "../AppState";
 import type { NodeTypes } from "../TestGraphEditor";
 import { useWithPrevDepsEffect } from "../hooks/usePrevValue";
 import { ReactComponent as MagnifyingGlass } from "../images/magnifying-glass.svg";
@@ -40,7 +40,7 @@ export function NodeSearchBar() {
       },
     };
 
-    const currentDialogue = useCurrentDialogue.getState();
+    const currentDialogue = useCurrentDialogue();
     for (const node of currentDialogue?.nodes ?? []) {
       if (node.type === undefined) continue;
       // FIXME: type these strings! (node.type?)

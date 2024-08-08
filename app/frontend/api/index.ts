@@ -1,6 +1,17 @@
 import { Document, DocumentHeader } from "../AppState";
 
-import type * as RemoteTypes from "dialogue-middleware-app-backend/lib/prisma";
+export namespace RemoteTypes {
+  export interface RegisterUserData {
+    username: string;
+    password: string;
+  }
+
+  export interface User {
+    id: string;
+    name: string;
+    email: string;
+  }
+}
 
 export type DocumentList = DocumentHeader[];
 

@@ -8,7 +8,7 @@ import { BaseNode } from "./BaseNode";
 import { Goto } from "./data";
 
 export function GotoNode(props: GotoNode.Props) {
-  const nodes = useCurrentDialogue(s => s.nodes, { assert: true });
+  const nodes = useCurrentDialogue(s => s.nodes);
   const targets = nodes.filter(n => n.data?.label).map(n => n.data?.label) as string[];
   const data = getNode<Goto>(props.id)?.data;
   const set = makeNodeDataSetter<Goto>(props.id);

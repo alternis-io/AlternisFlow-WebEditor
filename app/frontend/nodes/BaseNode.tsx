@@ -16,7 +16,7 @@ const FloatingTools = (props: {
   data: BaseNodeData;
   set: ReturnType<typeof makeNodeDataSetter<BaseNodeData>>
 }) => {
-  const nodes = useCurrentDialogue(s => s.nodes, { assert: true });
+  const nodes = useCurrentDialogue(s => s.nodes);
   const otherLabeledNodes = useMemo(() => nodes.filter((n) => n.data?.label && n.id !== props.id), [nodes]);
   const takenLabels = useMemo(() => otherLabeledNodes.map(n => n.data.label as string), [otherLabeledNodes]);
   const inputRef = React.useRef<HTMLInputElement>(null);

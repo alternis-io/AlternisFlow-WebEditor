@@ -797,8 +797,8 @@ const CustomEdge = (props: EdgeProps) => {
     path={edgePath}
     {...props}
     style={{strokeWidth: 2, ...props.style}}
-    markerWidth={10}
-    markerHeight={10}
+    //markerWidth={10}
+    //markerHeight={10}
     markerStart={MarkerType.ArrowClosed}
     markerEnd={MarkerType.ArrowClosed}
   />;
@@ -1014,8 +1014,8 @@ const TopRightPanel = () => {
 export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
   // FIXME: use correct types
   const graph = useReactFlow<{}, {}>();
-  const nodes = useCurrentDialogue(s => s.nodes, { assert: true });
-  const edges = useCurrentDialogue(s => s.edges, { assert: true });
+  const nodes = useCurrentDialogue(s => s.nodes);
+  const edges = useCurrentDialogue(s => s.edges);
 
   // const dragBoxSelectMouseBinding = useAppState(s => s.preferences.graph.dragBoxSelectMouseBinding);
   const appendToSelectModifier = useAppState(s => s.preferences.graph.appendToSelectModifier);

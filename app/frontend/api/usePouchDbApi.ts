@@ -88,14 +88,14 @@ const stable = {
 export const usePouchDbApi = <F extends (s: UseApiResult) => any>(
   getter?: F
 ): F extends (s: UseApiResult) => infer R ? R : UseApiResult => {
-  const documents = useAllDocs({
+  const documents = useAllDocs<Document>({
     include_docs: true,
   });
 
   const state = React.useMemo(() => ({
     documents: documents.rows
       .filter(d => !d.doc!._deleted)
-      .map(d => d.doc as DocumentHeader),
+      .map(d => d.doc! as DocumentHeader),
     me: undefined,
     ...stable
   }), [documents, stable]);

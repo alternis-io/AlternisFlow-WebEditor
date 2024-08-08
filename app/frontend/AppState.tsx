@@ -142,7 +142,7 @@ export type Variable = Document["variables"][string];
 const appStateKey = "alternis-v1_appState";
 
 import _template1 from "./templates/template1.json";
-const template1 = _template1 as Document;
+const template1 = _template1 as any as Document;
 const demoDocId = _template1.id;
 
 import { assert } from "js-utils/lib/browser-utils.js";
@@ -174,6 +174,26 @@ declare global {
 
 globalThis._appState = useAppState;
 
+const emptyDoc: Document = {
+  id: "0",
+  name: "",
+  // FIXME: would be nice to not need a current dialogue in case this causes
+  // a jitter in the dialogue list
+  dialogues: {
+    "": {
+      nodes: [],
+      edges: [],
+    },
+  },
+  updatedAt: new Date().toISOString(),
+  ownerEmail: undefined,
+  participants: [],
+  variables: {},
+  functions: {}
+};
+
+Object.freeze(emptyDoc);
+
 // FIXME: remove document from useAppState state
 export function useCurrentDocument<T>(selector: ((d: Document) => T)): T;
 export function useCurrentDocument(): Document;
@@ -182,37 +202,24 @@ export function useCurrentDocument<T>(selector?: ((d: Document) => T)): T {
   // FIXME: oh no
   if (id === undefined)
     throw Error("cannot use this hook without a document")
-  const doc = useDoc(id).doc as Document;
+  const doc = (useDoc(id).doc ?? structuredClone(emptyDoc)) as Document;
   return typeof selector === "function" ? selector(doc) : doc as T;
 }
 
-/*
- * FIXME: remove
-export function getCurrentDialogue(s: AppState, opts: { assert: true }): Dialogue;
-export function getCurrentDialogue(s: AppState, opts?: { assert?: boolean }): Dialogue | undefined;
+export function useCurrentDialogue<T>(cb: (s: Dialogue) => T): T;
+export function useCurrentDialogue<T>(cb: (s: Dialogue) => T): T;
+export function useCurrentDialogue(): Dialogue;
 // NOTE: funky typescript union of function types
-export function getCurrentDialogue(s: AppState, opts?: { assert?: boolean }): Dialogue | undefined {
-  const result = s.currentDialogueId === undefined
-    ? undefined
-    : s.document.dialogues[s.currentDialogueId];
-  if (opts?.assert && result === undefined)
-    throw Error(`Current dialogue '${s.currentDialogueId}' was not defined`);
-  return result;
-}
-*/
-
-export function useCurrentDialogue<T>(cb: (s: Dialogue) => T, opts: { assert: true }): T | undefined;
-export function useCurrentDialogue<T>(cb: (s: Dialogue | undefined) => T, opts?: { assert?: boolean }): T | undefined;
-export function useCurrentDialogue(): Dialogue | undefined;
-// NOTE: funky typescript union of function types
-export function useCurrentDialogue<T>(cb?: ((s: Dialogue) => T), opts?: { assert?: boolean }): T | undefined {
+export function useCurrentDialogue<T>(cb?: ((s: Dialogue) => T)): T {
   const docId = useAppState(s => s.projectId);
+
   if (docId === undefined)
     throw Error("cannot use this hook without a document")
-  const doc = useDoc<Document>(docId).doc;
-  if (doc === undefined) return undefined;
+
+  let doc = useDoc<Document>(docId).doc;
+  
   const dialogueId = useAppState(s => s.currentDialogueId);
-  const dialogue = doc?.dialogues[dialogueId];
+  const dialogue = doc ? doc.dialogues[dialogueId] : structuredClone(emptyDoc.dialogues[""]);;
   return cb ? cb(dialogue as Dialogue) : dialogue as T;
 }
 
@@ -300,7 +307,6 @@ export function resetAllAppState() {
 export const getNode = <T extends object>(nodeId: string) =>
   useCurrentDialogue(s =>
     s.nodes.find(n => n.id === nodeId),
-    { assert: true },
   ) as Node<T> | undefined;
 
 export const makeNodeDataSetter = <T extends BaseNodeData>(nodeId: string) =>

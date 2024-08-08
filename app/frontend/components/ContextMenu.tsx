@@ -160,12 +160,16 @@ export const Options = React.forwardRef<
 );
 
 export function ContextMenuOptions(props: ContextMenuOptions.Props) {
-  const { options, autoCloseDelay, mouseBinding,  onHide, forceEventKey, ...divProps } = props;
+  const { options, autoCloseDelay, mouseBinding,  onHide, forceEventKey, ref: _ref, ...divProps } = props;
   const baseProps: ContextMenu.BaseProps = { autoCloseDelay, mouseBinding, onHide, forceEventKey };
   const ctxMenuRef = useRef<ContextMenu.Ref>(null);
   return (
     <ContextMenu ref={ctxMenuRef} {...baseProps}>
-      <Options onAfterSelect={() => ctxMenuRef.current?.hide()} options={options} {...divProps} />
+      <Options
+        onAfterSelect={() => ctxMenuRef.current?.hide()}
+        options={options}
+        {...divProps}
+      />
     </ContextMenu>
   );
 }

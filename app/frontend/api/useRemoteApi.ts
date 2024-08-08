@@ -41,7 +41,7 @@ export interface UseApiResult {
     logout: () => Promise<void>;
     syncMe(): Promise<void>;
     syncMyRecentDocuments(): Promise<void>;
-    getDocument(id: string): Promise<AppState["document"]>;
+    getDocument(id: string): Promise<Document>;
     updateDocumentMeta(id: number, patch: Partial<Document>): Promise<void>;
     patchDocument(id: number, prev: AppState, next: AppState): Promise<void>;
     deleteDocument(id: number): Promise<void>;
@@ -197,7 +197,7 @@ const useLocalApiState = create<ApiState>()((set, get) => ({
       set({ documents });
     },
 
-    async getDocument(id: string): Promise<AppState["document"]> {
+    async getDocument(id: string): Promise<Document> {
       return get()._apiFetch(`/users/me/documents/${id}`).then((r) => r.json());
     },
 

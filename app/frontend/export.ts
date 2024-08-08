@@ -14,7 +14,7 @@ export async function exportToJson() {
 }
 
 /** export to the external format */
-export function exportDocumentToJson(doc: AppState["document"]) {
+export function exportDocumentToJson(doc: Document) {
   const dialogues = Object.fromEntries(Object.entries(doc.dialogues).map(([dialogueName, dialogue]) => {
     const nodes: any[] = [];
 

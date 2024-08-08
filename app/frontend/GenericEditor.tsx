@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
-import { AppState, useAppState, useCurrentDocument } from "./AppState";
+import { Document, useAppState, useCurrentDocument } from "./AppState";
 import "./shared.global.css";
 import styles from "./GenericEditor.module.css";
 import { Center } from "./Center";
 import { classNames } from "js-utils/lib/react-utils";
 import { Split } from "./Split";
+import { docs } from "./api/usePouchDbApi";
 
 // all keys that are a simple record
 type SupportedKeys = "variables" | "functions" | "dialogues";
@@ -27,55 +28,59 @@ export function GenericEditor<T extends SupportedKeys>(
     ? props.newInitialVal()
     : props.newInitialVal;
 
-  const setGeneric = React.useCallback((
+  const setGeneric = React.useCallback(async (
     name: string,
-    value: Partial<AppState["document"][T][string]>,
-  ) => set(s => ({
-    document: {
-      ...s.document,
+    value: Partial<Document[T][string]>,
+  ) => {
+    const docId = useAppState.getState().projectId;
+    if (docId === undefined) throw Error("projectId cannot be undefined in the editor");
+    const doc = await docs.get(docId);
+    await docs.put({
+      ...doc,
       [props.docPropKey]: {
-        ...s.document[props.docPropKey],
+        ...doc[props.docPropKey],
         [name]: {
-          ...s.document[props.docPropKey][name],
+          ...doc[props.docPropKey][name],
           ...value,
         },
       },
-    },
-  })), [props.docPropKey]);
+    });
+  }, [props.docPropKey]);
 
   const addGeneric = React.useCallback(
     (name: string) => setGeneric(name, defaultSetGenericValue),
     [setGeneric, defaultSetGenericValue],
   );
 
-  const replaceGeneric = React.useCallback((
+  const replaceGeneric = React.useCallback(async (
     oldName: string,
     newName: string,
-  ) => set(s => {
-    const result = {
-      document: {
-        ...s.document,
+  ) => {
+    const docId = useAppState.getState().projectId;
+    if (docId === undefined) throw Error("projectId cannot be undefined in the editor");
+    const doc = await docs.get(docId);
+    await docs.put({
+      ...doc,
+      [props.docPropKey]: {
         [props.docPropKey]: {
-          ...s.document[props.docPropKey],
-          [newName]: s.document[props.docPropKey][oldName],
+          ...doc[props.docPropKey],
+          [newName]: doc[props.docPropKey][oldName],
         },
       },
-    };
-    if (oldName !== newName)
-      delete result.document.dialogues[oldName];
-    return result;
-  }), [props.docPropKey]);
+    });
+  }, [props.docPropKey]);
 
-  const deleteGeneric = React.useCallback((name: string) => set(s => {
-    const generic = { ...s.document[props.docPropKey] };
+  const deleteGeneric = React.useCallback(async (name: string) => {
+    const docId = useAppState.getState().projectId;
+    if (docId === undefined) throw Error("projectId cannot be undefined in the editor");
+    const doc = await docs.get(docId);
+    const generic = { ...doc[props.docPropKey] };
     delete generic[name];
-    return {
-      document: {
-        ...s.document,
-        [props.docPropKey]: generic,
-      },
-    };
-  }), [props.docPropKey]);
+    await docs.put({
+      ...doc,
+      [props.docPropKey]: generic,
+    });
+  }, [props.docPropKey]);
 
   const proposedNameInputRef = useRef<HTMLDivElement>(null);
 
@@ -86,12 +91,12 @@ export function GenericEditor<T extends SupportedKeys>(
     }
   }, [proposedName]);
 
-  const finishProposedGeneric = (value: string) => {
+  const finishProposedGeneric = async (value: string) => {
     if (keyBeingEdited !== undefined) {
-      replaceGeneric(keyBeingEdited, value)
+      await replaceGeneric(keyBeingEdited, value)
       setKeyBeingEdited(undefined);
     } else {
-      addGeneric(value);
+      await addGeneric(value);
       props.onAdd?.(value);
     }
     setProposedName(undefined);
@@ -106,7 +111,7 @@ export function GenericEditor<T extends SupportedKeys>(
         display: "flex",
         flexDirection: "column",
         gap: "11px",
-        ...props.style,
+        ...divProps.style,
       }}
     >
       {Object.entries(generic)
@@ -146,13 +151,13 @@ export function GenericEditor<T extends SupportedKeys>(
             <div style={{ display: "flex", flexDirection: "row", justifyContent: "flex-end", gap: "3px" }}>
               <ExtraActions
                 data={data as any}
-                set={(d: Partial<AppState["document"][T][string]>) => setGeneric(name, d)}
+                set={(d: Partial<Document[T][string]>) => setGeneric(name, d)}
               />
               <Center
                 className="alternis__hoverable alternis__hoverable-red"
                 title={`Delete this ${props.singularEntityName}`}
-                onClick={() => {
-                  deleteGeneric(name);
+                onClick={async () => {
+                  await deleteGeneric(name);
                 }}
               >
                 <strong>&times;</strong>
@@ -176,9 +181,9 @@ export function GenericEditor<T extends SupportedKeys>(
             }}
             ref={proposedNameInputRef}
             // FIXME: just don't finalize if invalid
-            onBlur={(e) => {
+            onBlur={async (e) => {
               const value = e.currentTarget.innerText.trim();
-              finishProposedGeneric(value || "invalid name")
+              await finishProposedGeneric(value || "invalid name")
               if (keyBeingEdited) {
                 props.onRename?.(keyBeingEdited, value);
               }
@@ -204,11 +209,11 @@ export namespace GenericEditor {
   export interface Props<T extends SupportedKeys> extends React.HTMLProps<HTMLDivElement> {
     singularEntityName: string;
     docPropKey: T;
-    newInitialVal: AppState["document"][T][string] | (() => AppState["document"][T][string]);
+    newInitialVal: Document[T][string] | (() => Document[T][string]);
     // FIXME: use correct react type that supports all possible components impls
     extraActions?: React.FunctionComponent<{
-      data: AppState["document"][T][string];
-      set: (data: Partial<AppState["document"][T][string]>) => void;
+      data: Document[T][string];
+      set: (data: Partial<Document[T][string]>) => void;
     }>;
     noDrag?: boolean;
     onClickEntryName?(key: string, t: T, e: React.MouseEvent<HTMLSpanElement>): void;

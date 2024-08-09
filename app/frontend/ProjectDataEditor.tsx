@@ -99,9 +99,12 @@ const dataPanes = {
         docPropKey="dialogues"
         noDrag
         onClickEntryName={(key) => useAppState.setState({ currentDialogueId: key })}
-        onRename={(_oldName, newName) => useAppState.setState({
-          currentDialogueId: newName
-        })}
+        onRename={(_oldName, newName) => {
+          // FIXME: this is out of sync with the pouchdb update...
+          useAppState.setState({
+            currentDialogueId: newName,
+          });
+        }}
         data-tut-id="dialogues-content"
         onAdd={(key) => useAppState.setState({ currentDialogueId: key })}
       />

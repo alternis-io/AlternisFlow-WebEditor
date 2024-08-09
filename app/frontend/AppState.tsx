@@ -157,12 +157,23 @@ let isLocalDemo = () => {
 const initialStateNoDoc: Omit<AppState, "document"> = structuredClone(defaultAppState);
 delete (initialStateNoDoc as any).document;
 
-const initialState = {
-  ...initialStateNoDoc,
-  ...isLocalDemo() && {
-    currentDialogueId: Object.keys(template1.dialogues)[0],
-  },
-};
+const initialState: AppState = (() => {
+  let maybeLocallyStoredState: AppState | undefined;
+
+  try {
+    const localState = localStorage.getItem(appStateKey);
+    if (localState !== null)
+      maybeLocallyStoredState = JSON.parse(localState);
+  } catch {}
+
+  return {
+    ...initialStateNoDoc,
+    ...maybeLocallyStoredState,
+    ...isLocalDemo() && {
+      currentDialogueId: Object.keys(template1.dialogues)[0],
+    },
+  };
+})();
 
 export const useAppState = create<AppState>()(
   temporal(() => ({ ...initialState, }),
@@ -254,8 +265,8 @@ export namespace useCurrentDialogue {
     if (doc === undefined) return;
     const currentDialogue = doc.dialogues[currentDialogueId];
 
-    await docs.put({
-      ...doc,
+    await docs.upsert(doc._id, (doc) => ({
+      ...doc as Document,
       dialogues: {
         ...doc.dialogues,
         [currentDialogueId]: {
@@ -263,7 +274,7 @@ export namespace useCurrentDialogue {
           ...typeof value === "function" ? value(currentDialogue) : value,
         },
       },
-    });
+    }));
   };
 
   export const getState = async () => {
@@ -303,9 +314,14 @@ if (isLocalDemo()) {
 
   const impl = async () => {
     // if we're in the demo, install the demo document
-    await docs.put({
+    await docs.putIfNotExists({
       ...template1,
-      _id: template1.id,
+      _id: "hidden/demo1",
+    });
+
+    useAppState.setState({
+      projectId: "hidden/demo1",
+      currentDialogueId: Object.keys(template1.dialogues)[0],
     });
 
     const changes = docs.changes({ since: "now", include_docs: true, live: true })

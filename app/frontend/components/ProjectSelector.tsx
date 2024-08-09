@@ -1,13 +1,14 @@
 import React, { useRef } from "react";
 import { useApi } from "../hooks/useApi";
 import { useAsyncEffect, useAsyncInterval, useOnExternalClick } from "@bentley/react-hooks";
-import type { DocumentList } from "../api";
+import type { DocumentList, UseApiResult } from "../api";
 import { Center } from "../Center";
 import { classNames } from "js-utils/lib/react-utils";
 import { assert } from "js-utils/lib/browser-utils";
 import * as styles from "./ProjectSelector.module.css";
 import { MoreMenu } from "./ContextMenu";
 import { Document, emptyDoc } from "../AppState";
+import { useShallow } from "zustand/react/shallow";
 
 import template1 from "../templates/template1.json";
 
@@ -97,21 +98,12 @@ function ProjectTile(props: {
 }
 
 export function ProjectSelector(props: ProjectSelector.Props) {
-  const documents = useApi(s => s.documents);
-  const syncMyRecentDocuments = useApi(s => s.api.syncMyRecentDocuments);
+  const documents = useApi(useShallow(
+    (s: UseApiResult) => s.documents?.filter(d => !d.id.startsWith("hidden/"))
+  ));
   const createDocument = useApi(s => s.api.createDocument);
   const duplicateDocument = useApi(s => s.api.duplicateDocument);
   const [createDocDialogShown, setCreateDocDialogShown] = React.useState(false);
-
-  // FIXME: add run immediately to useAsyncInterval?
-  useAsyncEffect(async () => {
-    await syncMyRecentDocuments();
-  }, []);
-
-  const _10min = 10 * 60 * 1000;
-  useAsyncInterval(async () => {
-    await syncMyRecentDocuments();
-  }, _10min);
 
   const dialogRef = useRef<HTMLDialogElement>(null);
   useOnExternalClick(dialogRef, () => setCreateDocDialogShown(false));

@@ -944,7 +944,7 @@ const ToolsPanel = () => {
 
       {/* FIXME: need a better breadcrumb design with the document name in the header or something */}
       <div style={{ marginLeft: "var(--gap)" }}>
-        <em>
+        <em title="Name of the currently viewed dialogue within this project">
           {currentDialogueId}
         </em>
       </div>

@@ -249,7 +249,12 @@ export function useCurrentDialogue<T>(cb?: ((s: Dialogue) => T)): T {
   const docWasEmpty = doc === emptyDoc;
   const currentDialogueId = useAppState(s => s.currentDialogueId);
   const dialogueId = docWasEmpty ? emptyDocDialogueId : currentDialogueId;
-  const dialogue = doc.dialogues[dialogueId];
+  // FIXME: when adding a new dialogue, even though we (asynchronously) put the new dialogue
+  // right before changing the app state to consider it the current dialogue, the changes
+  // listener doesn't seem to pick up the new dialogue yet so we may temporarily
+  // request a dialogue that isn't seen in the state yet. In that case, just return an
+  // empty dialogue
+  const dialogue = doc.dialogues[dialogueId] ?? emptyDoc.dialogues[emptyDocDialogueId];
 
   return cb ? cb(dialogue as Dialogue) : dialogue as T;
 }

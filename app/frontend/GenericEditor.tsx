@@ -93,7 +93,7 @@ export function GenericEditor<T extends SupportedKeys>(
 
   const finishProposedGeneric = async (value: string) => {
     if (keyBeingEdited !== undefined) {
-      await replaceGeneric(keyBeingEdited, value)
+      await replaceGeneric(keyBeingEdited, value);
       setKeyBeingEdited(undefined);
     } else {
       await addGeneric(value);

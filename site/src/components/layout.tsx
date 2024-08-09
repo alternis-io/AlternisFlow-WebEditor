@@ -7,10 +7,12 @@ import * as styles from "./layout.module.scss"
 
 interface LayoutProps {
   pageTitle: string
+  pageDesc: string
 }
 
 const Layout = ({
   pageTitle,
+  pageDesc,
   children,
 }: React.PropsWithChildren<LayoutProps>) => {
   const data = useStaticQuery(graphql`
@@ -26,7 +28,7 @@ const Layout = ({
   return (
     <div>
       <Header siteTitle={data.site.siteMetadata.title} />
-      <SEO title={pageTitle} />
+      <SEO title={pageTitle} description={pageDesc} />
       <div className={styles.pageWrapper}>
         <main>{children}</main>
       </div>

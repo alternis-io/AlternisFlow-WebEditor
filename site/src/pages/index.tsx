@@ -8,6 +8,11 @@ import html5LogoUrl from "../images/HTML5_Logo.svg";
 import { MailLink } from '../components/MailLink';
 import { useOnNoLongerMouseInteracted } from "js-utils/lib/react-utils";
 
+const desc = `
+Alternis is an experimental dialogue editor
+and open source dialogue middleware that
+fits on the web or in any game engine portably.`;
+
 const Homepage = () => {
   const [iframeInteractable, setIframeInteractable] = React.useState(false);
   const mouseInteract = useOnNoLongerMouseInteracted({
@@ -16,13 +21,9 @@ const Homepage = () => {
   });
 
   return (
-    <Layout pageTitle="Home">
+    <Layout pageTitle="Home" pageDesc={desc}>
       <p style={{ fontSize: "18pt", textAlign: "center", }}>
-        <strong>
-        Alternis is an experimental dialogue editor
-        and open source dialogue middleware that
-        fits on the web or in any game engine portably.
-        </strong>
+        <strong>{desc}</strong>
       </p>
 
       <div

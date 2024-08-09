@@ -307,6 +307,8 @@ export function Tutorial1() {
 
   return tutorialState.tutorialOpen
     ? <Tutorial
+        open={tutorialState.tutorialOpen}
+        setOpen={s => useTutorialStore.setState({ tutorialOpen: s })}
         data={tutorial1Data}
         onClose={() => { localStorage.setItem(hasSeenTutKey, "true"); }}
       />

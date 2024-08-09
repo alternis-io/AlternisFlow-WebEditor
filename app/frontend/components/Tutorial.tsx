@@ -26,6 +26,8 @@ export namespace Tutorial {
     data: TutorialData;
     highlightClass?: string;
     onClose?(): void;
+    open: boolean,
+    setOpen: (s: boolean) => void;
   }
 }
 
@@ -34,7 +36,7 @@ export function Tutorial(props: Tutorial.Props) {
 
   const highlightClass = props.highlightClass ?? "alternis__tutorial-highlighted";
 
-  const [open, setOpen] = useState(true);
+  const { open, setOpen } = props;
   const [stepIndex, setStepIndex] = useState(0);
   const step = props.data.steps[stepIndex];
 

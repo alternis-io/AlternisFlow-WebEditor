@@ -103,6 +103,11 @@ export function GenericEditor<T extends SupportedKeys>(
 
   const ExtraActions = props.extraActions ?? React.useRef((_p: any) => null).current;
 
+  React.useLayoutEffect(() => {
+    if (proposedNameInputRef.current && proposedName !== undefined)
+      proposedNameInputRef.current.textContent = proposedName;
+  }, [proposedName]);
+
   return (
     <div
       {...divProps}
@@ -187,9 +192,7 @@ export function GenericEditor<T extends SupportedKeys>(
                 props.onRename?.(keyBeingEdited, value);
               }
             }}
-          >
-            {proposedName}
-          </div>
+          />
         </div>
       : <div
           data-tut-id="generic-proj-data-add-button"

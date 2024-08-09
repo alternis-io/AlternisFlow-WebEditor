@@ -19,7 +19,6 @@ export function GenericEditor<T extends SupportedKeys>(
 
   const doc = useCurrentDocument();
   const generic = doc[props.docPropKey];
-  const set = useAppState.setState;
 
   const [keyBeingEdited, setKeyBeingEdited] = React.useState<string>();
   const [proposedName, setProposedName] = useState<string>();
@@ -59,13 +58,13 @@ export function GenericEditor<T extends SupportedKeys>(
     const docId = useAppState.getState().projectId;
     if (docId === undefined) throw Error("projectId cannot be undefined in the editor");
     const doc = await docs.get(docId);
+    const old = doc[props.docPropKey][oldName];
+    delete doc[props.docPropKey][oldName];
     await docs.put({
       ...doc,
       [props.docPropKey]: {
-        [props.docPropKey]: {
-          ...doc[props.docPropKey],
-          [newName]: doc[props.docPropKey][oldName],
-        },
+        ...doc[props.docPropKey],
+        [newName]: old,
       },
     });
   }, [props.docPropKey]);

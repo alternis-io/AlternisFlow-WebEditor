@@ -150,7 +150,7 @@ import { docs } from "./api/usePouchDbApi";
 
 // FIXME: this codebase confuses hash and search a lot... fix that
 let isLocalDemo = () => {
-  return window.location.hash.includes("?demo");
+  return window.location.hash.includes("demo") || window.location.search.includes("demo");
 };
 
 // FIXME: goes away once document can be undefined
@@ -334,7 +334,8 @@ if (isLocalDemo()) {
         const changedFromDemo = () => JSON.stringify(listenedState(change.doc!)) !== demoListenedState;
 
         if (change.id === demoDocId && isLocalDemo() && changedFromDemo()) {
-          window.location.hash = window.location.hash.replace("?demo", "");
+          window.location.hash = window.location.hash.replace("demo", "");
+          window.location.search = window.location.search.replace("demo", "");
           changes.removeAllListeners();
         }
       });

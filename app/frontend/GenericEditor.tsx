@@ -14,8 +14,8 @@ export function GenericEditor<T extends SupportedKeys>(
   inProps: GenericEditor.Props<T>
 ) {
   // FIXME: must be in sync with props interface
-  const { singularEntityName, docPropKey, newInitialVal, extraActions, noDrag, onClickEntryName, getTitle, onRename, onAdd, ...divProps } = inProps;
-  const props = { singularEntityName, docPropKey, newInitialVal, extraActions, noDrag, onClickEntryName, getTitle, onRename, onAdd };
+  const { singularEntityName, docPropKey, newInitialVal, extraActions, noDrag, onClickEntryName, getTitle, onRename, onAdd, disallowDeleteLast, ...divProps } = inProps;
+  const props = { singularEntityName, docPropKey, newInitialVal, extraActions, noDrag, onClickEntryName, getTitle, onRename, onAdd, disallowDeleteLast };
 
   const doc = useCurrentDocument();
   const generic = doc[props.docPropKey];
@@ -108,6 +108,8 @@ export function GenericEditor<T extends SupportedKeys>(
       proposedNameInputRef.current.textContent = proposedName;
   }, [proposedName]);
 
+  const entries = Object.entries(generic);
+
   return (
     <div
       {...divProps}
@@ -118,7 +120,7 @@ export function GenericEditor<T extends SupportedKeys>(
         ...divProps.style,
       }}
     >
-      {Object.entries(generic)
+      {entries
       .filter(([name]) => name !== keyBeingEdited)
       .map(([name, data]) => (
         <Split
@@ -151,22 +153,26 @@ export function GenericEditor<T extends SupportedKeys>(
               {name}
             </span>
           }
-          right = {
-            <div style={{ display: "flex", flexDirection: "row", justifyContent: "flex-end", gap: "3px" }}>
-              <ExtraActions
-                data={data as any}
-                set={(d: Partial<Document[T][string]>) => setGeneric(name, d)}
-              />
-              <Center
-                className="alternis__hoverable alternis__hoverable-red"
-                title={`Delete this ${props.singularEntityName}`}
-                onClick={async () => {
-                  await deleteGeneric(name);
-                }}
-              >
-                <strong>&times;</strong>
-              </Center>
-            </div>
+          right={
+            !props.disallowDeleteLast || entries.length > 1
+              ? (
+                <div style={{ display: "flex", flexDirection: "row", justifyContent: "flex-end", gap: "3px" }}>
+                  <ExtraActions
+                    data={data as any}
+                    set={(d: Partial<Document[T][string]>) => setGeneric(name, d)}
+                  />
+                  <Center
+                    className="alternis__hoverable alternis__hoverable-red"
+                    title={`Delete this ${props.singularEntityName}`}
+                    onClick={async () => {
+                      await deleteGeneric(name);
+                    }}
+                  >
+                    <strong>&times;</strong>
+                  </Center>
+                </div>
+              )
+              : <span/>
           }
         />
       ))}
@@ -217,6 +223,7 @@ export namespace GenericEditor {
       data: Document[T][string];
       set: (data: Partial<Document[T][string]>) => void;
     }>;
+    disallowDeleteLast?: boolean;
     noDrag?: boolean;
     onClickEntryName?(key: string, t: T, e: React.MouseEvent<HTMLSpanElement>): void;
     getTitle?(key: string, t: T): string;

@@ -98,6 +98,7 @@ const dataPanes = {
         singularEntityName="dialogue"
         docPropKey="dialogues"
         noDrag
+        disallowDeleteLast={true}
         onClickEntryName={(key) => useAppState.setState({ currentDialogueId: key })}
         onRename={(_oldName, newName) => {
           // FIXME: this is out of sync with the pouchdb update...

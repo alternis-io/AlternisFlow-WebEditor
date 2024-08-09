@@ -1,17 +1,13 @@
 import React from "react";
 import { Document, DocumentHeader } from "../AppState";
-import type { DocumentList, Id, UseApiResult } from ".";
-import { create } from "zustand";
+import type { Id, UseApiResult } from ".";
 import { useAllDocs } from "use-pouchdb";
 
 // FIXME: use pouchdb-browser?
 // REPORTME: types don't allow using this with vite
+import PouchDB from "pouchdb-browser";
 // @ts-ignore
-import * as _PouchDB from "pouchdb/dist/pouchdb";
-const PouchDB = _PouchDB as typeof import("pouchdb");
-// @ts-ignore
-import * as _PouchDBUpsert from "pouchdb-upsert/dist/pouchdb.upsert";
-import { useAsyncEffect } from "@bentley/react-hooks";
+import _PouchDBUpsert from "pouchdb-upsert/dist/pouchdb.upsert";
 const PouchDBUpsert = _PouchDBUpsert as typeof import("pouchdb-upsert");
 
 PouchDB.plugin(PouchDBUpsert);

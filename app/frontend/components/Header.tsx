@@ -75,8 +75,8 @@ export function Header() {
         Open source at <a href="https://github.com/alternis-io/DialogueMiddleware">Github</a>.
       </p>
       <p>
-        Check out the tutorial in the header for help but feel free to use the feedback link or contact
-        the author.
+        Check out the tutorial in the header for help but feel free to use the feedback link
+        or <a href="mailto:support@alternis.io">contact the author</a>.
       </p>
       <p>
         Made by <a href="https://mikemikeb.com">Michael Belousov</a>

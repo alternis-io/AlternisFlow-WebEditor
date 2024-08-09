@@ -295,7 +295,7 @@ const tutorial1Data: TutorialData = {
         <p>
           {/* FIXME: need a forum so people won't just say the same thing someone else has said */}
           Please contact <a href="mailto:support@alternis.io">support@alternis.io</a> if you
-          encounter any issues!
+          encounter any issues or want a feature!
         </p>
       </div>,
     },

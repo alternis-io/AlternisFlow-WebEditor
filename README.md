@@ -14,9 +14,10 @@ local-first (and today is actually local-only).
 
 Please submit an issue or PR with feature requests.
 
-## Intended future changes
+## TODO
 
 - There is a need for compound boolean conditions when gating replies.
   Either gate nodes should be introduced with boolean operation nodes, or
   a separate editor for conditions may need to be introduced which opens when
   editing a gate.
+- better data management like exporting all projects at once

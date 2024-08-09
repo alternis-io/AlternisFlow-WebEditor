@@ -20,7 +20,7 @@ export default function(props: any) {
   )
 
   return (
-    <Layout pageTitle="Blog">
+    <Layout pageTitle="Blog" pageDesc="The devblog for alternis">
       {Array.from(perYear.entries(), ([year, edges]) => (
         <div key={year}>
           {year}

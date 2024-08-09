@@ -7,7 +7,7 @@ import { classNames } from 'js-utils/lib/react-utils';
 
 const Homepage = () => {
   return (
-    <Layout pageTitle="Roadmap">
+    <Layout pageTitle="Roadmap" pageDesc="A roadmap of milestones to work on for the alternis project">
       <p>
         Here is a look at our goals through the next 12 months.
       </p>
@@ -21,20 +21,12 @@ const Homepage = () => {
       <div className="center">
         <div {...classNames(styles.roadmapMilestones, "full-size")}>
           <div>
-            wasm-powered npm package for the browser and Node.js
-            <div><em>Q4-2023</em></div>
-          </div>
-          <div>
             Unity integration
             <div><em>Q4-2023</em></div>
           </div>
           <div>
             Define JSON spec and schema
             <div><em>Q1-2024</em></div>
-          </div>
-          <div>
-            Integrate with OpenAI's GPT for AI-powered dialogue writing
-            <div><em>Q2-2024</em></div>
           </div>
         </div>
       </div>

@@ -23,6 +23,8 @@ export function NodeSearchBar() {
   const searchAsRegex = useWildcardSearch(searchInput);
   const graph = useReactFlow();
 
+  const currentDialogue = useCurrentDialogue();
+
   const matches = React.useMemo(() => {
     if (searchAsRegex === undefined)
       return [];
@@ -39,16 +41,14 @@ export function NodeSearchBar() {
           matches.push(node);
       },
     };
-
-    const currentDialogue = useCurrentDialogue();
-    for (const node of currentDialogue?.nodes ?? []) {
+    for (const node of currentDialogue.nodes) {
       if (node.type === undefined) continue;
       // FIXME: type these strings! (node.type?)
       matchers[node.type]?.(searchAsRegex, node);
     }
 
     return matches;
-  }, [searchAsRegex]);
+  }, [currentDialogue.nodes, searchAsRegex]);
 
   const [matchIndex, setMatchIndex] = React.useState<number>();
 

@@ -235,7 +235,9 @@ export function useCurrentDialogue<T>(cb?: ((s: Dialogue) => T)): T {
   const id = useAppState(s => s.projectId);
   const doc = useDoc<Document>(id ?? failingId, undefined, emptyDoc).doc as Document;
 
-  const dialogueId = useAppState(s => s.currentDialogueId);
+  const docWasEmpty = doc === emptyDoc;
+  const currentDialogueId = useAppState(s => s.currentDialogueId);
+  const dialogueId = docWasEmpty ? emptyDocDialogueId : currentDialogueId;
   const dialogue = doc.dialogues[dialogueId];
 
   return cb ? cb(dialogue as Dialogue) : dialogue as T;

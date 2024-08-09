@@ -34,7 +34,7 @@ const Layout = ({
       </div>
       {/* FIXME: should be copyrighted by alternis company */}
       <footer className="center">
-        &copy; Michael Belousov 2023
+        &copy; Michael Belousov 2024
       </footer>
     </div>
   )

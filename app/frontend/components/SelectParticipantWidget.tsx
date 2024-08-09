@@ -28,7 +28,7 @@ export function SelectParticipantWidget(props: SelectParticipantWidget.Props) {
   return (
     <div className="alternis__floatingbox" ref={rootElem} {...divProps}>
       <strong>{props.header ?? "Pick a participant"}</strong>
-      <div style={{ height: "max-content", width: 300, overflow: "scroll", marginTop: "var(--gap)" }}>
+      <div style={{ height: "max-content", width: 300, overflowY: "scroll", marginTop: "var(--gap)" }}>
         <RespGrid
           size={"small"}
           cells={

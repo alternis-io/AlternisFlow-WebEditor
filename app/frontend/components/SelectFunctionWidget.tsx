@@ -36,7 +36,7 @@ export function SelectFunctionWidget(props: SelectFunctionWidget.Props) {
           height: "max-content",
           minWidth: 200,
           width: "fit-content",
-          overflow: "scroll",
+          overflowY: "scroll",
           marginTop: "var(--gap)"
         }}
       >

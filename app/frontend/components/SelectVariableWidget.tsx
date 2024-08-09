@@ -34,7 +34,7 @@ export function SelectVariableWidget(props: SelectVariableWidget.Props) {
           height: "max-content",
           minWidth: 200,
           width: "fit-content",
-          overflow: "scroll",
+          overflowY: "scroll",
           marginTop: "var(--gap)"
         }}
       >

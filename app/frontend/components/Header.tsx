@@ -77,14 +77,14 @@ export function Header() {
       </p>
       <p>
         This project is open source.
-        Please see <a href="https://github.com/alternis-io/AlternisFlow-WebEditor">the repository</a> for
+        Please see <a href="https://github.com/alternis-io/AlternisFlow-WebEditor" target="_blank">the repository</a> for
         all open source dependencies with which this project is made [possible].
       </p>
       <p>
-        Made by <a href="https://mikemikeb.com">Michael Belousov</a>.
+        Made by <a href="https://mikemikeb.com" target="_blank">Michael Belousov</a>.
       </p>
       <p>
-        Demo art by <a href="https://www.jmitchell-illustrations.com/">Mitch Vecchione</a>.
+        Demo art by <a href="https://www.jmitchell-illustrations.com/" target="_blank">Mitch Vecchione</a>.
       </p>
     </dialog>
   );

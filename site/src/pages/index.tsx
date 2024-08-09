@@ -2,7 +2,6 @@ import React from 'react'
 import Layout from '../components/layout'
 import "../shared.css";
 import * as styles from "./index.module.scss";
-import unityLogoUrl from "../images/U_Logo_Small_White_RGB_1C.svg";
 import unrealLogoUrl from "../images/UE_Logo_stacked_unreal-engine_white.svg";
 import godotLogoUrl from "../images/godot_logo_large_color_dark.svg";
 import html5LogoUrl from "../images/HTML5_Logo.svg";
@@ -20,7 +19,7 @@ const Homepage = () => {
     <Layout pageTitle="Home">
       <p style={{ fontSize: "18pt", textAlign: "center", }}>
         <strong>
-        Alternis is the intuitive dialogue editor
+        Alternis is an experimental dialogue editor
         and open source dialogue middleware that
         fits on the web or in any game engine portably.
         </strong>
@@ -82,7 +81,7 @@ const Homepage = () => {
 
       <p>
         All in a <strong>tiny native library with a C API</strong> that embeds in any platform easily,
-        with many existing integrations: for Godot, Unreal, Unity and the web.
+        already with these integrations: for Godot, Unreal, and the web.
       </p>
 
       <div className="center full-size">
@@ -90,7 +89,6 @@ const Homepage = () => {
           <img alt="godot-logo" src={godotLogoUrl} />
           {/* FIXME: haven't asked for permission for unreal logo usage! */}
           <img alt="unreal-logo" src={unrealLogoUrl} />
-          <img alt="unity-logo" src={unityLogoUrl} />
           <img alt="html5-logo" src={html5LogoUrl} />
         </div>
       </div>
@@ -99,16 +97,15 @@ const Homepage = () => {
         <strong>
           Join our <a target="_blank" href="https://e0a075ca.sibforms.com/serve/MUIFANC3EaFwNn2Lb330eR8CUoK52Kqq3Iw805_JEf19NtNbXgz8blNJHfE7RaKNJADeNfGAkMOKu86zmyUy_B8V1ivmiigESd_rQkaChA0dM3eST4ictTcvmsCZXQ2ec4b_xS9nXdaF4S1fOmDeDInPn7hFEVTEiHlExtWpPGNEiPcJXdBTlt7MRtajeVcdJGC3u3dBacXZcMsz">
             newsletter
-          </a> to receive product updates.
+          </a> to receive updates.
         </strong>
       </p>
 
       <p style={{ textAlign: "center" }}>
-      Want custom pricing, or support for a specific engine or environment?
+      Want support for a specific engine or environment?
       <br />
       Reach out to us at <MailLink email="support@alternis.io" />
       </p>
-
     </Layout>
   )
 }

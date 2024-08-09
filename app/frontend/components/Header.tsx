@@ -72,14 +72,19 @@ export function Header() {
         A visual editor for the Alternis dialogue middleware's dialogue format.
       </p>
       <p>
-        Open source at <a href="https://github.com/alternis-io/DialogueMiddleware">Github</a>.
-      </p>
-      <p>
         Check out the tutorial in the header for help but feel free to use the feedback link
         or <a href="mailto:support@alternis.io">contact the author</a>.
       </p>
       <p>
-        Made by <a href="https://mikemikeb.com">Michael Belousov</a>
+        This project is open source.
+        Please see <a href="https://github.com/alternis-io/AlternisFlow-WebEditor">the repository</a> for
+        all open source dependencies with which this project is made [possible].
+      </p>
+      <p>
+        Made by <a href="https://mikemikeb.com">Michael Belousov</a>.
+      </p>
+      <p>
+        Demo art by <a href="https://www.jmitchell-illustrations.com/">Mitch Vecchione</a>.
       </p>
     </dialog>
   );

@@ -3,7 +3,7 @@ import { ContextMenuOptions } from "../components/ContextMenu";
 import { UniqueInput } from "../components/UniqueInput";
 import { getNode, makeNodeDataSetter, useCurrentDialogue, useAppState, useCurrentDocument } from "../AppState";
 import styles from "../TestGraphEditor.module.css"
-import { useDialogueContext } from "../DialogueViewer"
+import { useDialogueContextFromJson } from "../DialogueViewer"
 import playbackStyles from "../DialogueViewer.module.css"
 import { Center } from "../Center";
 import { classNames } from "js-utils/lib/react-utils";
@@ -23,7 +23,7 @@ const FloatingTools = (props: {
   // FIXME: definitely broken in the presence of disconnected nodes
   const nodeIndex = React.useMemo(() => nodes.findIndex(n => n.id === props.id), [nodes, props.id]);
 
-  const dialogueCtx = useDialogueContext();
+  const dialogueCtx = useDialogueContextFromJson();
   const currentDialogueId = useAppState(s => s.currentDialogueId);
   const dialogues = useCurrentDocument(d => d.dialogues);
   const dialogueIndex = Object.keys(dialogues).findIndex(d => d === currentDialogueId);

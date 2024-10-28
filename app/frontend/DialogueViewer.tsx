@@ -12,6 +12,7 @@ import { assert } from "js-utils/lib/browser-utils";
 import { create } from "zustand";
 
 export interface DialogueStoreState {
+  dialogueJson: string | undefined;
   dialogueCtx: WorkerDialogueContext | undefined;
   setDialogueCtx: typeof debouncedUpdateDialogue;
 }
@@ -19,28 +20,40 @@ export interface DialogueStoreState {
 const debouncedUpdateDialogue = debounce(
   async (json: string | undefined) => {
     const prevCtx = useDialogueStore.getState().dialogueCtx;
+    const prevJson = useDialogueStore.getState().dialogueJson;
+
+    if (json === prevJson)
+      return;
 
     const newCtx = json !== undefined ? await makeDialogueContext(json) : undefined;
 
     if (prevCtx !== undefined)
       prevCtx.dispose();
 
-    useDialogueStore.setState(s => ({ ...s, dialogueCtx: newCtx }));
+    useDialogueStore.setState(s => ({
+      ...s,
+      dialogueCtx: newCtx,
+      dialogueJson: json
+    }));
   },
   400,
 );
 
 const useDialogueStore = create<DialogueStoreState>()((set) => ({
   dialogueCtx: undefined,
+  dialogueJson: undefined,
   setDialogueCtx: debouncedUpdateDialogue,
 }));
 
 
-export function useDialogueContext(json?: string) {
+export function useDialogueContextFromJson(json?: string) {
   const setCtx = useDialogueStore(p => p.setDialogueCtx);
+
   if (json !== undefined)
     void setCtx(json);
-  return useDialogueStore(p => p.dialogueCtx);
+
+  const dialogueCtx = useDialogueStore(p => p.dialogueCtx);
+  return dialogueCtx;
 }
 
 export function DialogueViewer(props: DialogueViewer.Props) {
@@ -64,7 +77,7 @@ export function DialogueViewer(props: DialogueViewer.Props) {
     [doc],
   );
 
-  const dialogueCtx = useDialogueContext(json);
+  const dialogueCtx = useDialogueContextFromJson(json);
 
   const [currentStep, setCurrentStep] = useState<DialogueContext.StepResult>();
 

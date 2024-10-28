@@ -1,3 +1,4 @@
+import React from "react";
 import type { Node, Edge } from "reactflow";
 import type { NodeTypes } from "./TestGraphEditor";
 import { Participant } from "../common/data-types/participant";
@@ -7,6 +8,7 @@ import { TemporalState, temporal } from "zundo";
 import { MouseBinding } from "./components/KeyBindingInput" ;
 import { BaseNodeData } from "./nodes/data";
 import { useDoc } from "use-pouchdb";
+import { docs } from "./api/usePouchDbApi";
 
 // FIXME: move out icon data and get type from that list
 export type IconSizes = "small" | "medium" | "large";
@@ -145,9 +147,6 @@ import _template1 from "./templates/template1.json";
 const template1 = _template1 as any as Document;
 const demoDocId = _template1.id;
 
-import { assert } from "js-utils/lib/browser-utils.js";
-import { docs } from "./api/usePouchDbApi";
-
 // FIXME: this codebase confuses hash and search a lot... fix that
 let isLocalDemo = () => {
   return window.location.hash.includes("demo") || window.location.search.includes("demo");
@@ -229,13 +228,71 @@ export const emptyDoc = {
 
 const failingId = "";
 
+type UnsubFunc = () => void;
+type SubFunc = (notifyChange: () => void) => UnsubFunc;
+
+function makeDocSelectorSubscribe<T>(
+  docId: string,
+  selector: ((d: Document) => T),
+): [SubFunc, () => T] {
+  let lastSnapshot: T | undefined = undefined;
+  let lastSnapshotHash: string = "";
+
+  const subscribe = (notifyChange: () => void) => {
+    const docMutatedListener = (change: Pick<PouchDB.Core.ChangesResponseChange<Document>, "doc" | "id">) => {
+      if (change.id !== docId)
+        return;
+
+      const newSnapshot = selector === undefined ? change.doc as T : selector(change.doc!);
+      const newSnapshotHash = JSON.stringify(newSnapshot);
+
+      // FIXME: use less expensive equality check
+      if (newSnapshotHash === lastSnapshotHash)
+        return;
+
+      lastSnapshot = newSnapshot;
+      lastSnapshotHash = newSnapshotHash;
+
+      notifyChange();
+    };
+
+    let unsubbed = false;
+
+    docs.get<Document>(docId).then((doc) => {
+      if (unsubbed) return;
+      docMutatedListener({
+        id: docId,
+        doc,
+      })
+    });
+
+    const changes = docs.changes({ since: "now", include_docs: true, live: true })
+      .on("change", docMutatedListener);
+
+    const unsubscribe = () => {
+      unsubbed = true;
+      changes.removeListener("change", docMutatedListener);
+    };
+
+    return unsubscribe;
+  };
+
+  const getSnapshot = () => lastSnapshot ?? selector(emptyDoc);
+
+  return [subscribe, getSnapshot];
+}
+
+docs.setMaxListeners(2000);
+
 // FIXME: remove document from useAppState state
 export function useCurrentDocument<T>(selector: ((d: Document) => T)): T;
 export function useCurrentDocument(): Document;
-export function useCurrentDocument<T>(selector?: ((d: Document) => T)): T {
+export function useCurrentDocument<T>(maybeSelector?: ((d: Document) => T)): T {
   const id = useAppState(s => s.projectId) ?? "";
-  const doc = useDoc<Document>(id ?? failingId, undefined, emptyDoc).doc as Document;
-  return typeof selector === "function" ? selector(doc) : doc as T;
+  // FIXME: this assumes that the selector is never mutated!
+  const selector = typeof maybeSelector === "function" ? maybeSelector : (d: Document) => d as T;
+  const [docSubscribe, getDocSnapshot] = React.useMemo(() => makeDocSelectorSubscribe(id, selector), [id]);
+  return React.useSyncExternalStore(docSubscribe, getDocSnapshot);
 }
 
 export function useCurrentDialogue<T>(cb: (s: Dialogue) => T): T;
@@ -243,20 +300,16 @@ export function useCurrentDialogue<T>(cb: (s: Dialogue) => T): T;
 export function useCurrentDialogue(): Dialogue;
 // NOTE: funky typescript union of function types
 export function useCurrentDialogue<T>(cb?: ((s: Dialogue) => T)): T {
-  const id = useAppState(s => s.projectId);
-  const doc = useDoc<Document>(id ?? failingId, undefined, emptyDoc).doc as Document;
-
-  const docWasEmpty = doc === emptyDoc;
   const currentDialogueId = useAppState(s => s.currentDialogueId);
-  const dialogueId = docWasEmpty ? emptyDocDialogueId : currentDialogueId;
-  // FIXME: when adding a new dialogue, even though we (asynchronously) put the new dialogue
-  // right before changing the app state to consider it the current dialogue, the changes
-  // listener doesn't seem to pick up the new dialogue yet so we may temporarily
-  // request a dialogue that isn't seen in the state yet. In that case, just return an
-  // empty dialogue
-  const dialogue = doc.dialogues[dialogueId] ?? emptyDoc.dialogues[emptyDocDialogueId];
-
-  return cb ? cb(dialogue as Dialogue) : dialogue as T;
+  return useCurrentDocument(doc => {
+    // FIXME: when adding a new dialogue, even though we (asynchronously) put the new dialogue
+    // right before changing the app state to consider it the current dialogue, the changes
+    // listener doesn't seem to pick up the new dialogue yet so we may temporarily
+    // request a dialogue that isn't seen in the state yet. In that case, just return an
+    // empty dialogue
+    const dialogue = doc === emptyDoc ? emptyDoc.dialogues[emptyDocDialogueId] : doc.dialogues[currentDialogueId];
+    return cb ? cb(dialogue as Dialogue) : dialogue as T;
+  });
 }
 
 // FIXME: remove?
@@ -329,16 +382,18 @@ if (isLocalDemo()) {
       currentDialogueId: Object.keys(template1.dialogues)[0],
     });
 
-    const changes = docs.changes({ since: "now", include_docs: true, live: true })
-      .on("change", (change) => {
-        const changedFromDemo = () => JSON.stringify(listenedState(change.doc!)) !== demoListenedState;
+    const demoMutatedListener = (change: PouchDB.Core.ChangesResponseChange<Document>) => {
+      const changedFromDemo = () => JSON.stringify(listenedState(change.doc!)) !== demoListenedState;
 
-        if (change.id === demoDocId && isLocalDemo() && changedFromDemo()) {
-          window.location.hash = window.location.hash.replace("demo", "");
-          window.location.search = window.location.search.replace("demo", "");
-          changes.removeAllListeners();
-        }
-      });
+      if (change.id === demoDocId && isLocalDemo() && changedFromDemo()) {
+        window.location.hash = window.location.hash.replace("demo", "");
+        window.location.search = window.location.search.replace("demo", "");
+        changes.removeListener("change", demoMutatedListener);
+      }
+    };
+
+    const changes = docs.changes({ since: "now", include_docs: true, live: true })
+      .on("change", demoMutatedListener);
   };
 
   void impl();

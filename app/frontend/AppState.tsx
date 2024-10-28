@@ -259,27 +259,34 @@ export function useCurrentDialogue<T>(cb?: ((s: Dialogue) => T)): T {
   return cb ? cb(dialogue as Dialogue) : dialogue as T;
 }
 
+let prevCurrentDialogueSet: Promise<any> = Promise.resolve();
+
 // FIXME: remove?
 export namespace useCurrentDialogue {
-  export const setState = async (value: Partial<Dialogue> | ((s: Dialogue) => Partial<Dialogue>)) => {
+  export const setState = async (value: Partial<Dialogue> | ((s: Dialogue) => Partial<Dialogue>), ordered = false) => {
     const docId = useAppState.getState().projectId;
     if (docId === undefined)
       return;
     const currentDialogueId = useAppState.getState().currentDialogueId;
-    const doc = await docs.get(docId);
-    if (doc === undefined) return;
-    const currentDialogue = doc.dialogues[currentDialogueId];
 
-    await docs.upsert(doc._id, (doc) => ({
-      ...doc as Document,
-      dialogues: {
-        ...doc.dialogues,
-        [currentDialogueId]: {
-          ...currentDialogue,
-          ...typeof value === "function" ? value(currentDialogue) : value,
+    const performSet = async () => await docs.upsert(docId, (doc) => {
+      const currentDialogue = doc.dialogues![currentDialogueId];
+      return {
+        ...doc as Document,
+        dialogues: {
+          ...doc.dialogues,
+          [currentDialogueId]: {
+            ...currentDialogue,
+            ...typeof value === "function" ? value(currentDialogue) : value,
+          },
         },
-      },
-    }));
+      };
+    });
+
+    if (ordered)
+      prevCurrentDialogueSet = prevCurrentDialogueSet.then(performSet);
+    else
+      performSet();
   };
 
   export const getState = async () => {

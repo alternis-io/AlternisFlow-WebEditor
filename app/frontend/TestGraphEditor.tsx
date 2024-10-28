@@ -63,7 +63,6 @@ const forceAddNodeEvent = "force-addnode";
 
 // FIXME: rename to Line node
 const DialogueEntryNode = (props: NodeProps<DialogueEntry>) => {
-  //const data = getNode<DialogueEntry>(props.id)?.data;
   const data = props?.data;
   const participants = useCurrentDocument((d) => d.participants);
   const participant
@@ -1128,10 +1127,10 @@ export const TestGraphEditor = (_props: TestGraphEditor.Props) => {
           // FIXME: need to filter illegal deletion changes here (e.g. no delete entry node)
           onNodesChange={(changes) => useCurrentDialogue.setState(s => ({
             nodes: applyNodeChanges(changes, s.nodes) as Node[],
-          }))}
+          }), true)}
           onEdgesChange={(changes) => useCurrentDialogue.setState(s => ({
             edges: applyEdgeChanges(changes, s.edges),
-          }))}
+          }), true)}
           onConnect={(connection) => {
             useCurrentDialogue.setState(s => ({
               edges: addEdge(connection, s.edges),
